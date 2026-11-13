@@ -2,34 +2,53 @@
 <title>Build plan · GPT which GPT?</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
-:root{--bg:#f5f3ee;--paper:#fff;--fg:#14232e;--muted:#5c6b74;--line:#d8d3c8;--navy:#0f2f52;--teal:#126a6a;--gold:#c98a1c;--gold-soft:#fff1d6;--green:#2f8a58;--chip:#ece8df;--display:"IBM Plex Sans",system-ui,sans-serif;--mono:"IBM Plex Mono",ui-monospace,monospace}
-@media (prefers-color-scheme:dark){:root{--bg:#0f2f52;--paper:#143a5f;--fg:#f3f1ea;--muted:#bfd6e2;--line:#2a4f73;--navy:#0b2440;--teal:#9fd8d0;--gold:#ffb547;--gold-soft:#3a3214;--green:#6fc48f;--chip:#1d4670;color-scheme:dark}}
+:root{--bg:#f5f3ee;--paper:#fff;--fg:#14232e;--muted:#5c6b74;--line:#d8d3c8;--navy:#0f2f52;--teal:#126a6a;--gold:#c98a1c;--gold-soft:#fff1d6;--green:#2f8a58;--red:#c43c3c;--chip:#ece8df;--display:"IBM Plex Sans",system-ui,sans-serif;--mono:"IBM Plex Mono",ui-monospace,monospace}
+@media (prefers-color-scheme:dark){:root{--bg:#0f2f52;--paper:#143a5f;--fg:#f3f1ea;--muted:#bfd6e2;--line:#2a4f73;--navy:#0b2440;--teal:#9fd8d0;--gold:#ffb547;--gold-soft:#3a3214;--green:#6fc48f;--red:#f07a7a;--chip:#1d4670;color-scheme:dark}}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--display);line-height:1.5;padding:0 16px 40px}
 a{color:var(--teal)}.wrap{max-width:1120px;margin:0 auto}
 nav{display:flex;flex-wrap:wrap;gap:6px 18px;align-items:center;padding:14px 0;border-bottom:1px solid var(--line);font-family:var(--mono);font-size:.8rem}
 nav a{text-decoration:none;color:var(--fg)}nav a.brand{font-weight:600;color:var(--gold)}nav a.cur{text-decoration:underline;text-underline-offset:4px}
 h1{font-size:2rem;line-height:1.15;margin:28px 0 6px;text-wrap:balance}h2{font-family:var(--mono);font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:30px 0 10px;font-weight:500}
-.lede{color:var(--muted);max-width:70ch;margin:0 0 18px;font-size:1.05rem}
+.lede{color:var(--muted);max-width:72ch;margin:0 0 18px;font-size:1.05rem}
 .eyebrow{font-family:var(--mono);font-size:.76rem;letter-spacing:.08em;text-transform:uppercase;color:var(--teal)}
-.gate{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px}
-.gate a{display:grid;gap:6px;background:var(--paper);border:1px solid var(--line);border-top:4px solid var(--gold);padding:16px;text-decoration:none;color:var(--fg)}
-.gate a:hover{border-color:var(--teal)}.gate b{font-size:1.05rem}.gate span{color:var(--muted);font-size:.9rem}.gate small{font-family:var(--mono);font-size:.72rem;color:var(--teal)}
+.gate{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px}
+.gate a{display:grid;gap:6px;align-content:start;background:var(--paper);border:1px solid var(--line);border-top:6px solid var(--c,var(--gold));padding:16px;text-decoration:none;color:var(--fg)}
+.gate a:hover{border-color:var(--teal);border-top-color:var(--c,var(--gold))}.gate b{font-size:1.05rem;line-height:1.25}.gate span{color:var(--muted);font-size:.9rem}.gate small{font-family:var(--mono);font-size:.72rem;color:var(--muted)}
+.gate a.focus{grid-column:span 2;background:var(--gold-soft)}@media (max-width:640px){.gate a.focus{grid-column:auto}}
+.code{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:.74rem;font-weight:500}.code i{width:11px;height:11px;border-radius:50%;background:var(--c)}
+.flag{font-family:var(--mono);font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;color:var(--gold);font-weight:600}
 .states{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px}
 .st{background:var(--paper);border:1px solid var(--line);padding:10px 12px;border-left:5px solid var(--line)}
 .st.empty{border-left-color:#6fc48f}.st.partial{border-left-color:#ffb547}.st.full{border-left-color:#f08a5a}.st.blocked{border-left-color:#dc4646}.st.unusable{border-left-color:#8fb3c4}.st.damaged{border-left-color:#c9a3e8}
 .st b{display:block}.st i{font-style:normal;font-family:var(--mono);font-size:.74rem;color:var(--muted);display:block}.st span{font-size:.86rem}
-.panel{background:var(--paper);border:1px solid var(--line);padding:16px 18px}
+.panel{background:var(--paper);border:1px solid var(--line);padding:16px 18px;min-width:0}
 .two{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
+.three{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
 table{border-collapse:collapse;width:100%;font-size:.9rem}th,td{text-align:left;padding:8px 8px;border-top:1px solid var(--line);vertical-align:top}th{font-family:var(--mono);font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:500;border-top:0}
-td.role{font-family:var(--mono);font-size:.76rem;color:var(--teal);white-space:nowrap}td.cost{font-family:var(--mono);font-size:.76rem;color:var(--muted)}
+td.role{font-family:var(--mono);font-size:.76rem;color:var(--teal)}td.cost{font-family:var(--mono);font-size:.76rem;color:var(--muted)}td.num{font-family:var(--mono);text-align:right;white-space:nowrap}
 .tbl{overflow-x:auto}ul{padding-left:18px;margin:0}li{margin-bottom:4px}
 .rule{background:var(--gold-soft);border-left:5px solid var(--gold);padding:10px 14px;font-size:.95rem}
 .chips{display:flex;flex-wrap:wrap;gap:6px}.chips span{background:var(--chip);font-family:var(--mono);font-size:.74rem;padding:3px 9px}
 img.fig{max-width:100%;border:1px solid var(--line);display:block}
+.cap{font-size:.82rem;color:var(--muted);margin-top:6px}
 footer{margin-top:40px;font-family:var(--mono);font-size:.74rem;color:var(--muted);line-height:1.6;max-width:100ch}
 .matrix td.y{color:var(--green);font-weight:600}.matrix td.n{color:var(--muted)}
+.quote{border-left:3px solid var(--teal);padding:4px 0 4px 14px;color:var(--fg);font-size:.98rem;max-width:70ch}
+.quote small{display:block;color:var(--muted);font-family:var(--mono);font-size:.72rem;margin-top:4px}
+.scn{background:var(--paper);border:1px solid var(--line);padding:14px 16px;display:grid;gap:6px;align-content:start}
+.scn .n{font-family:var(--mono);color:var(--gold);font-size:.8rem}.scn b{font-size:1.02rem}.scn span{font-size:.88rem;color:var(--muted)}
+.bar{height:10px;background:var(--chip);position:relative}.bar i{position:absolute;inset:0 auto 0 0;background:var(--gold)}
+/* email mock */
+.mail{background:var(--paper);border:1px solid var(--line);max-width:760px;font-size:.95rem}
+.mail .hd{padding:12px 18px;border-bottom:1px solid var(--line);display:grid;gap:2px;font-size:.86rem;color:var(--muted)}
+.mail .hd b{color:var(--fg);font-size:1.05rem}
+.mail .bd{padding:16px 18px;display:grid;gap:12px}
+.mail .pill{display:inline-block;font-family:var(--mono);font-size:.72rem;padding:2px 8px;border-radius:3px;color:#fff;background:var(--red)}
+.mail .why{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;font-size:.88rem}.mail .why dt{color:var(--muted);font-family:var(--mono);font-size:.76rem;padding-top:2px}.mail .why dd{margin:0}
+.mail .acts{display:flex;flex-wrap:wrap;gap:8px}.mail .acts span{border:1px solid var(--teal);color:var(--teal);padding:7px 12px;font-weight:600;font-size:.86rem}.mail .acts span.pri{background:var(--teal);color:var(--paper)}
+.figwrap{position:relative;max-width:640px}.figwrap svg{position:absolute;inset:0;width:100%;height:100%}
 </style></head><body><div class="wrap">
-<nav><a class="brand" href="index.html">GPT which GPT?</a><a href="index.html">Home</a><a href="index.html#types">GPT types</a><a href="sensors.html">Sensor matrix</a><a href="plan.html" class=cur>Build plan</a><a href="evidence.html">Evidence</a></nav>
+<nav><a class="brand" href="index.html">GPT which GPT?</a><a href="index.html">Home</a><a href="mvp.html">MVP</a><a href="alert.html">Sample alert</a><a href="sensors.html">Sensor matrix</a><a href="plan.html" class=cur>Build plan</a><a href="evidence.html">Evidence</a></nav>
 <style>
 /* Layout: a field map. One column of narrative sections (destination, decisions, fog, out of scope), then the ticket board as three columns by frontier depth, then the post-map build slices as a numbered rail. Dark navy brand palette carried from the exhibit assets, with a light theme for printing. */
 :root{
@@ -105,7 +124,7 @@ footer a{color:inherit}
 .wrap .wrap{padding:0;max-width:none}</style>
 <div class="eyebrow" style="margin-top:24px">Build plan</div>
 <h1 style="margin-top:4px">How this gets built</h1>
-<p class="lede">Planned with the <a href="https://www.aihero.dev/skills-wayfinder">Wayfinder</a> method: the destination is fixed, the route is a map of decisions, each a ticket with a question for a title. The frontier is what can be worked on now. <a href="assets/GPT-which-GPT-wayfinder-map.pdf">One-page PDF</a>.</p>
+<p class="lede">Planned with the <a href="https://www.aihero.dev/skills-wayfinder">Wayfinder</a> method: the destination is fixed, the route is a map of decisions, each a ticket phrased as a question. The frontier is what can be worked on now. <a href="assets/GPT-which-GPT-wayfinder-map.pdf">One-page PDF</a>.</p>
 
 <div class="wrap">
 <header>
@@ -113,9 +132,9 @@ footer a{color:inherit}
   <h1>GPT which GPT? — the route from camera wall to approved work order</h1>
   <p>The destination is agreed. The route isn't. This map charts the build as decisions, each one a ticket with a question for a title, and shows the frontier: the tickets with nothing blocking them that a session can claim today. The map plans; it does not build. When "Not yet specified" is empty and every ticket is closed, the next command is <span style="font-family:var(--mono)">/to-spec</span>.</p>
   <div class="stats">
-    <div class="stat"><b>9</b><span>decisions so far</span></div>
-    <div class="stat"><b>18</b><span>open tickets</span></div>
-    <div class="stat"><b>8</b><span>on the frontier</span></div>
+    <div class="stat"><b>14</b><span>decisions so far</span></div>
+    <div class="stat"><b>17</b><span>open tickets</span></div>
+    <div class="stat"><b>7</b><span>on the frontier</span></div>
     <div class="stat"><b>7</b><span>in the fog</span></div>
     <div class="stat"><b>6</b><span>build slices after</span></div>
   </div>
@@ -123,8 +142,8 @@ footer a{color:inherit}
 
 <section class="dest">
   <h2>Destination</h2>
-  <p>A decision assistant that reads every frame from City of Parramatta's GPT camera wall (23 sites, 14 live today), scores each trap as empty / partially full / full / blocked / unusable / damaged with a confidence, combines the score with rainfall, and drafts a work order a Council officer approves in one click. It records fullness-at-clean per trap so Council can show, for the first time, what "emptied at optimum frequencies" means. It runs inside Council's existing systems (SCADA feeds in, OneCouncil work orders out) and replaces nothing.</p>
-  <small>Measure of done: an officer at Rydalmere opens the morning list, sees the three traps that need a truck this week with the frame and the reason, approves, and the work order lands in OneCouncil. Scheduled visits to near-empty traps fall by a third.</small>
+  <p>A decision assistant for Council's end-of-pipe litter nets. It reads each day's camera image from SCADA (about 10 working cameras today), scores fill, damage, detachment and can't-see with a confidence, checks the BoM forecast, and emails the duty officer a marked-up photo when a net must be cleaned or repaired before the next storm. The officer approves; a work order follows; the outcome is recorded so each net's fill rate is learned. Other GPT types are shown as a solution map with their own sensors. Nothing is replaced.</p>
+  <small>Measure of done: the Lackey St West torn net would have produced an email on 13 Nov with an arrow on the tear, on a Saturday, with the officer on leave. No net detaches unseen; about one email a week.</small>
 </section>
 
 <div class="two">
@@ -132,14 +151,19 @@ footer a{color:inherit}
   <h2>Decisions so far</h2>
   <ol class="dec">
     <li><span class="k">D1</span><div><b>Challenge 5 fit confirmed</b><span>AI for Smarter Asset and Environmental Management; Smart City strategy actions 1.1.1–1.1.3, 2.1.x, 5.1.x cited.</span></div></li>
-    <li><span class="k">D2</span><div><b>Model drafts, officer decides</b><span>No automated dispatch. Approval is a human action with an audit trail. Matches Council AI Plan (NOM26-2) and Audit Office findings.</span></div></li>
-    <li><span class="k">D3</span><div><b>Five-state fullness schema</b><span>Empty 0–15% · partial 15–60% · full 60–90% · blocked &gt;90% / overtopping · unusable. Simulated examples built from two Council frames.</span></div></li>
+    <li><span class="k">D2</span><div><b>Model drafts, officer decides</b><span>No automated dispatch. Approval is a human action with an audit trail. Matches Council AI Plan (NOM26-2) and Paul Hackney's brief.</span></div></li>
+    <li><span class="k">D3</span><div><b>Six-state schema, tuned to nets</b><span>Empty · filling · clean due 70–80% · overdue · can't see · damaged/detached. Council's target is to intervene at 70–80% because full nets detach by design.</span></div></li>
     <li><span class="k">D4</span><div><b>Integrate, don't replace</b><span>Systems of record stay TechnologyOne OneCouncil, Infor CRM (to 2027), ESRI GIS, SCADA.</span></div></li>
-    <li><span class="k">D5</span><div><b>Cameras already exist</b><span>SCADA "GPT Cameras" page: Swift Enduro trail cams, 1920×1440 JPG, overlay strip with site ID, temp, timestamp. No new hardware in scope.</span></div></li>
+    <li><span class="k">D5</span><div><b>Cameras already exist</b><span>About 15 Council-installed trail cams, about 10 working, one photo a day into SCADA, 1–3 years of history. 1920×1440 JPG with a site-ID and timestamp strip. Not from the CSIRO trial.</span></div></li>
     <li><span class="k">D6</span><div><b>Today's regime is quarterly + storm</b><span>Annual Report 24/25. Contractor Urban Asset Solutions, Part A of ITT 22/2023, schedule of rates, to 30 Jun 2027.</span></div></li>
     <li><span class="k">D7</span><div><b>The money case is redirected visits</b><span>Cleaning ≈ $420k/yr (est. $230–740k); $60–120k/yr of scheduled visits avoidable. Not a cost-cutting pitch, a right-trap-right-week pitch.</span></div></li>
     <li><span class="k">D8</span><div><b>Pitch assets done</b><span>Banner, 5W1H, sources visual, fullness states, process swimlane, cost page, Drive folder.</span></div></li>
-    <li><span class="k">D9</span><div><b>Damaged-net is a sixth state</b><span>Lackey St West frame (13 Nov 2026) shows a torn, sagging net. Added to schema; threshold TBD under "What counts as full?".</span></div></li>
+    <li><span class="k">D9</span><div><b>Damaged-net is a sixth state</b><span>Lackey St West frame (13 Nov 2026) shows a torn, sagging net. Paul also asked for "come off the pipe" detection.</span></div></li>
+    <li><span class="k">D10</span><div><b>Nets first</b><span>Paul Hackney, SME session 9 Nov: "concentrate on the nets"; other types only if capacity allows. Shown as a solution map.</span></div></li>
+    <li><span class="k">D11</span><div><b>Output is an email, not a dashboard</b><span>Image with an arrow on the problem, reason, confidence, link to a live view. About one a week or fortnight.</span></div></li>
+    <li><span class="k">D12</span><div><b>Trigger is flood-aware</b><span>Clean when the net can't hold the next forecast storm; a clean can't be arranged the day before.</span></div></li>
+    <li><span class="k">D13</span><div><b>Three demo scenarios</b><span>Camera net 75% + heavy rain; damaged net; can't-see / sensor offline. From the team alignment brief.</span></div></li>
+    <li><span class="k">D14</span><div><b>Synthetic data is allowed; no CBA</b><span>Council confirmed both in the SME session. Prototype only, about three weeks.</span></div></li>
   </ol>
 </section>
 
@@ -147,7 +171,8 @@ footer a{color:inherit}
   <div>
     <h2>Not yet specified (the fog)</h2>
     <ul class="plain">
-      <li>Night / infrared frames: separate model, or "unusable" until dawn?</li>
+      <li>Night / infrared frames: separate model, or "can't see" until dawn?</li>
+      <li>Which Council staff can label sample images (Council offered to explore)?</li>
       <li>Sediment vs litter: does fullness need to tell them apart for disposal classification?</li>
       <li>Retraining: does the model learn from each officer approval, and who signs off a new version?</li>
       <li>Procurement route if Council adopts it: Smart City strategy action, LGP panel, or pilot under the AI Plan?</li>
@@ -159,11 +184,12 @@ footer a{color:inherit}
   <div>
     <h2>Out of scope</h2>
     <ul class="plain">
-      <li>New cameras, LoRaWAN or 4G hardware (the CSIRO trial already settled this: 4G, trail cams).</li>
+      <li>Buying hardware. Sensors are recommended and simulated, not installed.</li>
       <li>Replacing or re-platforming SCADA, OneCouncil or CRM.</li>
       <li>Pipe CCTV inspection (Part F), WSUD maintenance (Part D), water quality sensing.</li>
       <li>Automated dispatch to the contractor without an officer.</li>
-      <li>Flood prediction. Rainfall is an input to prioritisation, nothing more.</li>
+      <li>Flood prediction. The forecast is an input to the trigger, nothing more.</li>
+      <li>Cost-benefit analysis (Council: not required).</li>
     </ul>
   </div>
 </section>
@@ -186,8 +212,7 @@ footer a{color:inherit}
       <div class="t research"><div class="type">research <em>AFK</em></div><b>What does a OneCouncil work order need?</b><p>Mandatory fields, asset ID format, CSV/API import path, how it links to a CRM case and to the Part A schedule of rates line.</p><div class="blk"><span class="lbl">blocks</span><span>Approval UX</span></div></div>
       <div class="t research"><div class="type">research <em>AFK</em></div><b>What does Council's AI Plan require of a tool like this?</b><p>NOM26-2 clause (f) scoping report, NSW AI Assessment Framework, Audit Office LG 2025 findings, data sovereignty.</p><div class="blk"><span class="lbl">blocks</span><span>Where does it run?</span></div></div>
       <div class="t grilling"><div class="type">grilling <em>HITL</em></div><b>What counts as "full"?</b><p>Thresholds per trap type (rack vs net vs CDS), the damaged-net state, what "blocked" means for a net with no visible waterline.</p><div class="blk"><span class="lbl">blocks</span><span>Label 300 frames</span></div></div>
-      <div class="t grilling"><div class="type">grilling <em>HITL</em></div><b>What do we demo at Festi, and what do we only describe?</b><p>Live scoring of Council frames, or the simulated set? Officer screen clickable, or storyboard?</p><div class="blk"><span class="lbl">blocks</span><span>Build slices</span></div></div>
-      <div class="t task"><div class="type">task</div><b>Get a frame export from Council</b><p>Ask James Sankar / Discord Q&amp;A for 2–4 weeks of frames from the 14 live sites, plus the labels of the 9 placeholders.</p><div class="blk"><span class="lbl">blocks</span><span>Can we read the overlay?</span><span>Label 300 frames</span></div></div>
+      <div class="t task"><div class="type">task</div><b>Get a frame export from Council</b><p>Ask Paul Hackney via Lele (Westy) for historic SCADA images, GPT lat/longs, the cleaning and repair records, and the telemetry contact. Paul agreed in principle on 9 Nov.</p><div class="blk"><span class="lbl">blocks</span><span>Can we read the overlay?</span><span>Label 300 frames</span></div></div>
     </div>
     <div class="col">
       <h3>Next — one blocker</h3>
@@ -215,10 +240,10 @@ footer a{color:inherit}
   <div class="rail">
     <div class="slice"><div class="n">01</div><div><b>One frame in, one score out</b><p>Ingest a frame from the export, run the chosen model, show state + confidence + the frame. <code>frame → score</code></p></div></div>
     <div class="slice"><div class="n">02</div><div><b>Add rain, get a recommendation</b><p>Rainfall feed joined; rule turns score into "urgent / this week / next round / no action". <code>score × rain → action</code></p></div></div>
-    <div class="slice"><div class="n">03</div><div><b>Officer approves, work order leaves</b><p>Approve / defer / inspect buttons; a OneCouncil-shaped work order (CSV first, API later) with the frame attached; audit row written.</p></div></div>
-    <div class="slice"><div class="n">04</div><div><b>The morning list for 23 sites</b><p>Camera-wall view ranked by action, the thing an officer opens at 7:30. Replaces the SCADA grid of unranked thumbnails.</p></div></div>
+    <div class="slice"><div class="n">03</div><div><b>Email goes out, officer decides</b><p>Marked-up image, reason, confidence and forecast in one email; approve / defer / inspect; a OneCouncil-shaped work order after approval; audit row written.</p></div></div>
+    <div class="slice"><div class="n">04</div><div><b>Damage and can't-see</b><p>Torn or detached nets raise a repair email; two days of obstructed frames raise a restore-the-view email.</p></div></div>
     <div class="slice"><div class="n">05</div><div><b>Fullness-at-clean record</b><p>Each approved order stores the score at approval and the contractor's reported mass, so the AMP KPI has data behind it.</p></div></div>
-    <div class="slice"><div class="n">06</div><div><b>Abstain, damaged-net and night handling</b><p>Low-confidence and unusable frames route to a person; damaged nets raise a repair job instead of a clean.</p></div></div>
+    <div class="slice"><div class="n">06</div><div><b>Learn each net's fill rate; other types</b><p>Join outcomes to rainfall so each net's mm-to-fill curve sharpens; add fullness sensors for nets without cameras, then racks, pits, vaults, booms.</p></div></div>
   </div>
 </section>
 
@@ -236,9 +261,9 @@ footer a{color:inherit}
 </section>
 </div>
 
-<footer>Map drafted 14 Nov 2026 from the GPT which GPT? research (Drive folder "GPT which GPT - Festi 2026"). Method: <a href="https://www.aihero.dev/skills-wayfinder">Wayfinder</a> by Matt Pocock (aihero.dev). Decisions cite: Council Annual Report 2024/25 App. 1; GIPA Contracts Register 30 Sep 2026; Asset Management Plan 2027–2036; Smart City &amp; Innovation Strategy 2024–2033; NOM26-2 City of Parramatta AI Plan; Smarter Cleaner Sydney Harbour final report; SCADA GPT Cameras page screenshots, 13 Nov 2026.</footer>
+<footer>Map drafted 14 Nov 2026, updated after the SME session notes and the team alignment brief, from the GPT which GPT? research (Drive folder "GPT which GPT - Festi 2026"). Method: <a href="https://www.aihero.dev/skills-wayfinder">Wayfinder</a> by Matt Pocock (aihero.dev). Decisions cite: Council Annual Report 2024/25 App. 1; GIPA Contracts Register 30 Sep 2026; Asset Management Plan 2027–2036; Smart City &amp; Innovation Strategy 2024–2033; NOM26-2 City of Parramatta AI Plan; Smarter Cleaner Sydney Harbour final report; SCADA GPT Cameras page screenshots, 13 Nov 2026.</footer>
 </div>
 
 
-<footer>GPT which GPT? is a Business Analyst Services entry for the WSTI Festi 2026 Build with AI challenge (City Challenge track, Challenge 5: AI for Smarter Asset and Environmental Management). Council facts cite City of Parramatta public records: Asset Management Plan 2027–2036, Annual Report 2024/25 Appendix 1, GIPA Contracts Register 30 Sep 2026, Smart City &amp; Innovation Strategy 2024–2033. Sensor costs are indicative 2026 ranges, not quotes. Camera frames are City of Parramatta SCADA trail-camera images used with the Festi brief.</footer>
+<footer>GPT which GPT? is a Team 101 entry for the WSTI Festi 2026 Build with AI challenge, City Challenge track, Parramatta Possibilities Challenge 5 (AI for Smarter Asset and Environmental Management). Operating facts come from the Council SME breakout session with Dr Paul Hackney (9 Nov 2026) and City of Parramatta public records: GPT Audit (Council minutes 25 Mar 2024), Asset Management Plan 2027–2036, Annual Report 2024/25. Sensor costs are indicative, not quotes. Vendor names are examples from public sources, not endorsements. Camera frames are Council SCADA images shared for the challenge.</footer>
 </div></body></html>

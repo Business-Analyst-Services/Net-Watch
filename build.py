@@ -1,144 +1,192 @@
 #!/usr/bin/env python3
-"""Generates the GPT which GPT? static site into ./docs (GitHub Pages)."""
-import os, html, shutil, json
-OUT = os.path.join(os.path.dirname(__file__), 'docs')
+"""Generates the GPT which GPT? static site into ./docs (GitHub Pages).
+
+Content sources: Council SME breakout session (Dr Paul Hackney, 9 Nov 2026), the team's
+Proactive GPT Monitoring brief (Zoe), City of Parramatta public records, and the SCADA
+GPT Cameras page screenshots (13 Nov 2026).
+"""
+import os, html, shutil, re
+HERE = os.path.dirname(os.path.abspath(__file__))
+OUT = os.path.join(HERE, 'docs')
 os.makedirs(os.path.join(OUT, 'types'), exist_ok=True)
 os.makedirs(os.path.join(OUT, 'assets'), exist_ok=True)
 
 STATES = [
- ("empty","Empty","0–15%","No action. Log the frame."),
- ("partial","Partially full","15–60%","Schedule in the next round."),
- ("full","Full","60–90%","Empty this week."),
- ("blocked","Blocked","&gt;90% / overtopping","Urgent. Raise today."),
- ("unusable","Unusable","image unreadable","Re-capture; after 3 misses send a person."),
- ("damaged","Damaged","net torn, rack bent","Raise a repair job, not a clean."),
+ ("empty","Empty","0–40%","No action. Log the frame."),
+ ("partial","Filling","40–70%","Watch. Re-score after the next rain."),
+ ("full","Clean due","70–80%","Email: clean before the next storm."),
+ ("blocked","Overdue","&gt;80% or overtopping","Email: urgent. A full net detaches in the next surge."),
+ ("unusable","Can't see","leaves, fog, dark, offline","Email after 2 days: restore the view."),
+ ("damaged","Damaged / detached","torn mesh, off the pipe","Email: repair job, not a clean."),
 ]
 
+# Council asset codes and map colours from the Dec 2022 GPT Audit (Council minutes, 25 Mar 2024).
 TYPES = [
- dict(slug="trash-rack", place="Creek lines and culvert mouths", name="Trash rack / creek screen", short="Open-channel screens across a creek or culvert mouth",
-  where="Creek lines through Northmead, Toongabbie, Darling Mills and Hunts Creek; WILLAV 050 is the camera reference frame.",
-  how="Vertical bars or mesh across the flow hold back floating litter and large organics. Material builds up on the upstream face until the screen chokes and water backs up or spills around the ends.",
-  looks=["Empty: bars visible top to bottom, bed visible between them.","Partial: a band of leaves and bottles along the base, bars still clear above.","Full: debris mat stacked two or three layers, bars hidden in the lower half.","Blocked: mound over the top rail, ponded brown water upstream, starved channel downstream.","Damaged: bars bent, panel sections missing, mat pushed through."],
-  cue="Fraction of bar length still visible, texture of the upstream face, waterline difference upstream vs downstream.",
+ dict(slug="net", code="GPT", colour="#7b4fc9", colname="Purple", focus=True,
+  name="End-of-pipe net or basket", short="A steel-cable net clamped to the end of a stormwater pipe, just before the creek",
+  place="Pipe outlets in creek bushland",
+  where="Most of Council's camera sites: Lackey St East and West, Bettington Rd, James Ruse Dr, Sturt St, Norwood Ave and others on the SCADA wall.",
+  how="Rain washes litter down the pipe into the net. The net swells and sags as it fills. Nets are designed to detach from the pipe when full and hit by another surge, through a weak link, so the net doesn't tear the outlet apart. That is the whole problem: once a net is full, the next storm sends it and its contents into the creek. Council wants to intervene at 70–80% full.",
+  looks=["Empty: net hangs slack, pipe mouth visible through the mesh.","Filling: lower third swollen with leaves and packaging.","Clean due: net taut and rounded, sagging toward the ground.","Overdue: net at full stretch, pipe mouth hidden, material backing into the pipe.","Damaged / detached: mesh torn, or net pulled off the top of the pipe (Lackey St West, 13 Nov 2026; Paul's example in the SME session).","Can't see: leaves or a branch across the lens, fog, IR night frame."],
+  cue="Change in the net itself, not the scene. Paul's warning: dense leafy frames, and about 90% of days nothing changes. Score against the trap's own last clean frame, not a generic 'full' image.",
   sensors=[
-   ("Trail camera (existing)","Primary","Swift Enduro, 4G, 1920×1440 frames with overlay strip. Already installed at the creek sites on the SCADA wall.","$0 marginal · solar/battery · 4G"),
-   ("Upstream/downstream level pair","Strong second signal","Two ultrasonic or pressure level sensors; head loss across the screen rises as it blocks, and it works at night and in fog when the camera is unusable.","~$1.5–3k per site · battery/solar · LoRaWAN or 4G"),
-   ("Rain gauge / BoM feed","Context","Tipping-bucket gauge on site or Council's SCADA gauges; first-flush events drive the load.","shared"),
-   ("Tilt or strain on panel","Damage only","Detects a bent or displaced panel after a storm.","~$300 · battery · LoRaWAN"),
+   ("Existing trail camera","Primary","About 15 installed, about 10 working; one photo a day into SCADA, 1–3 years of history. AI scores fill %, damage, detachment and can't-see.","$0 marginal · solar · 4G"),
+   ("Fullness sensor (ToF, ultrasonic or radar) on a bracket over the net","For nets with no camera","CSIRO/Matter 4G dry-sump fullness sensor: 17 units trialled, within 2% of manual checks. Low bandwidth, so it works where 4G is too weak for images.","low-cost · battery · 4G/LTE-M"),
+   ("Tilt or strain on the net frame","Detachment","A detached net is the one event that must never be missed; a tilt switch confirms it when the camera can't see.","~$300 · battery"),
+   ("BoM 12-hour forecast + FloodSmart gauges","Trigger","Council's 25 SCADA rain and level gauges and the Nelen &amp; Schuurmans forecast already exist. Used to ask: is there room in this net for the next storm?","shared, already in SCADA"),
   ],
-  rule="Score from camera; if camera unusable use the level differential; blocked = differential above threshold OR vision ≥ blocked with confidence ≥ 0.8.",
-  tickets=["What counts as full?","Can a zero-shot model separate empty / full / blocked on Council frames?","Which rainfall feed do we trust?"]),
- dict(slug="litter-net", place="Pipe outlets into creeks and the river", name="Litter net / sock on a pipe outlet", short="A mesh bag hung on the end of a stormwater pipe",
-  where="Pipe outlets into creeks and the river: Lackey St East and West, Bettington Rd, James Ruse Dr, Sturt St on the camera wall.",
-  how="Flow carries litter into a net clamped to the outlet; the net swells and sags as it fills. Nets tear on sharp debris and high flows, and a torn net passes everything.",
-  looks=["Empty: net hangs slack and translucent, pipe mouth visible through it.","Partial: lower third swollen with leaves and packaging.","Full: net taut and rounded, sagging to the ground, pipe mouth hidden.","Blocked: material backing up inside the pipe, water ponding at the mouth.","Damaged: net torn open, frame off its clamps, bag lying on the rocks (Lackey St West, 13 Nov 2026)."],
-  cue="Net silhouette area and sag angle, visibility of the pipe mouth, straight edges where mesh has torn.",
+  rule="Email when fill ≥ 70% <b>and</b> the 12-hour forecast exceeds the rain this net has historically needed to fill the remainder; email at once for damaged or detached; email after 2 days of can't-see. Expected volume: one email a week or fortnight.",
+  tickets=["What counts as full?","Can a zero-shot model separate empty / full / blocked on Council frames?","Which rainfall feed do we trust?","Get a frame export from Council"]),
+ dict(slug="trash-rack", code="Trash Rack", colour="#2f6fd6", colname="Blue", focus=False,
+  name="Trash rack across a waterway", short="A fixed steel rack across a channel; debris piles against it",
+  place="Open channels and culvert mouths",
+  where="Fewer sites than nets; one is on the SCADA camera wall (Paul showed it in the SME session, mostly leaves).",
+  how="Water comes over the top and debris piles against the bars. Here the risk is hydraulic as much as volume: a choked rack backs water up and floods upstream.",
+  looks=["Empty: bars visible top to bottom.","Filling: a band of leaves along the base.","Clean due: debris mat over the lower half.","Overdue: mound over the top rail, ponded water upstream.","Damaged: bars bent or missing.","Can't see: vegetation across the view."],
+  cue="Share of bar height still visible; water level difference upstream vs downstream.",
   sensors=[
-   ("Trail camera (existing)","Primary","Same cameras as the racks; the net silhouette is a strong visual cue.","$0 marginal"),
-   ("Load cell on the net hanger","Strong second signal","Weight of the net rises with contents; a sudden drop to near zero means it has torn or fallen.","~$600–1,200 · battery · LoRaWAN"),
-   ("Tilt sensor on frame","Damage","Frame knocked off the outlet by flow or vandalism.","~$300"),
-   ("Pipe water-level sensor","Blocked","Level inside the pipe upstream of the net rises when the net chokes.","~$800 · battery · LoRaWAN"),
+   ("Existing camera with AI debris coverage","Primary","AquaWatch AW-108 does this at the edge on an ACT trash rack, with an API to work orders.","$0 marginal (existing)"),
+   ("Upstream / downstream level pair (radar)","Blockage and flood risk","HiLo LS1-R radar level sends email, SMS, API or SCADA. Head loss across the rack rises as it blocks, day or night.","~$1.5–3k per pair · battery · 4G"),
+   ("Rain forecast","Trigger","As for nets.","shared"),
   ],
-  rule="Score from camera; weight trend confirms; weight drop &gt; 80% in one reading with no clean recorded = damaged.",
-  tickets=["What counts as full?","Can we read the overlay strip reliably?","Agree pilot terms with Council"]),
- dict(slug="underground-unit", place="Road-side and car-park catchments", name="Underground unit (CDS, vortex, Cleansall)", short="A below-ground chamber that spins litter and sediment out of the flow",
-  where="Road-side and car-park catchments: CBD trunk drains, Granville and Rydalmere industrial outlets. No camera today; the only view is the manhole lid.",
-  how="Flow enters a cylindrical chamber, spins, and drops gross pollutants and sediment into a sump while screened water leaves. Needs an eductor truck to empty; the sump is invisible from the street.",
-  looks=["No trail-cam view. The states are measured, not seen: sump depth against the design capacity.","A chamber camera with IR can show the water surface and floating litter layer only."],
-  cue="Sump sediment depth from a level sensor; floating layer from an IR chamber camera if fitted.",
-  sensors=[
-   ("Ultrasonic sump level","Primary","Mounted under the lid, measures distance to the sediment/litter surface; fullness = 1 − depth/design depth. Standard in the UK and US for these units.","~$1.5–2.5k · battery · LoRaWAN/4G; confined-space install"),
-   ("Float or tilt switch","Cheap fallback","Trips at a set level; binary full/not full.","~$200"),
-   ("Upstream/downstream level","Bypass detection","When the unit bypasses in high flow, treated and untreated levels converge.","~$2k"),
-   ("Chamber IR camera","Optional","Shows oil sheen and floating litter; limited value for sediment depth.","~$1k · needs power"),
-   ("Eductor truck weighbridge ticket","After the clean","The mass removed per clean calibrates the level sensor.","$0, from the contractor invoice"),
-  ],
-  rule="Fullness from level sensor; blocked if level exceeds 90% or bypass detected; the camera classes do not apply; schedule by predicted fill rate × forecast.",
-  tickets=["What is the minimum labelled set?","What does a OneCouncil work order need?","Where does it run?"]),
- dict(slug="pit-basket", place="Kerb inlets in town centres", name="Pit basket / insert", short="A lift-out basket under a street grate",
-  where="Kerb inlets in town centres and shopping strips: Epping, Harris Park, station shops.",
-  how="Catches litter at the kerb before it reaches the pipe. Small, cheap, numerous, emptied by hand or small vacuum unit. Each one is low value; the fleet is not.",
-  looks=["Empty: mesh floor visible through the grate.","Partial: leaves and cups across the floor.","Full: basket heaped to the grate, overflow bypass in use.","Blocked: grate itself covered, ponding on the road.","Damaged: basket missing, handle broken, mesh split."],
-  cue="Grate-level photo from a phone or a lid camera; the grate pattern gives a fixed reference for fill depth.",
-  sensors=[
-   ("Phone photo at inspection","Primary","Officer or sweeper crew photographs through the grate; the model scores it. No hardware.","$0"),
-   ("Lid-mounted IR camera","Only for hot spots","Fast-food strips and bus stops that fill weekly.","~$400 · battery"),
-   ("Tilt/float on basket","Rarely worth it","Fleet-wide hardware is dearer than the cleaning it saves.","~$150"),
-  ],
-  rule="Batch scoring of crew photos; schedule by land-use class (fast food strip vs residential) and season; no per-basket hardware unless a hot spot.",
-  tickets=["What do we demo at Festi, and what do we only describe?","What counts as full?"]),
- dict(slug="boom", place="Weir pool, Lake Parramatta, open water", name="Floating boom / weir pool", short="A floating barrier that corrals litter on open water",
-  where="Parramatta River weir pool in the CBD, Lake Parramatta, Charles St and Willmott Ave on the camera wall.",
-  how="A skirted boom holds floating litter and oil in a corner of the pool for a skimmer or crew. Wind and tide move the raft; the 2024/25 weir-pool drain removed 430 t of sediment.",
-  looks=["Empty: clear water inside the boom line.","Partial: a thin raft along the boom.","Full: raft covers the enclosed area, debris pushing under the skirt.","Blocked: boom submerged or detached, raft escaping.","Damaged: boom sections parted, anchor line slack."],
-  cue="Raft area as a share of the enclosed water, boom line continuity, colour and sheen for oil.",
-  sensors=[
-   ("Wide-angle camera (existing)","Primary","The weir and lake cameras already look across the pool.","$0 marginal"),
-   ("Wind and tide feed","Context","Raft position depends on them; use BoM wind and the river gauge.","shared"),
-   ("GPS/tilt on boom","Damage","Boom drift or submersion.","~$500 · solar · 4G"),
-   ("Oil sheen sensor","Spill","Hydrocarbon detection for industrial catchments.","~$3–5k · power"),
-  ],
-  rule="Score raft area from camera; damaged if boom line broken; raise a skimmer job rather than an eductor clean.",
+  rule="Email when debris coverage is high <b>or</b> head loss passes threshold with rain forecast. Blockage and flood risk matter more than volume.",
   tickets=["How does rainfall change the recommendation?","How is confidence shown, and when does the model abstain?"]),
+ dict(slug="pit", code="pGPT", colour="#2f9a4a", colname="Green", focus=False,
+  name="Trap in a road-side pit", short="A basket or insert inside a kerbside drainage pit",
+  place="Kerb inlets in streets and centres",
+  where="Road-side pits across the LGA; no cameras today.",
+  how="Catches litter at the kerb. Small and numerous. A level sensor sees water rising in the pit, which flags a blockage but not how much litter is in the basket.",
+  looks=["No camera view. Fullness is inferred: an abnormal rise in pit level after modest rain points to a blocked basket."],
+  cue="Rate of level rise against rainfall, compared with the same pit's history.",
+  sensors=[
+   ("Radar or ultrasonic pit level","Primary","Exceed M.Scan and HiLo LS1-R offer pit debris, blockage and surge alerts in Australia.","~$800–2k · battery · LoRaWAN/4G"),
+   ("Crew phone photo at inspection","Ground truth","Contractor photographs through the grate; the same vision model scores it.","$0"),
+   ("Rain forecast","Trigger","As for nets.","shared"),
+  ],
+  rule="Email an inspect-and-clear when pit level rises faster than this pit's normal response to the rain that fell. Level is not litter fullness, so the email says 'inspect', not 'full'.",
+  tickets=["What is the minimum labelled set?","What does a OneCouncil work order need?"]),
+ dict(slug="vault", code="uGPT", colour="#e0b020", colname="Yellow", focus=False,
+  name="Underground wet vault", short="A below-ground chamber with standing water; litter can be submerged",
+  place="Under roads and car parks",
+  where="Large units; Paul: 'really, really big', one truck per load or more. No sensors at Council today. The earlier CSIRO trial instrumented one underground GPT at Parramatta, separate from the net cameras.",
+  how="Flow enters a vault that always holds water. Floating litter, submerged litter and sediment all collect. Nothing on the surface tells you how full it is, and a level sensor reads the water, not the litter.",
+  looks=["No view. Treated as a risk score, not a fullness reading."],
+  cue="None from vision. Risk from rainfall since last clean, the tonnes removed at past cleans, and catchment land use.",
+  sensors=[
+   ("Rainfall + cleaning history model","Primary","Learn each vault's fill rate from mm of rain since the last clean and the mass removed each time. StormHarvester does this for sewers from level, flow and rainfall.","software only"),
+   ("Hydraulic level in and out","Secondary","Detects bypass during storms (treated and untreated levels converge).","~$2k · power/4G"),
+   ("Periodic inspection or specialist sonar","Ground truth","Submerged litter remains a sensing gap; say so.","per visit"),
+  ],
+  rule="Email an inspection recommendation when predicted fill passes 70% or the vault bypassed in the last storm. Never claim a measured fullness.",
+  tickets=["Where does it run?","Agree pilot terms with Council"]),
+ dict(slug="boom", code="Boom", colour="#222222", colname="Black", focus=False,
+  name="Floating boom across deep waterway", short="A floating barrier that corrals surface litter",
+  place="River, weir pool and lake",
+  where="Parramatta River and Lake Parramatta; Charles St and Willmott Ave look across open water on the camera wall.",
+  how="A skirted boom holds floating litter in one corner for a skimmer. Wind and tide move the raft. There is no container, so no simple fullness percentage.",
+  looks=["Clear: open water inside the boom line.","Raft forming: a thin band along the boom.","Clean due: raft covers most of the enclosed water.","Damaged: boom parted or anchor slack, raft escaping."],
+  cue="Raft area as a share of the enclosed water; continuity of the boom line.",
+  sensors=[
+   ("Existing wide-angle camera","Primary","Raft area from the frame.","$0 marginal"),
+   ("Wind and river level","Context","BoM wind and the SCADA river gauge explain where the raft sits.","shared"),
+   ("GPS or tilt on the boom","Damage","Boom drift or parting.","~$500 · solar · 4G"),
+  ],
+  rule="Email a skimmer job when raft area passes threshold; email a repair when the boom line breaks.",
+  tickets=["How does rainfall change the recommendation?"]),
 ]
 
 CSS = """
-:root{--bg:#f5f3ee;--paper:#fff;--fg:#14232e;--muted:#5c6b74;--line:#d8d3c8;--navy:#0f2f52;--teal:#126a6a;--gold:#c98a1c;--gold-soft:#fff1d6;--green:#2f8a58;--chip:#ece8df;--display:"IBM Plex Sans",system-ui,sans-serif;--mono:"IBM Plex Mono",ui-monospace,monospace}
-@media (prefers-color-scheme:dark){:root{--bg:#0f2f52;--paper:#143a5f;--fg:#f3f1ea;--muted:#bfd6e2;--line:#2a4f73;--navy:#0b2440;--teal:#9fd8d0;--gold:#ffb547;--gold-soft:#3a3214;--green:#6fc48f;--chip:#1d4670;color-scheme:dark}}
+:root{--bg:#f5f3ee;--paper:#fff;--fg:#14232e;--muted:#5c6b74;--line:#d8d3c8;--navy:#0f2f52;--teal:#126a6a;--gold:#c98a1c;--gold-soft:#fff1d6;--green:#2f8a58;--red:#c43c3c;--chip:#ece8df;--display:"IBM Plex Sans",system-ui,sans-serif;--mono:"IBM Plex Mono",ui-monospace,monospace}
+@media (prefers-color-scheme:dark){:root{--bg:#0f2f52;--paper:#143a5f;--fg:#f3f1ea;--muted:#bfd6e2;--line:#2a4f73;--navy:#0b2440;--teal:#9fd8d0;--gold:#ffb547;--gold-soft:#3a3214;--green:#6fc48f;--red:#f07a7a;--chip:#1d4670;color-scheme:dark}}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--display);line-height:1.5;padding:0 16px 40px}
 a{color:var(--teal)}.wrap{max-width:1120px;margin:0 auto}
 nav{display:flex;flex-wrap:wrap;gap:6px 18px;align-items:center;padding:14px 0;border-bottom:1px solid var(--line);font-family:var(--mono);font-size:.8rem}
 nav a{text-decoration:none;color:var(--fg)}nav a.brand{font-weight:600;color:var(--gold)}nav a.cur{text-decoration:underline;text-underline-offset:4px}
 h1{font-size:2rem;line-height:1.15;margin:28px 0 6px;text-wrap:balance}h2{font-family:var(--mono);font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:30px 0 10px;font-weight:500}
-.lede{color:var(--muted);max-width:70ch;margin:0 0 18px;font-size:1.05rem}
+.lede{color:var(--muted);max-width:72ch;margin:0 0 18px;font-size:1.05rem}
 .eyebrow{font-family:var(--mono);font-size:.76rem;letter-spacing:.08em;text-transform:uppercase;color:var(--teal)}
-.gate{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px}
-.gate a{display:grid;gap:6px;background:var(--paper);border:1px solid var(--line);border-top:4px solid var(--gold);padding:16px;text-decoration:none;color:var(--fg)}
-.gate a:hover{border-color:var(--teal)}.gate b{font-size:1.05rem}.gate span{color:var(--muted);font-size:.9rem}.gate small{font-family:var(--mono);font-size:.72rem;color:var(--teal)}
+.gate{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px}
+.gate a{display:grid;gap:6px;align-content:start;background:var(--paper);border:1px solid var(--line);border-top:6px solid var(--c,var(--gold));padding:16px;text-decoration:none;color:var(--fg)}
+.gate a:hover{border-color:var(--teal);border-top-color:var(--c,var(--gold))}.gate b{font-size:1.05rem;line-height:1.25}.gate span{color:var(--muted);font-size:.9rem}.gate small{font-family:var(--mono);font-size:.72rem;color:var(--muted)}
+.gate a.focus{grid-column:span 2;background:var(--gold-soft)}@media (max-width:640px){.gate a.focus{grid-column:auto}}
+.code{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:.74rem;font-weight:500}.code i{width:11px;height:11px;border-radius:50%;background:var(--c)}
+.flag{font-family:var(--mono);font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;color:var(--gold);font-weight:600}
 .states{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px}
 .st{background:var(--paper);border:1px solid var(--line);padding:10px 12px;border-left:5px solid var(--line)}
 .st.empty{border-left-color:#6fc48f}.st.partial{border-left-color:#ffb547}.st.full{border-left-color:#f08a5a}.st.blocked{border-left-color:#dc4646}.st.unusable{border-left-color:#8fb3c4}.st.damaged{border-left-color:#c9a3e8}
 .st b{display:block}.st i{font-style:normal;font-family:var(--mono);font-size:.74rem;color:var(--muted);display:block}.st span{font-size:.86rem}
-.panel{background:var(--paper);border:1px solid var(--line);padding:16px 18px}
+.panel{background:var(--paper);border:1px solid var(--line);padding:16px 18px;min-width:0}
 .two{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
+.three{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
 table{border-collapse:collapse;width:100%;font-size:.9rem}th,td{text-align:left;padding:8px 8px;border-top:1px solid var(--line);vertical-align:top}th{font-family:var(--mono);font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:500;border-top:0}
-td.role{font-family:var(--mono);font-size:.76rem;color:var(--teal);white-space:nowrap}td.cost{font-family:var(--mono);font-size:.76rem;color:var(--muted)}
+td.role{font-family:var(--mono);font-size:.76rem;color:var(--teal)}td.cost{font-family:var(--mono);font-size:.76rem;color:var(--muted)}td.num{font-family:var(--mono);text-align:right;white-space:nowrap}
 .tbl{overflow-x:auto}ul{padding-left:18px;margin:0}li{margin-bottom:4px}
 .rule{background:var(--gold-soft);border-left:5px solid var(--gold);padding:10px 14px;font-size:.95rem}
 .chips{display:flex;flex-wrap:wrap;gap:6px}.chips span{background:var(--chip);font-family:var(--mono);font-size:.74rem;padding:3px 9px}
 img.fig{max-width:100%;border:1px solid var(--line);display:block}
+.cap{font-size:.82rem;color:var(--muted);margin-top:6px}
 footer{margin-top:40px;font-family:var(--mono);font-size:.74rem;color:var(--muted);line-height:1.6;max-width:100ch}
 .matrix td.y{color:var(--green);font-weight:600}.matrix td.n{color:var(--muted)}
+.quote{border-left:3px solid var(--teal);padding:4px 0 4px 14px;color:var(--fg);font-size:.98rem;max-width:70ch}
+.quote small{display:block;color:var(--muted);font-family:var(--mono);font-size:.72rem;margin-top:4px}
+.scn{background:var(--paper);border:1px solid var(--line);padding:14px 16px;display:grid;gap:6px;align-content:start}
+.scn .n{font-family:var(--mono);color:var(--gold);font-size:.8rem}.scn b{font-size:1.02rem}.scn span{font-size:.88rem;color:var(--muted)}
+.bar{height:10px;background:var(--chip);position:relative}.bar i{position:absolute;inset:0 auto 0 0;background:var(--gold)}
+/* email mock */
+.mail{background:var(--paper);border:1px solid var(--line);max-width:760px;font-size:.95rem}
+.mail .hd{padding:12px 18px;border-bottom:1px solid var(--line);display:grid;gap:2px;font-size:.86rem;color:var(--muted)}
+.mail .hd b{color:var(--fg);font-size:1.05rem}
+.mail .bd{padding:16px 18px;display:grid;gap:12px}
+.mail .pill{display:inline-block;font-family:var(--mono);font-size:.72rem;padding:2px 8px;border-radius:3px;color:#fff;background:var(--red)}
+.mail .why{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;font-size:.88rem}.mail .why dt{color:var(--muted);font-family:var(--mono);font-size:.76rem;padding-top:2px}.mail .why dd{margin:0}
+.mail .acts{display:flex;flex-wrap:wrap;gap:8px}.mail .acts span{border:1px solid var(--teal);color:var(--teal);padding:7px 12px;font-weight:600;font-size:.86rem}.mail .acts span.pri{background:var(--teal);color:var(--paper)}
+.figwrap{position:relative;max-width:640px}.figwrap svg{position:absolute;inset:0;width:100%;height:100%}
 """
 
 def page(title, body, cur, depth=0):
     root = '../' if depth else ''
-    links = [('index.html','Home'),('index.html#types','GPT types'),('sensors.html','Sensor matrix'),('plan.html','Build plan'),('evidence.html','Evidence')]
-    nav = ''.join(f'<a href="{root}{h}"{" class=cur" if cur==h.split("#")[0] else ""}>{t}</a>' for h,t in links)
+    links = [('index.html','Home'),('mvp.html','MVP'),('alert.html','Sample alert'),('sensors.html','Sensor matrix'),('plan.html','Build plan'),('evidence.html','Evidence')]
+    nav = ''.join(f'<a href="{root}{h}"{" class=cur" if cur==h else ""}>{t}</a>' for h,t in links)
     return f"""<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>{html.escape(title)} · GPT which GPT?</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>{CSS}</style></head><body><div class="wrap">
 <nav><a class="brand" href="{root}index.html">GPT which GPT?</a>{nav}</nav>
 {body}
-<footer>GPT which GPT? is a Business Analyst Services entry for the WSTI Festi 2026 Build with AI challenge (City Challenge track, Challenge 5: AI for Smarter Asset and Environmental Management). Council facts cite City of Parramatta public records: Asset Management Plan 2027–2036, Annual Report 2024/25 Appendix 1, GIPA Contracts Register 30 Sep 2026, Smart City &amp; Innovation Strategy 2024–2033. Sensor costs are indicative 2026 ranges, not quotes. Camera frames are City of Parramatta SCADA trail-camera images used with the Festi brief.</footer>
+<footer>GPT which GPT? is a Team 101 entry for the WSTI Festi 2026 Build with AI challenge, City Challenge track, Parramatta Possibilities Challenge 5 (AI for Smarter Asset and Environmental Management). Operating facts come from the Council SME breakout session with Dr Paul Hackney (9 Nov 2026) and City of Parramatta public records: GPT Audit (Council minutes 25 Mar 2024), Asset Management Plan 2027–2036, Annual Report 2024/25. Sensor costs are indicative, not quotes. Vendor names are examples from public sources, not endorsements. Camera frames are Council SCADA images shared for the challenge.</footer>
 </div></body></html>"""
 
+def code_chip(t):
+    return f'<span class="code" style="--c:{t["colour"]}"><i></i>{t["colname"]} · {t["code"]}</span>'
+
 # ---------- index ----------
-gates = ''.join(f'<a href="types/{t["slug"]}.html"><small>{t["place"]}</small><b>{t["name"]}</b><span>{t["short"]}</span><span style="font-family:var(--mono);font-size:.74rem;color:var(--teal)">Primary sensor: {t["sensors"][0][0]}</span></a>' for t in TYPES)
+gates = ''.join(
+  f'<a href="types/{t["slug"]}.html" class="{"focus" if t["focus"] else ""}" style="--c:{t["colour"]}">'
+  f'{"<span class=flag>MVP focus · Council asked for nets first</span>" if t["focus"] else ""}'
+  f'{code_chip(t)}<b>{t["name"]}</b><span>{t["short"]}</span><small>Primary signal: {t["sensors"][0][0]}</small></a>' for t in TYPES)
 states = ''.join(f'<div class="st {k}"><b>{n}</b><i>{r}</i><span>{a}</span></div>' for k,n,r,a in STATES)
 index = f"""
-<div class="eyebrow">City of Parramatta · 40 GPTs · 13 other pollution control devices · 23 camera sites</div>
-<h1>Which trap needs the truck this week?</h1>
-<p class="lede">Council cleans its gross pollutant traps quarterly and after big rain, whether they need it or not. The cameras already exist. GPT which GPT? reads every frame, scores each trap's fullness with a confidence, adds the rain forecast, and drafts a work order an officer approves in one click. Start with the type of trap: each one fills differently, shows it differently, and wants a different sensor.</p>
-<h2 id="types">Choose a trap type</h2>
+<div class="eyebrow">City of Parramatta · about 35–40 GPTs · about 15 cameras, 10 working · one photo a day</div>
+<h1>Clean the net before the storm, not after it lets go</h1>
+<p class="lede">Council's litter nets are built to break away from the pipe when they are full and the next surge hits. Today one officer looks at the camera images for about 15 minutes each weekday; nobody looks on weekends or over Christmas, and that officer is on leave until mid-January. GPT which GPT? reads every image, scores how full each net is, checks the rain forecast, and emails an officer with the marked-up photo when a net needs cleaning or repair. The officer approves; the work order follows.</p>
+<h2 id="types">Start with the trap type</h2>
+<p style="margin:-4px 0 12px;color:var(--muted);font-size:.92rem">Council's own asset codes and map colours from the 2022 GPT Audit. Each type fills differently and needs a different sensor; the decision and email layer is the same for all of them.</p>
 <div class="gate">{gates}</div>
-<h2>The six states every type is scored into</h2>
+<h2>The six states a net is scored into</h2>
 <div class="states">{states}</div>
-<p style="color:var(--muted);font-size:.9rem;margin-top:10px">Thresholds are the starting schema; the open ticket "What counts as full?" sets them per type with Council's stormwater team. <a href="assets/gpt-fullness-states.png">See simulated examples of the first five states</a> built from two Council frames.</p>
+<p style="color:var(--muted);font-size:.9rem;margin-top:10px">Council's target is to intervene at 70–80% full. The thresholds are a starting point for the open question "What counts as full?". <a href="assets/gpt-fullness-states.png">Simulated examples</a> built from two Council frames.</p>
 <div class="two" style="margin-top:28px">
-<div class="panel"><h2 style="margin-top:0">Today</h2><p>Quarterly rounds plus storm callouts, run by Urban Asset Solutions under Part A of ITT 22/2023 on a schedule of rates. Fullness is judged with the lid off. No per-trap record exists between cleans. Estimated cost ≈ $420k a year, of which $60–120k is visits to traps that were nearly empty.</p><p><a href="assets/gpt-clean-process.png">The end-to-end process, as reconstructed</a> · <a href="assets/gpt-cost-estimate.png">The cost estimate</a></p></div>
-<div class="panel"><h2 style="margin-top:0">With GPT which GPT?</h2><p>Every camera frame scored daily. A ranked morning list instead of a grid of thumbnails. Officer approves, defers or sends someone to look. Work order lands in OneCouncil with the frame attached; fullness at clean is recorded, so the Asset Management Plan's "emptied at optimum frequencies" finally has data behind it.</p><p><a href="plan.html">The build plan (Wayfinder map)</a></p></div>
+<div class="panel"><h2 style="margin-top:0">Today</h2><ul>
+<li>Camera nets: one person reviews the day's photos, weekdays only. The judgement lives in that person's head.</li>
+<li>Everything else: cleaned about every three months, after a big storm, or from experience ("that one fills after 20 mm, that one after 90 mm").</li>
+<li>Some nets are cleaned half empty; some have already overflowed or detached.</li>
+</ul><p><a href="assets/gpt-clean-process.png">Process as reconstructed</a> · <a href="assets/gpt-cost-estimate.png">Cost estimate</a></p></div>
+<div class="panel"><h2 style="margin-top:0">With GPT which GPT?</h2><ul>
+<li>Every image scored the day it arrives, weekends and holidays included.</li>
+<li>Rain-aware trigger: clean when the net can't hold the next forecast storm.</li>
+<li>One email with the photo, an arrow on the problem, the reason and the confidence. About one a week across the network.</li>
+<li>Officer approves, defers or asks for an inspection. The outcome is recorded, so each net's fill behaviour is learned over time.</li>
+</ul><p><a href="alert.html">See a sample alert</a> · <a href="mvp.html">What we are demoing</a></p></div>
 </div>
 """
 open(os.path.join(OUT,'index.html'),'w').write(page('Home', index, 'index.html'))
@@ -148,67 +196,135 @@ for t in TYPES:
     looks = ''.join(f'<li>{l}</li>' for l in t['looks'])
     sens = ''.join(f'<tr><td><b>{s[0]}</b><br><span style="font-size:.86rem;color:var(--muted)">{s[2]}</span></td><td class="role">{s[1]}</td><td class="cost">{s[3]}</td></tr>' for s in t['sensors'])
     chips = ''.join(f'<span>{c}</span>' for c in t['tickets'])
-    others = ''.join(f'<a href="{o["slug"]}.html"><b>{o["name"]}</b><span>{o["short"]}</span></a>' for o in TYPES if o is not t)
+    others = ''.join(f'<a href="{o["slug"]}.html" style="--c:{o["colour"]}">{code_chip(o)}<b>{o["name"]}</b></a>' for o in TYPES if o is not t)
+    focus = '<p class="flag" style="margin:6px 0 0">MVP focus. Paul Hackney, SME session: "If you wanted to target one type of system, concentrate on the nets."</p>' if t['focus'] else '<p style="margin:6px 0 0;font-size:.9rem;color:var(--muted)">Outside the MVP. Shown so the solution map covers every Council GPT type.</p>'
     body = f"""
-<div class="eyebrow">GPT type</div>
-<h1>{t['name']}</h1>
+<div style="margin-top:24px">{code_chip(t)}</div>
+<h1 style="margin-top:8px">{t['name']}</h1>
 <p class="lede">{t['short']}. {t['where']}</p>
-<div class="two">
-<div class="panel"><h2 style="margin-top:0">How it fills</h2><p>{t['how']}</p><h2>What the camera sees</h2><ul>{looks}</ul><p style="font-size:.9rem;color:var(--muted)"><b>Vision cue:</b> {t['cue']}</p></div>
-<div class="panel"><h2 style="margin-top:0">Sensors for this type</h2><div class="tbl"><table><tr><th>Sensor</th><th>Role</th><th>Indicative cost · power · comms</th></tr>{sens}</table></div></div>
+{focus}
+<div class="two" style="margin-top:18px">
+<div class="panel"><h2 style="margin-top:0">How it fills</h2><p>{t['how']}</p><h2>What the evidence shows in each state</h2><ul>{looks}</ul><p style="font-size:.9rem;color:var(--muted)"><b>Signal to read:</b> {t['cue']}</p></div>
+<div class="panel"><h2 style="margin-top:0">Sensors for this type</h2><div class="tbl"><table><tr><th>Sensor</th><th>Role</th><th>Cost · power · comms</th></tr>{sens}</table></div></div>
 </div>
-<h2>Decision rule</h2>
+<h2>When to email the officer</h2>
 <div class="rule">{t['rule']}</div>
-<h2>Open Wayfinder tickets that touch this type</h2>
+<h2>Open questions that touch this type</h2>
 <div class="chips">{chips}</div>
-<p style="font-size:.9rem;color:var(--muted)">See the <a href="../plan.html">build plan</a> for how these are settled.</p>
+<p style="font-size:.9rem;color:var(--muted)">How these get settled: <a href="../plan.html">build plan</a>.</p>
 <h2>Other trap types</h2>
 <div class="gate">{others}</div>
 """
     open(os.path.join(OUT,'types',t['slug']+'.html'),'w').write(page(t['name'], body, '', depth=1))
 
+# ---------- MVP ----------
+mvp = """
+<div class="eyebrow">What we are demoing</div>
+<h1>One net, one storm, one email, one decision</h1>
+<p class="lede">A small flow that works end to end beats a broad platform that doesn't. Council said synthetic or sample data is fine and no cost-benefit analysis is needed; the judges score a working prototype and a credible path forward.</p>
+<h2>Three demo scenarios</h2>
+<div class="three">
+<div class="scn"><div class="n">01 · CAMERA</div><b>Net 75% full, heavy rain forecast</b><span>Annotated image, confidence and reason; email says clean before the storm. Officer approves; work order drafted.</span></div>
+<div class="scn"><div class="n">02 · DAMAGE</div><b>Net torn or off the pipe</b><span>Lackey St West, 13 Nov 2026. Email says repair, not clean, with an arrow on the tear.</span></div>
+<div class="scn"><div class="n">03 · DATA QUALITY</div><b>Camera can't see, or a sensor is offline</b><span>Two days of obstructed frames raise a restore-the-view email. Never report a false "empty".</span></div>
+</div>
+<h2>What is in and what is out</h2>
+<div class="two">
+<div class="panel"><h2 style="margin-top:0">In</h2><ul><li>Nets, with the other four types shown as a solution map</li><li>Real Council frames plus synthetic ones, with a simulated fullness sensor feed for nets without cameras</li><li>Rain-aware trigger from the BoM forecast</li><li>Email with evidence, and officer approval</li><li>Outcome recorded, so each net's fill behaviour can be learned</li></ul></div>
+<div class="panel"><h2 style="margin-top:0">Out</h2><ul><li>Production-grade model training and accuracy claims</li><li>Live integration with SCADA or OneCouncil</li><li>Sending contractors out automatically</li><li>Solving every GPT type</li><li>Cost-benefit analysis (Council said not required)</li></ul></div>
+</div>
+<h2>How the judges score it, and where this entry answers</h2>
+<div class="tbl"><table>
+<tr><th>Criterion</th><th style="text-align:right">Weight</th><th>Our answer</th></tr>
+<tr><td>Problem understanding and community impact</td><td class="num">25%</td><td>Detach-when-full is the real risk; weekend and holiday gap; one person's knowledge. Less litter reaching creeks, assets protected, staff time saved.</td></tr>
+<tr><td>Working prototype and feasibility</td><td class="num">25%</td><td>Three scenarios run end to end on Council frames; uses cameras and SCADA Council already has.</td></tr>
+<tr><td>Path forward and implementation potential</td><td class="num">25%</td><td>Pilot on the ~10 working cameras; add low-bandwidth fullness sensors to nets without cameras; then the other types.</td></tr>
+<tr><td>Innovation and creativity</td><td class="num">15%</td><td>Rain-aware "is there room for the next storm" trigger; each net learns its own fill rate.</td></tr>
+<tr><td>Pitch and presentation</td><td class="num">10%</td><td>Show the torn Lackey St net that nobody saw, then the email that would have caught it.</td></tr>
+</table></div>
+<p class="cap">Weights from the WSTI Festi judging slide; for City Challenges, community impact includes alignment to Council priorities, community outcomes and implementation potential. Two finalists per city challenge; the jury picks winners at Pitch Night.</p>
+<h2>Success measures</h2>
+<div class="chips"><span>Damaged or detached nets missed: zero</span><span>Lead time before forecast rain</span><span>False alerts per week</span><span>Weekend and holiday coverage</span><span>Manual review cut to exceptions</span><span>Alert-to-action time</span><span>Cleans avoided on half-empty nets</span></div>
+<p class="cap">Scenarios and measures follow the team's alignment brief (<a href="assets/Proactive_GPT_Monitoring_Solution.pdf">PDF</a>).</p>
+"""
+open(os.path.join(OUT,'mvp.html'),'w').write(page('MVP', mvp, 'mvp.html'))
+
+# ---------- sample alert ----------
+alert = """
+<div class="eyebrow">Sample alert · the officer's view</div>
+<h1>What lands in the inbox</h1>
+<p class="lede">Council officers asked for email, not another dashboard to watch, with the image and something pointing at the problem. This is the damage scenario built from the real Lackey St West frame.</p>
+<div class="mail">
+ <div class="hd"><span>From: GPT Monitor &lt;gpt-monitor@&hellip;&gt; · To: Stormwater officer on duty</span><b>Lackey St West net is torn: repair before Tuesday's rain</b><span>Sat 14 Nov 2026, 07:30 · Camera LACKEST 009 · Asset code GPT (end-of-pipe net)</span></div>
+ <div class="bd">
+  <div><span class="pill">DAMAGED · confidence 0.86</span></div>
+  <div class="figwrap"><img class="fig" src="assets/lackey-st-west-2026-11-13.jpg" alt="Lackey St West camera frame showing the litter net torn and sagging off the pipe outlet">
+   <svg viewBox="0 0 100 75" preserveAspectRatio="none" aria-hidden="true"><ellipse cx="57" cy="52" rx="10" ry="13" fill="none" stroke="#ff3b3b" stroke-width=".8"/><line x1="84" y1="22" x2="67.5" y2="40" stroke="#ff3b3b" stroke-width="1"/><polygon points="66.6,41.6 66.4,37.6 69.9,39.6" fill="#ff3b3b"/><text x="85" y="20" fill="#ff3b3b" font-size="4" font-family="IBM Plex Mono,monospace" text-anchor="middle">torn</text></svg></div>
+  <dl class="why">
+   <dt>What</dt><dd>Net has torn and is hanging off the pipe outlet. Material is spilling onto the rocks.</dd>
+   <dt>Since</dt><dd>First seen 13 Nov 11:05. The 12 Nov frame showed an intact net about 40% full.</dd>
+   <dt>Rain</dt><dd>BoM forecast 24–38 mm Tue 17 Nov. A torn net passes everything in that storm.</dd>
+   <dt>Suggest</dt><dd>Repair (not a clean) this week. Add to the next contractor run.</dd>
+   <dt>History</dt><dd>Last cleaned 21 Aug. Lackey St was listed for replacement in the 2022 GPT Audit.</dd>
+  </dl>
+  <div class="acts"><span class="pri">Approve repair work order</span><span>Defer a week</span><span>Send someone to inspect</span><span>Open live view</span></div>
+  <p class="cap" style="margin:0">Your choice is recorded with this frame so the model learns from it. No work order is raised until you approve.</p>
+ </div>
+</div>
+<p class="cap" style="max-width:760px">Illustrative. The frame is real (Council SCADA, 13 Nov 2026); the confidence, forecast, dates of earlier frames and last-clean date are example values for the demo.</p>
+"""
+open(os.path.join(OUT,'alert.html'),'w').write(page('Sample alert', alert, 'alert.html'))
+
 # ---------- sensor matrix ----------
-SENS = ["Trail camera (existing)","Level sensor (ultrasonic/pressure)","Up/down level pair","Load cell","Tilt / float switch","Rain / wind / tide feed","Phone photo at inspection","Weighbridge ticket"]
+SENS = ["Existing camera","Fullness sensor (ToF / ultrasonic / radar)","Water level (radar)","Up/down level pair","Tilt / strain","Rain forecast + gauges","Cleaning history model","Crew photo"]
 MAT = {
- "trash-rack":      ["Primary","–","Strong second","–","Damage","Context","Backup","Calibrates"],
- "litter-net":      ["Primary","Blocked (in pipe)","–","Strong second","Damage","Context","Backup","Calibrates"],
- "underground-unit":["– (no view)","Primary","Bypass","–","Cheap fallback","Context","–","Calibrates"],
- "pit-basket":      ["Hot spots only","–","–","–","Rarely","Context","Primary","–"],
- "boom":            ["Primary","–","–","–","Damage (GPS/tilt)","Context (wind, tide)","Backup","–"],
+ "net":       ["Primary","No-camera nets","–","–","Detachment","Trigger","Learns fill rate","Ground truth"],
+ "trash-rack":["Primary","–","–","Blockage","–","Trigger","Learns fill rate","Ground truth"],
+ "pit":       ["–","–","Primary","–","–","Trigger","Normal response","Ground truth"],
+ "vault":     ["–","–","Bypass","–","–","Trigger","Primary","Ground truth"],
+ "boom":      ["Primary","–","–","–","Damage (GPS)","Context (wind)","–","–"],
 }
-rows=''.join('<tr><td><a href="types/%s.html">%s</a></td>'%(t['slug'],t['name'])+''.join(f'<td class="{"y" if v not in ("–","– (no view)") else "n"}">{v}</td>' for v in MAT[t['slug']])+'</tr>' for t in TYPES)
+rows=''.join(f'<tr><td>{code_chip(t)}<br><a href="types/{t["slug"]}.html">{t["name"]}</a></td>'+''.join(f'<td class="{"n" if v=="–" else "y"}">{v}</td>' for v in MAT[t['slug']])+'</tr>' for t in TYPES)
 matrix=f"""
-<div class="eyebrow">Sensing strategy</div>
-<h1>One model, five trap types, the cheapest sensor that answers the question</h1>
-<p class="lede">The camera is the primary sensor wherever there is a line of sight, because Council already owns 23 of them. Underground units have no view, so they get a level sensor instead. Everything else is a second signal for the hours the camera can't see (night, fog, lens water) or for damage the camera can't judge.</p>
+<div class="eyebrow">Layered sensing</div>
+<h1>Pick the sensor by trap type; keep one decision and email layer</h1>
+<p class="lede">One sensing method won't fit every asset. Cameras work where there is a clear line of sight and enough 4G to send an image. Where there isn't, a low-bandwidth fullness or level sensor sends a number instead. Everything feeds the same rule: is there room for the next storm?</p>
 <div class="tbl matrix"><table><tr><th>Trap type</th>{''.join(f'<th>{s}</th>' for s in SENS)}</tr>{rows}</table></div>
-<h2>Principles behind the matrix</h2>
+<h2>Principles</h2>
 <div class="two">
 <div class="panel"><ul>
-<li><b>Vision first, hardware second.</b> The CSIRO trial already proved 4G trail cameras work and LoRaWAN did not at these sites. Add hardware only where the camera is blind.</li>
-<li><b>Two independent signals before "urgent".</b> A blocked call that triggers a same-day truck should come from the camera and a physical sensor, or from the camera at high confidence twice.</li>
-<li><b>The weighbridge ticket is a sensor.</b> Mass removed per clean, already on the contractor invoice, calibrates every other reading against reality.</li>
+<li><b>Use what Council has first.</b> About 15 cameras and 25 FloodSmart rain and level gauges already feed SCADA.</li>
+<li><b>Bandwidth decides the sensor.</b> Paul's team flagged weak 4G at some nets. A fullness sensor sends a few bytes; an image sends hundreds of kilobytes.</li>
+<li><b>A detached net must never be missed.</b> Back the camera with a tilt switch where the view is unreliable.</li>
 </ul></div>
 <div class="panel"><ul>
-<li><b>Night is "unusable", not "empty".</b> IR frames are scored by a separate head or routed to the level sensor; a dark frame never counts as a clean trap.</li>
-<li><b>Damage is its own state.</b> A torn net scores as empty to a naive model. Load drop, tilt and torn-edge detection catch it and raise a repair job under Part G, not a clean under Part A.</li>
-<li><b>Fleet economics.</b> 13 pit baskets at $150 of hardware each is cheaper than one eductor visit, but not cheaper than a crew photo. Spend per trap in proportion to its cleaning cost.</li>
+<li><b>"Can't see" is a state, not "empty".</b> Leaves, fog and night frames raise their own email.</li>
+<li><b>Level is not litter.</b> Pit and vault sensors trigger "inspect", never "full".</li>
+<li><b>Every clean is a data point.</b> Mass removed and date, joined to rainfall, teaches each trap's fill rate (Paul: "60 mm took it from 10% to 50%").</li>
 </ul></div>
 </div>
+<h2>Examples on the market</h2>
+<div class="tbl"><table><tr><th>Solution</th><th>Fits</th><th>Watch-out</th></tr>
+<tr><td>Matter / CSIRO</td><td>4G dry-sump fullness for nets and baskets; 17 sensors within 2% of manual checks</td><td>Not for submerged litter</td></tr>
+<tr><td>AquaWatch AW-108</td><td>Edge AI debris, water level and flood risk on an ACT trash rack; API to work orders</td><td>Needs camera view, power, comms</td></tr>
+<tr><td>HiLo LS1-R</td><td>Radar level; email, SMS, API or SCADA</td><td>Level, not litter</td></tr>
+<tr><td>Exceed M.Scan</td><td>Pit debris, blockage and surge alerts</td><td>Confirm GPT references</td></tr>
+<tr><td>SGS + Rocla</td><td>Commercial multi-sensor GPT monitoring</td><td>Little public validation</td></tr>
+<tr><td>StormHarvester</td><td>Sensor-agnostic AI on level, flow, rainfall</td><td>Sewer-focused; no GPT hardware</td></tr>
+</table></div>
+<p class="cap">From the team's alignment brief, public sources. Not endorsements.</p>
 """
 open(os.path.join(OUT,'sensors.html'),'w').write(page('Sensor matrix', matrix, 'sensors.html'))
 
 # ---------- plan (wayfinder) ----------
-wf=open('/tmp/claude-0/-home-claude/981d7120-64b3-57a1-b6b3-7424906ca6b8/scratchpad/wayfinder.html').read()
-# strip title/meta/font link, keep style + body
-import re
+wf=open(os.path.join(HERE,'wayfinder.html')).read()
 style=re.search(r'<style>(.*?)</style>',wf,re.S).group(1)
+style=re.sub(r'body\{background:var\(--bg\);color:var\(--fg\);font-family:var\(--display\);line-height:1\.5;\s*padding-left[^}]*\}','',style)
 inner=wf.split('</style>',1)[1]
-style=style.replace('body{background:var(--bg);color:var(--fg);font-family:var(--display);line-height:1.5;\n  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:28px}','')
 plan=f"""<style>{style}.wrap .wrap{{padding:0;max-width:none}}</style>
 <div class="eyebrow" style="margin-top:24px">Build plan</div>
 <h1 style="margin-top:4px">How this gets built</h1>
-<p class="lede">Planned with the <a href="https://www.aihero.dev/skills-wayfinder">Wayfinder</a> method: the destination is fixed, the route is a map of decisions, each a ticket with a question for a title. The frontier is what can be worked on now. <a href="assets/GPT-which-GPT-wayfinder-map.pdf">One-page PDF</a>.</p>
+<p class="lede">Planned with the <a href="https://www.aihero.dev/skills-wayfinder">Wayfinder</a> method: the destination is fixed, the route is a map of decisions, each a ticket phrased as a question. The frontier is what can be worked on now. <a href="assets/GPT-which-GPT-wayfinder-map.pdf">One-page PDF</a>.</p>
 {inner}
 """
 open(os.path.join(OUT,'plan.html'),'w').write(page('Build plan', plan, 'plan.html'))
@@ -216,32 +332,65 @@ open(os.path.join(OUT,'plan.html'),'w').write(page('Build plan', plan, 'plan.htm
 # ---------- evidence ----------
 ev="""
 <div class="eyebrow">Evidence</div>
-<h1>What we know about Parramatta's traps, and where it came from</h1>
+<h1>What we know, and where it came from</h1>
+<h2>From Council's SME session (Dr Paul Hackney, 9 Nov 2026)</h2>
 <div class="two">
-<div class="panel"><h2 style="margin-top:0">Council's camera wall</h2><p>The SCADA "GPT Cameras" page shows 14 live trail-camera feeds (Lackey St West and East, Lake Parra Res, Forest Cl, James Ruse Dr 1 and 2, Shirley St, Bettington Rd, Ridge St, Anthony St, Norwood Ave, Sturt St, Willmott Ave, Charles St) and nine named sites awaiting cameras (21 Short St, 11 and 12 Parra Park West/East, 26 Beecroft Ave, 27 Stanley Rd North, 17 Pemberton St, 24 McDonald St, 19 Harris St, 52 Cowells Lane, 23 Mason Rd, 30 Stanley Rd South).</p><img class="fig" src="assets/current_cameras_GPT.png" alt="SCADA GPT Cameras page"></div>
-<div class="panel"><h2 style="margin-top:0">A damaged net, seen but not acted on</h2><p>Lackey St West, 13 Nov 2026 11:05, 24 °C. The litter net has torn and collapsed onto the rocks. A human sees it at a glance; nobody is looking at 23 feeds four times a day. This frame is why "damaged" is a sixth state.</p><img class="fig" src="assets/current_cameras_GPT_example_broken_net.png" alt="Lackey St West frame showing a torn litter net"></div>
+<div class="panel"><ul>
+<li>About 35–40 GPTs. About 15 have cameras; about 10 work; a repair run is planned.</li>
+<li>One photo a day into SCADA, cameras in place 1–3 years. About 90% of days nothing changes.</li>
+<li>One officer reviews the photos for about 15 minutes a day. No weekend or holiday cover. That officer is on leave until mid-January.</li>
+<li>GPTs without cameras: cleaned about every three months, after big storms, or from experience of each trap's rainfall threshold.</li>
+<li>Contractors clean and repair. Underground units need a truck per load; nets are small.</li>
+</ul></div>
+<div class="panel"><ul>
+<li>Nets detach by design when full and hit by another surge. Intervene at 70–80%.</li>
+<li>Email alerts with an image and an arrow on the problem; officers don't want to watch a dashboard. Expect one a week or fortnight.</li>
+<li>Trigger must allow for flood risk: a clean can't be arranged the day before a storm.</li>
+<li>Alert when the camera can't see, so a person can restore the view.</li>
+<li>Non-camera sensors welcome; 4G coverage limits image quality. Synthetic data is fine.</li>
+<li>Nice to have: learn each trap's fill behaviour from rain and cleaning records; route the crew.</li>
+</ul></div>
 </div>
-<h2>Visuals from the research</h2>
+<div class="quote" style="margin-top:14px">"If we could intervene when it's say 70% or 80% full … it's good for the environment because there's less litter going into the environment … and also it saves human time."<small>Dr Paul Hackney, City of Parramatta, SME session transcript</small></div>
+<h2>Council's camera wall and the net nobody saw</h2>
+<div class="two">
+<div class="panel"><img class="fig" src="assets/current_cameras_GPT.png" alt="SCADA GPT Cameras page with 14 camera tiles and 11 named sites without images"><p class="cap">SCADA "GPT Cameras" page: 14 camera tiles (Lackey St West and East, Lake Parra Res, Forest Cl, James Ruse Dr 1 and 2, Shirley St, Bettington Rd, Ridge St, Anthony St, Norwood Ave, Sturt St, Willmott Ave, Charles St), several fogged or obscured, and 11 named sites with no image.</p></div>
+<div class="panel"><img class="fig" src="assets/lackey-st-west-2026-11-13.jpg" alt="Lackey St West frame showing a torn litter net"><p class="cap">Lackey St West, 13 Nov 2026, 11:05. Net torn and collapsed onto the rocks.</p></div>
+</div>
+<h2>Council's GPT categories and the 2022 audit</h2>
+<div class="two">
+<div class="panel"><img class="fig" src="assets/council-gpt-categories.png" alt="Table of Council GPT asset codes: uGPT, GPT, pGPT, Boom, Trash Rack"><p class="cap">Asset codes and map colours from the December 2022 GPT Audit, reproduced in Council minutes of 25 March 2024. To check against the 2026 asset register.</p></div>
+<div class="panel"><img class="fig" src="assets/gpt-audit-2024-locations.png" alt="Map of GPT audit locations with lists of GPTs recommended for replacement or major work"><p class="cap">Recommended for replacement: Anthony St Carlingford, Benaud Pl Telopea, Burrabogee Rd Toongabbie, Clyde St Rydalmere, Lackey St (Lake Parra) North Parramatta, Masons Rd Oatlands, Model Farms Rd Winston Hills. Major work: Blaxland Rd Epping, Cooyong Cres Toongabbie, Lackey St (via car park), Norwood Ave Beecroft. Three of these are camera sites.</p></div>
+</div>
+<div class="panel" style="margin-top:16px"><img class="fig" src="assets/gpt-types-illustrative.png" alt="Illustrative concept images of the five GPT types"><p class="cap">Illustrative concept of the five types, labelled as not actual Council assets.</p></div>
+<h2>Research visuals</h2>
 <div class="gate">
 <a href="assets/gpt-fullness-states.png"><b>Fullness states, simulated</b><span>Five states on two Council frames</span></a>
 <a href="assets/gpt-clean-process.png"><b>How a clean happens today</b><span>Swimlane, documented vs inferred</span></a>
-<a href="assets/gpt-cost-estimate.png"><b>What cleaning costs</b><span>$230–740k/yr, three scenarios</span></a>
+<a href="assets/gpt-cost-estimate.png"><b>What cleaning costs</b><span>Bottom-up estimate, three scenarios</span></a>
 <a href="assets/gpt-sources-visual.png"><b>Who fills a trap</b><span>Land use to pollutant to trap</span></a>
 </div>
-<h2>Public records used</h2>
+<h2>Public records</h2>
 <ul>
-<li>City of Parramatta, Asset Management Plan 2027–2036: 40 GPTs, 13 pollution control devices, 2 swales; service measure "emptied at optimum frequencies".</li>
-<li>Annual Report 2024/25, Appendix 1: traps "cleaned quarterly and following significant rain events"; contracts list shows ITT 22/2023 parts as schedule of rates.</li>
-<li>GIPA Contracts Register, 30 Sep 2026: Urban Asset Solutions holds Part A Pollution Control Assets, 1 Jul 2024 – 30 Jun 2027.</li>
-<li>Smart City &amp; Innovation Strategy 2024–2033 and the Council AI Plan motion (NOM26-2, Feb 2026).</li>
-<li>Smarter, Cleaner Sydney Harbour trial (CSIRO, 2022–24): 4G trail cameras worked, LoRaWAN did not; ~1% of frames contained litter.</li>
-<li>Council GPT page: about 104 tonnes removed from the traps each year.</li>
+<li>Council minutes, 25 March 2024: GPT Audit asset locations and replacement priorities.</li>
+<li>Asset Management Plan 2027–2036: 40 GPTs, 13 other pollution control devices; service measure "emptied at optimum frequencies".</li>
+<li>Annual Report 2024/25, Appendix 1: traps "cleaned quarterly and following significant rain events".</li>
+<li>GIPA Contracts Register, 30 Sep 2026: Urban Asset Solutions holds Part A, Pollution Control Assets, of the stormwater maintenance panel.</li>
+<li>Smart City &amp; Innovation Strategy 2024–2033; Council AI Plan motion (Feb 2026).</li>
+<li>CSIRO GPT sensors research and the Smarter, Cleaner Sydney Harbour trial: low-cost non-visual fullness sensing. Per Paul, that trial instrumented an underground GPT; the net cameras are Council's own operational installs.</li>
 </ul>
 """
 open(os.path.join(OUT,'evidence.html'),'w').write(page('Evidence', ev, 'evidence.html'))
 
 # ---------- assets ----------
-for f in ['gpt-fullness-states.png','gpt-clean-process.png','gpt-cost-estimate.png','gpt-sources-visual.png','current_cameras_GPT.png','current_cameras_GPT_example_broken_net.png','GPT-which-GPT-wayfinder-map.pdf','gpt-which-gpt-banner-festi.png']:
-    shutil.copy(os.path.join('/home/claude',f), os.path.join(OUT,'assets',f))
+for f in ['gpt-fullness-states.png','gpt-clean-process.png','gpt-cost-estimate.png','gpt-sources-visual.png','current_cameras_GPT.png','current_cameras_GPT_example_broken_net.png','GPT-which-GPT-wayfinder-map.pdf']:
+    src=os.path.join('/home/claude',f)
+    if os.path.exists(src): shutil.copy(src, os.path.join(OUT,'assets',f))
+for old in ['gpt-which-gpt-banner-festi.png']:
+    p=os.path.join(OUT,'assets',old)
+    if os.path.exists(p): os.remove(p)
+for old in ['underground-unit.html','pit-basket.html','litter-net.html']:
+    p=os.path.join(OUT,'types',old)
+    if os.path.exists(p): os.remove(p)
 open(os.path.join(OUT,'.nojekyll'),'w').write('')
-print('built', os.listdir(OUT))
+print('built', sorted(os.listdir(OUT)), sorted(os.listdir(os.path.join(OUT,'types'))))
