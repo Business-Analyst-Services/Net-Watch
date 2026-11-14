@@ -109,7 +109,7 @@ let RAIN={days:[{d:iso(D(1)),mm:2},{d:iso(D(2)),mm:6},{d:iso(D(3)),mm:28}],live:
 const rainTotal=()=>RAIN.days.reduce((a,x)=>a+x.mm,0);
 const stormDay=()=>{const x=RAIN.days.find(x=>x.mm>=10)||RAIN.days.reduce((a,b)=>b.mm>a.mm?b:a);return x};
 async function getRain(){
- try{const r=await fetch('https://api.open-meteo.com/v1/forecast?latitude=-33.815&longitude=151.003&daily=precipitation_sum&timezone=Australia%2FSydney&forecast_days=4');
+ try{const ac=new AbortController();setTimeout(()=>ac.abort(),6000);const r=await fetch('https://api.open-meteo.com/v1/forecast?latitude=-33.815&longitude=151.003&daily=precipitation_sum&timezone=Australia%2FSydney&forecast_days=4',{signal:ac.signal});
   const j=await r.json();const t=j.daily.time,p=j.daily.precipitation_sum;
   RAIN={days:t.slice(1,4).map((d,i)=>({d,mm:Math.round(p[i+1]||0)})),live:true};
  }catch(e){}
