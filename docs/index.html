@@ -5,212 +5,393 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Net Watch</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <style>
-:root{--bg:#f4f2ed;--card:#fff;--fg:#15232d;--muted:#63717a;--line:#dcd7cc;--accent:#126a6a;--accent-fg:#fff;
---l3:#c63d3d;--l2:#d98a12;--l1:#2f8a58;--l0:#8fa3ad;--chip:#ece8df;
+:root{--bg:#eef1f0;--card:#fff;--fg:#13222c;--muted:#61707a;--line:#d6dde0;--accent:#0f6b67;--accent-fg:#fff;--ink:#0f2f52;
+--repair:#c03a6b;--now:#d2392f;--soon:#e58a10;--view:#5b6f7c;--ok:#2f8a58;--rain:#2a7fd4;--chip:#e6ecec;
 --sans:"IBM Plex Sans",system-ui,sans-serif;--mono:"IBM Plex Mono",ui-monospace,monospace}
-@media (prefers-color-scheme:dark){:root{--bg:#0e1d28;--card:#16293a;--fg:#eef0ee;--muted:#a3b4bd;--line:#284256;--accent:#5fc2b6;--accent-fg:#0e1d28;--l3:#f07272;--l2:#f2b14a;--l1:#6fc48f;--l0:#7f939d;--chip:#203a4f;color-scheme:dark}}
+@media (prefers-color-scheme:dark){:root{--bg:#0b1820;--card:#13242f;--fg:#edf1f1;--muted:#9fb1ba;--line:#24394a;--accent:#4fc2b8;--accent-fg:#0b1820;--ink:#d8e6f2;
+--repair:#ec6f9c;--now:#f0675e;--soon:#f5ab3e;--view:#93a7b3;--ok:#6fc48f;--rain:#62a8ef;--chip:#1c3342;color-scheme:dark}}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.45 var(--sans)}
-.app{max-width:760px;margin:0 auto;padding:0 16px 48px}
-header{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:6px 16px;padding:18px 0 10px}
-h1{margin:0;font-size:1.35rem}
-.rain{font-family:var(--mono);font-size:.82rem;color:var(--muted)}
-.rain b{color:var(--fg);font-weight:500}
-nav{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:14px;overflow-x:auto}
-nav button{background:none;border:0;border-bottom:3px solid transparent;padding:10px 12px;font:500 .92rem var(--sans);color:var(--muted);cursor:pointer;white-space:nowrap}
-nav button.on{color:var(--fg);border-color:var(--accent)}
-nav .n{font-family:var(--mono);font-size:.78rem;margin-left:4px}
-.list{display:grid;gap:8px}
-.item{display:grid;grid-template-columns:64px 1fr auto;gap:12px;align-items:center;background:var(--card);border:1px solid var(--line);border-left:5px solid var(--l0);padding:8px 12px 8px 8px;cursor:pointer;text-align:left;width:100%;font:inherit;color:inherit}
-.item:hover{border-color:var(--accent)}
-.item img{width:64px;height:64px;object-fit:cover;display:block}
-.item b{display:block;font-weight:600}
-.item span{color:var(--muted);font-size:.86rem}
-.item .act{font-family:var(--mono);font-size:.76rem;font-weight:500;white-space:nowrap}
-.lv3{border-left-color:var(--l3)}.lv3 .act{color:var(--l3)}
-.lv2{border-left-color:var(--l2)}.lv2 .act{color:var(--l2)}
-.lv1{border-left-color:var(--l1)}.lv1 .act{color:var(--l1)}
-.empty{color:var(--muted);padding:28px 0;text-align:center}
-.sheet{background:var(--card);border:1px solid var(--line);margin-bottom:16px}
-.fig{background:#000;display:flex;justify-content:center}
-.fig .fw{position:relative;max-width:100%}
-.fig img{display:block;max-width:100%;max-height:420px;width:auto;height:auto}
-.fig svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
-.body{padding:14px 16px;display:grid;gap:12px}
-.ttl{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap}
-.ttl h2{margin:0;font-size:1.15rem}
-.tag{font-family:var(--mono);font-size:.74rem;padding:2px 8px;color:#fff;background:var(--l0)}
-.tag.lv3{background:var(--l3)}.tag.lv2{background:var(--l2)}.tag.lv1{background:var(--l1)}
-dl{display:grid;grid-template-columns:auto 1fr;gap:4px 16px;margin:0;font-size:.92rem}
-dt{color:var(--muted)}dd{margin:0;font-variant-numeric:tabular-nums}
-.meter{height:8px;background:var(--chip);margin-top:6px}.meter i{display:block;height:100%;background:var(--l2)}
-.btns{display:flex;flex-wrap:wrap;gap:8px}
-.btn{border:1px solid var(--accent);background:none;color:var(--accent);padding:9px 14px;font:600 .9rem var(--sans);cursor:pointer}
+body{margin:0;background:var(--bg);color:var(--fg);font:14.5px/1.45 var(--sans)}
+.app{max-width:1240px;margin:0 auto;padding:0 16px 40px}
+header{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 20px;padding:16px 0 12px}
+.brand{display:flex;align-items:baseline;gap:12px}
+h1{margin:0;font-size:1.4rem;letter-spacing:-.01em}
+.date{font-family:var(--mono);font-size:.8rem;color:var(--muted)}
+.wx{display:flex;gap:8px;flex-wrap:wrap}
+.wx span{background:var(--card);border:1px solid var(--line);padding:5px 10px;font-size:.84rem}
+.wx b{font-variant-numeric:tabular-nums}
+/* action tiles */
+.actions{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin-bottom:12px}
+.tile{position:relative;display:grid;gap:4px;align-content:start;text-align:left;background:var(--card);border:1px solid var(--line);border-top:6px solid var(--c);padding:12px 14px;cursor:pointer;font:inherit;color:inherit;min-height:116px}
+.tile:hover,.tile.on{box-shadow:0 0 0 2px var(--c) inset}
+.tile .num{font-size:2.2rem;font-weight:700;line-height:1;color:var(--c);font-variant-numeric:tabular-nums}
+.tile .lbl{font-weight:600}
+.tile .who{font-size:.82rem;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tile.zero{opacity:.55}
+.tile .go{position:absolute;right:12px;top:10px;font-family:var(--mono);font-size:.72rem;color:var(--c)}
+/* layout */
+.grid{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:12px}
+@media (max-width:900px){.grid{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);min-width:0}
+.card h2{margin:0;font-size:.74rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-family:var(--mono);font-weight:500}
+.hd{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.pad{padding:12px 14px}
+#map{height:430px;background:var(--chip)}
+.tog{display:flex;gap:6px}
+.tog button{background:var(--chip);border:1px solid var(--line);color:var(--fg);font:500 .78rem var(--sans);padding:4px 10px;cursor:pointer}
+.tog button.on{background:var(--accent);color:var(--accent-fg);border-color:var(--accent)}
+.legend{display:flex;flex-wrap:wrap;gap:4px 12px;padding:8px 14px;font-size:.78rem;color:var(--muted);border-top:1px solid var(--line)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px;vertical-align:-1px}
+.pin{width:18px;height:18px;border-radius:50%;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.4)}
+.pin.pulse{animation:pulse 1.6s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 var(--pc)}70%{box-shadow:0 0 0 12px transparent}100%{box-shadow:0 0 0 0 transparent}}
+@media (prefers-reduced-motion:reduce){.pin.pulse{animation:none}}
+.leaflet-popup-content{font:13px/1.4 var(--sans);margin:10px 12px}
+.leaflet-popup-content b{display:block;font-size:14px}
+.leaflet-popup-content button{margin-top:6px}
+/* charts */
+svg text{font-family:var(--mono);fill:var(--muted)}
+.chart{display:block;width:100%;height:auto}
+.proj .row{display:grid;grid-template-columns:118px 1fr 70px;gap:8px;align-items:center;font-size:.84rem;padding:3px 0;cursor:pointer}
+.proj .row:hover{background:var(--chip)}
+.proj .bar{position:relative;height:14px;background:var(--chip)}
+.proj .bar i{position:absolute;left:0;top:0;bottom:0}
+.proj .bar u{position:absolute;top:0;bottom:0;background:repeating-linear-gradient(45deg,var(--c) 0 3px,transparent 3px 6px);opacity:.6}
+.proj .bar s{position:absolute;left:80%;top:-3px;bottom:-3px;border-left:2px dashed var(--fg);opacity:.5}
+.proj .when{font-family:var(--mono);font-size:.76rem;text-align:right}
+/* lane */
+.lane{margin:12px 0}
+.lane .hd{background:var(--card);border:1px solid var(--line);border-left:6px solid var(--c)}
+.lane .hd b{font-size:1.05rem}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:10px;margin-top:10px}
+.nc{background:var(--card);border:1px solid var(--line);display:grid;grid-template-rows:auto 1fr}
+.nc .ph{position:relative;aspect-ratio:4/3;background:#000;cursor:pointer;max-width:100%}
+.nc .ph img{width:100%;height:100%;object-fit:cover;display:block}
+.nc .ph .badge{position:absolute;left:8px;top:8px;background:var(--c);color:#fff;font:600 .72rem var(--mono);padding:2px 7px}
+.nc .ph .fillb{position:absolute;left:0;right:0;bottom:0;height:6px;background:rgba(0,0,0,.4)}
+.nc .ph .fillb i{display:block;height:100%;background:var(--c)}
+.nc .bd{padding:10px 12px;display:grid;gap:6px;align-content:start}
+.nc b{font-size:1rem}
+.nc .why{font-size:.84rem;color:var(--muted)}
+.btns{display:flex;flex-wrap:wrap;gap:6px}
+.btn{border:1px solid var(--accent);background:none;color:var(--accent);padding:7px 11px;font:600 .84rem var(--sans);cursor:pointer}
 .btn.pri{background:var(--accent);color:var(--accent-fg)}
-.btn.quiet{border-color:var(--line);color:var(--muted)}
-.btn:focus-visible,nav button:focus-visible,.item:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-.back{background:none;border:0;color:var(--accent);font:500 .9rem var(--sans);padding:0 0 10px;cursor:pointer}
-pre{margin:0;background:var(--chip);padding:12px;font:.84rem/1.5 var(--mono);white-space:pre-wrap;overflow-x:auto}
-.form{display:grid;gap:10px}
-label{display:grid;gap:4px;font-size:.86rem;color:var(--muted)}
-input,select,textarea{font:inherit;color:var(--fg);background:var(--bg);border:1px solid var(--line);padding:8px}
-.wo{background:var(--card);border:1px solid var(--line);padding:12px 14px;display:grid;gap:8px}
-.wo .row{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
-.wo .no{font-family:var(--mono);font-size:.8rem;color:var(--muted)}
-footer{margin-top:28px;font-family:var(--mono);font-size:.74rem;color:var(--muted);display:flex;gap:14px;flex-wrap:wrap}
+.btn.q{border-color:var(--line);color:var(--muted)}
+.btn:disabled{opacity:.45;cursor:default}
+.btn:focus-visible,.tile:focus-visible,.tog button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+/* work orders */
+.wo{display:grid;grid-template-columns:auto 1fr auto;gap:4px 12px;align-items:center;padding:9px 14px;border-top:1px solid var(--line);font-size:.88rem}
+.wo:first-child{border-top:0}
+.wo .dot{width:10px;height:10px;border-radius:50%;background:var(--c)}
+.wo .no{font-family:var(--mono);font-size:.76rem;color:var(--muted)}
+.wo form{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:8px;align-items:end}
+.wo label{display:grid;gap:2px;font-size:.76rem;color:var(--muted)}
+input,select{font:inherit;color:var(--fg);background:var(--bg);border:1px solid var(--line);padding:6px 8px}
+.empty{color:var(--muted);padding:16px 14px;font-size:.9rem}
+.tl{display:grid;gap:0;padding:6px 14px 12px}
+.tl .ev{display:grid;grid-template-columns:86px 14px 1fr auto;gap:8px;align-items:center;font-size:.84rem;padding:4px 0}
+.tl .ev .d{font-family:var(--mono);font-size:.74rem;color:var(--muted)}
+.tl .ev .k{width:10px;height:10px;border-radius:50%;background:var(--c)}
+.tl .ev .kg{font-family:var(--mono);font-size:.76rem;color:var(--muted)}
+/* drawer */
+.drawer{position:fixed;inset:0;background:rgba(5,15,22,.55);display:flex;justify-content:flex-end;z-index:2000}
+.drawer .in{background:var(--card);width:min(560px,100%);height:100%;overflow:auto;display:grid;align-content:start}
+.drawer .fig{position:relative;background:#000;display:flex;justify-content:center}
+.drawer .fig .fw{position:relative;max-width:100%}
+.drawer .fig img{display:block;max-width:100%;max-height:360px}
+.drawer .fig svg{position:absolute;inset:0;width:100%;height:100%}
+.drawer .x{position:absolute;right:10px;top:10px;background:rgba(0,0,0,.6);color:#fff;border:0;width:34px;height:34px;font-size:18px;cursor:pointer;z-index:2}
+.gauge{display:flex;align-items:center;gap:14px}
+.gauge svg{width:92px;height:92px;flex:none}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:3px 14px;font-size:.88rem}
+.kv dt{color:var(--muted)}.kv dd{margin:0;font-variant-numeric:tabular-nums}
+pre{margin:0;background:var(--chip);padding:10px;font:.8rem/1.5 var(--mono);white-space:pre-wrap}
+.toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:9px 16px;font-size:.88rem;z-index:3000}
+footer{margin-top:20px;font-family:var(--mono);font-size:.72rem;color:var(--muted);display:flex;gap:14px;flex-wrap:wrap}
 footer button,footer a{background:none;border:0;padding:0;color:var(--muted);font:inherit;text-decoration:underline;cursor:pointer}
-.toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:8px 14px;font-size:.88rem}
-@media (max-width:480px){.item{grid-template-columns:52px 1fr}.item img{width:52px;height:52px}.item .act{grid-column:2}}
 </style>
 </head>
 <body>
 <div class="app">
-<header><h1>Net Watch</h1><div class="rain" id="rain">Rain forecast loading…</div></header>
-<nav id="tabs"></nav>
-<main id="view"></main>
-<footer><span>Demo data</span><span id="src"></span><button id="reset">Reset demo</button><a href="brief/">Brief</a></footer>
+<header>
+ <div class="brand"><h1>Net Watch</h1><span class="date" id="date"></span></div>
+ <div class="wx" id="wx"></div>
+</header>
+
+<section class="actions" id="actions"></section>
+<section class="lane" id="lane"></section>
+
+<section class="grid">
+ <div class="card">
+  <div class="hd"><h2>Map</h2><div class="tog"><button id="tRadar">Rain radar</button><button id="tRun">Contractor run</button></div></div>
+  <div id="map"></div>
+  <div class="legend" id="legend"></div>
+ </div>
+ <div style="display:grid;gap:12px;align-content:start">
+  <div class="card"><div class="hd"><h2>Rain, next 7 days</h2><span class="date" id="wxsrc"></span></div><div class="pad" id="rainchart"></div></div>
+  <div class="card"><div class="hd"><h2>When each net hits 80%</h2></div><div class="pad proj" id="proj"></div></div>
+ </div>
+</section>
+
+<section class="grid" style="margin-top:12px">
+ <div class="card"><div class="hd"><h2>Open work orders</h2><div class="btns"><button class="btn q" id="copyRun">Copy run sheet</button></div></div><div id="wos"></div></div>
+ <div class="card"><div class="hd"><h2>Work order history</h2><span class="date" id="kgtot"></span></div><div class="pad" id="histchart"></div><div class="tl" id="hist"></div></div>
+</section>
+
+<footer><span>Demo data · approximate locations</span><span id="src2"></span><button id="reset">Reset demo</button><a href="brief/">Brief</a></footer>
 </div>
 <div class="toast" id="toast" hidden></div>
+
 <script>
+/* ---------- dates ---------- */
 const TODAY=new Date();TODAY.setHours(0,0,0,0);
 const D=n=>{const d=new Date(TODAY);d.setDate(d.getDate()+n);return d};
 const iso=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 const P=s=>new Date(s+'T00:00:00');
-const nice=s=>new Date(s+'T00:00:00').toLocaleDateString('en-AU',{weekday:'short',day:'numeric',month:'short'}).replace(',','');
-const short=s=>new Date(s+'T00:00:00').toLocaleDateString('en-AU',{weekday:'short',day:'numeric'}).replace(',','');
+const fmt=(s,o)=>P(s).toLocaleDateString('en-AU',o).replace(',','');
+const nice=s=>fmt(s,{weekday:'short',day:'numeric',month:'short'});
+const short=s=>fmt(s,{weekday:'short',day:'numeric'});
+const dmy=s=>fmt(s,{day:'numeric',month:'short',year:'2-digit'});
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const cssv=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
 
-// Demo nets: real SCADA thumbnails; large frames are the real Lackey St West image or simulated states.
+/* ---------- demo nets (real SCADA thumbnails; locations approximate until Council supplies lat/longs) ---------- */
 const SEED=[
- {id:'lackey-st-west',name:'Lackey St West',fill:45,mm:70,last:iso(D(-85)),damaged:true,big:'img/lackey-st-west-full.jpg',mark:[57,52]},
- {id:'bettington-rd',name:'Bettington Rd',fill:86,mm:90,last:iso(D(-120)),big:'img/sim-net-blocked.jpg'},
- {id:'james-ruse-dr-1',name:'James Ruse Dr 1',fill:76,mm:80,last:iso(D(-95)),big:'img/sim-net-full.jpg'},
- {id:'norwood-ave',name:'Norwood Ave',fill:62,mm:55,last:iso(D(-70)),big:'img/sim-net-partial.jpg'},
- {id:'ridge-st',name:'Ridge St',fill:null,mm:80,last:iso(D(-60)),blind:3,big:'img/sim-net-unusable.jpg'},
- {id:'lackey-st-east',name:'Lackey St East',fill:35,mm:90,last:iso(D(-40))},
- {id:'lake-parra-res',name:'Lake Parra Res',fill:20,mm:120,last:iso(D(-30))},
- {id:'forest-cl',name:'Forest Cl',fill:15,mm:100,last:iso(D(-20))},
- {id:'james-ruse-dr-2',name:'James Ruse Dr 2',fill:30,mm:80,last:iso(D(-50))},
- {id:'shirley-st',name:'Shirley St',fill:40,mm:110,last:iso(D(-65))},
- {id:'anthony-st',name:'Anthony St',fill:25,mm:90,last:iso(D(-45))},
- {id:'sturt-st',name:'Sturt St',fill:10,mm:100,last:iso(D(-12)),big:'img/sim-net-empty.jpg'},
- {id:'willmott-ave',name:'Willmott Ave',fill:30,mm:120,last:iso(D(-55))},
- {id:'charles-st',name:'Charles St',fill:15,mm:150,last:iso(D(-25))}
+ {id:'lackey-st-west',name:'Lackey St West',sub:'North Parramatta',ll:[-33.7962,151.0068],fill:45,mm:70,damaged:true,big:'img/lackey-st-west-full.jpg',mark:[57,52]},
+ {id:'lackey-st-east',name:'Lackey St East',sub:'North Parramatta',ll:[-33.7953,151.0102],fill:58,mm:60},
+ {id:'lake-parra-res',name:'Lake Parra Res',sub:'North Parramatta',ll:[-33.7905,151.0040],fill:20,mm:120},
+ {id:'bettington-rd',name:'Bettington Rd',sub:'Oatlands',ll:[-33.7906,151.0305],fill:86,mm:90,big:'img/sim-net-blocked.jpg'},
+ {id:'james-ruse-dr-1',name:'James Ruse Dr 1',sub:'Northmead',ll:[-33.7985,151.0005],fill:76,mm:80,big:'img/sim-net-full.jpg'},
+ {id:'james-ruse-dr-2',name:'James Ruse Dr 2',sub:'Rosehill',ll:[-33.8205,151.0200],fill:30,mm:80},
+ {id:'norwood-ave',name:'Norwood Ave',sub:'Beecroft',ll:[-33.7530,151.0690],fill:62,mm:55,big:'img/sim-net-partial.jpg'},
+ {id:'ridge-st',name:'Ridge St',sub:'North Parramatta',ll:[-33.8010,151.0125],fill:null,mm:80,blind:3,big:'img/sim-net-unusable.jpg'},
+ {id:'shirley-st',name:'Shirley St',sub:'Carlingford',ll:[-33.7810,151.0480],fill:40,mm:110},
+ {id:'anthony-st',name:'Anthony St',sub:'Carlingford',ll:[-33.7840,151.0420],fill:25,mm:90},
+ {id:'forest-cl',name:'Forest Cl',sub:'Toongabbie Creek',ll:[-33.7870,150.9830],fill:15,mm:100},
+ {id:'sturt-st',name:'Sturt St',sub:'Telopea',ll:[-33.7935,151.0430],fill:10,mm:100,big:'img/sim-net-empty.jpg'},
+ {id:'willmott-ave',name:'Willmott Ave',sub:'Winston Hills',ll:[-33.7790,150.9880],fill:30,mm:120},
+ {id:'charles-st',name:'Charles St',sub:'Parramatta River',ll:[-33.8150,151.0080],fill:15,mm:150}
 ];
-const KEY='netwatch-v1';
-let S;
-function fresh(){return{nets:SEED.map(n=>({...n})),wos:[],log:[],seq:1}}
+const DEPOT={name:'Rydalmere Operations Centre',ll:[-33.8110,151.0330]};
+function rnd(seed){let h=0;for(const c of seed)h=(h*31+c.charCodeAt(0))>>>0;return()=>((h=(h*1103515245+12345)>>>0)%1000)/1000}
+function seedHistory(n){const r=rnd(n.id),h=[];let day=-Math.round(20+r()*70);for(let i=0;i<5;i++){const repair=r()<.15;h.push({date:iso(D(day)),task:repair?'Repair net':'Empty net',kg:repair?0:Math.round(25+r()*n.mm*0.9),by:'Contractor'});day-=Math.round(70+r()*40)}return h}
+
+/* ---------- state ---------- */
+const KEY='netwatch-v2';let S;
+function fresh(){const nets=SEED.map(n=>{const h=seedHistory(n);return{...n,hist:h,last:h[0].date}});return{nets,wos:[],seq:1}}
 function load(){try{const s=JSON.parse(localStorage.getItem(KEY));if(s&&s.nets)return s}catch(e){}return fresh()}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
 S=load();
 
-// Rain: Open-Meteo daily totals for Parramatta, next 3 days. Falls back to a demo storm.
-let RAIN={days:[{d:iso(D(1)),mm:2},{d:iso(D(2)),mm:6},{d:iso(D(3)),mm:28}],live:false};
-const rainTotal=()=>RAIN.days.reduce((a,x)=>a+x.mm,0);
-const stormDay=()=>{const x=RAIN.days.find(x=>x.mm>=10)||RAIN.days.reduce((a,b)=>b.mm>a.mm?b:a);return x};
+/* ---------- weather ---------- */
+let RAIN={days:[0,1,2,3,4,5,6].map(i=>({d:iso(D(i)),mm:[0,2,5,26,9,1,0][i],p:[10,30,55,90,70,20,10][i]})),live:false};
 async function getRain(){
- try{const ac=new AbortController();setTimeout(()=>ac.abort(),6000);const r=await fetch('https://api.open-meteo.com/v1/forecast?latitude=-33.815&longitude=151.003&daily=precipitation_sum&timezone=Australia%2FSydney&forecast_days=4',{signal:ac.signal});
-  const j=await r.json();const t=j.daily.time,p=j.daily.precipitation_sum;
-  RAIN={days:t.slice(1,4).map((d,i)=>({d,mm:Math.round(p[i+1]||0)})),live:true};
+ try{const ac=new AbortController();setTimeout(()=>ac.abort(),6000);
+  const r=await fetch('https://api.open-meteo.com/v1/forecast?latitude=-33.80&longitude=151.02&daily=precipitation_sum,precipitation_probability_max&timezone=Australia%2FSydney&forecast_days=7',{signal:ac.signal});
+  const j=await r.json();RAIN={days:j.daily.time.map((d,i)=>({d,mm:Math.round(j.daily.precipitation_sum[i]||0),p:j.daily.precipitation_probability_max[i]||0})),live:true};render();
  }catch(e){}
- render();
+}
+const storm=()=>RAIN.days.slice(1).reduce((a,b)=>b.mm>a.mm?b:a);
+const rain7=()=>RAIN.days.reduce((a,x)=>a+x.mm,0);
+
+/* ---------- decision rules ---------- */
+function project(n){ // fill per day over the forecast
+ if(n.fill==null)return null;let f=n.fill;return RAIN.days.map(x=>(f=Math.min(100,f+x.mm/n.mm*100)))}
+function hit80(n){const p=project(n);if(!p)return null;const i=p.findIndex(v=>v>=80);return i<0?null:RAIN.days[i].d}
+function openWO(n){return S.wos.find(w=>w.net===n.id&&w.status==='Open')}
+const B={
+ repair:{lbl:'Repair torn nets',c:'--repair',task:'Repair or refit net',pri:'Urgent'},
+ now:{lbl:'Empty full nets now',c:'--now',task:'Empty net',pri:'Urgent'},
+ soon:{lbl:'Empty before the rain',c:'--soon',task:'Empty net',pri:'High'},
+ view:{lbl:'Fix blocked cameras',c:'--view',task:'Clear camera view',pri:'Normal'},
+};
+function bucket(n){
+ if(openWO(n))return'wo';
+ if(n.defer&&n.defer>iso(TODAY))return'defer';
+ if(n.damaged)return'repair';
+ if(n.blind>=2)return'view';
+ if(n.fill>=80)return'now';
+ const h=hit80(n);if(h&&h<=iso(D(7)))return'soon';
+ return'ok';
+}
+function why(n){
+ const b=bucket(n),h=hit80(n);
+ if(b==='repair')return'Net torn or pulled off the pipe';
+ if(b==='view')return`No clear image for ${n.blind} days`;
+ if(b==='now')return`${n.fill}% full · overflows in the next storm`;
+ if(b==='soon')return`${n.fill}% now · hits 80% ${short(h)}`;
+ if(b==='wo'){const w=openWO(n);return`${w.no} · ${w.task}`}
+ if(b==='defer')return`Deferred to ${nice(n.defer)}`;
+ return n.fill==null?'No reading':`${n.fill}% full`;
+}
+const colOf=b=>({repair:'--repair',now:'--now',soon:'--soon',view:'--view',wo:'--accent',defer:'--muted',ok:'--ok'}[b]);
+
+/* ---------- map ---------- */
+let map,markers={},radar=null,runLine=null;
+function initMap(){
+ if(!window.L){$('#map').innerHTML='<div class="empty">Map unavailable offline.</div>';return}
+ map=L.map('map',{scrollWheelZoom:false}).setView([-33.795,151.02],12);
+ L.tileLayer('https://{s}.basemap.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{attribution:'© OpenStreetMap © CARTO',maxZoom:18}).addTo(map);
+ L.marker(DEPOT.ll,{icon:L.divIcon({className:'',html:'<div style="width:14px;height:14px;background:#0f2f52;border:2px solid #fff;transform:rotate(45deg)"></div>',iconSize:[14,14]})}).addTo(map).bindTooltip('Depot · '+DEPOT.name);
+}
+function drawPins(){
+ if(!map)return;
+ Object.values(markers).forEach(m=>m.remove());markers={};
+ S.nets.forEach(n=>{const b=bucket(n),c=cssv(colOf(b));
+  const pulse=['repair','now'].includes(b)?' pulse':'';
+  const m=L.marker(n.ll,{icon:L.divIcon({className:'',html:`<div class="pin${pulse}" style="background:${c};--pc:${c}"></div>`,iconSize:[18,18],iconAnchor:[9,9]})}).addTo(map);
+  m.bindPopup(`<b>${esc(n.name)}</b>${esc(why(n))}<br><button class="btn pri" data-open="${n.id}">Open</button>`);
+  markers[n.id]=m;});
+ $('#legend').innerHTML=[['repair','Repair'],['now','Empty now'],['soon','Before rain'],['view',"Can't see"],['wo','Work order'],['ok','OK']].map(([b,l])=>`<span><i style="background:var(${colOf(b)})"></i>${l}</span>`).join('');
+}
+async function toggleRadar(){
+ if(!map)return;
+ if(radar){map.removeLayer(radar);radar=null;$('#tRadar').classList.remove('on');return}
+ try{const ac=new AbortController();setTimeout(()=>ac.abort(),6000);
+  const j=await (await fetch('https://api.rainviewer.com/public/weather-maps.json',{signal:ac.signal})).json();
+  const f=j.radar.past[j.radar.past.length-1];
+  radar=L.tileLayer(`${j.host}${f.path}/256/{z}/{x}/{y}/2/1_1.png`,{opacity:.6,attribution:'Radar © RainViewer'}).addTo(map);
+  $('#tRadar').classList.add('on');toast('Radar '+new Date(f.time*1000).toLocaleTimeString('en-AU',{hour:'numeric',minute:'2-digit'}));
+ }catch(e){toast('Radar unavailable right now')}
+}
+function route(){ // nearest-neighbour run from the depot through open work orders
+ const stops=S.wos.filter(w=>w.status==='Open').map(w=>S.nets.find(n=>n.id===w.net));
+ const out=[];let cur=DEPOT.ll,left=[...stops];
+ const dist=(a,b)=>Math.hypot(a[0]-b[0],(a[1]-b[1])*Math.cos(a[0]*Math.PI/180));
+ while(left.length){left.sort((a,b)=>dist(cur,a.ll)-dist(cur,b.ll));const nx=left.shift();out.push(nx);cur=nx.ll}
+ const km=out.reduce((a,n,i)=>a+dist(i?out[i-1].ll:DEPOT.ll,n.ll)*111,0)+(out.length?dist(out[out.length-1].ll,DEPOT.ll)*111:0);
+ return{out,km:Math.round(km*1.4)};
+}
+function toggleRun(force){
+ if(!map)return;
+ if(runLine&&!force){runLine.remove();runLine=null;$('#tRun').classList.remove('on');return}
+ if(runLine){runLine.remove();runLine=null}
+ const {out}=route();if(!out.length){toast('No open work orders');$('#tRun').classList.remove('on');return}
+ runLine=L.polyline([DEPOT.ll,...out.map(n=>n.ll),DEPOT.ll],{color:cssv('--accent'),weight:4,dashArray:'8 6'}).addTo(map);
+ map.fitBounds(runLine.getBounds(),{padding:[30,30]});$('#tRun').classList.add('on');
 }
 
-function assess(n){
- const open=S.wos.find(w=>w.net===n.id&&w.status==='Open');
- if(open)return{lv:0,act:'Work order '+open.no,why:open.task,state:'With contractor'};
- if(n.defer&&n.defer>iso(TODAY))return{lv:0,act:'Deferred to '+nice(n.defer),why:'',state:'Deferred'};
- const cap0=n.fill==null?null:Math.round((100-n.fill)/100*n.mm);
- if(n.damaged)return{lv:3,act:'Repair',task:'Repair or refit net',why:'Net torn or off the pipe',state:'Damaged',cap:cap0};
- if(n.blind>=2)return{lv:2,act:'Restore view',task:'Clear camera view',why:`No clear image for ${n.blind} days`,state:"Can't see"};
- const cap=Math.round((100-n.fill)/100*n.mm),s=stormDay(),tot=rainTotal();
- if(n.fill>=80)return{lv:3,act:'Clean now',task:'Empty net',why:`${n.fill}% full`,state:'Overdue',cap};
- if(n.fill>=70||tot>=cap)return{lv:2,act:'Clean by '+short(s.d),task:'Empty net',why:`${n.fill}% full · holds ~${cap} mm more · ${tot} mm forecast`,state:'Clean due',cap};
- return{lv:1,act:'OK',why:`${n.fill}% full · holds ~${cap} mm more`,state:'OK',cap};
-}
-
-let tab='todo',open=null;
-const todo=()=>S.nets.map(n=>({n,a:assess(n)})).filter(x=>x.a.lv>=2).sort((x,y)=>y.a.lv-x.a.lv||(y.n.fill||0)-(x.n.fill||0));
-const $=s=>document.querySelector(s);
-const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-function toast(t){const e=$('#toast');e.textContent=t;e.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>e.hidden=true,2200)}
-
+/* ---------- render ---------- */
+let lane=null,drawerId=null;
 function render(){
- const s=stormDay();
- $('#rain').innerHTML=`Rain next 3 days <b>${rainTotal()} mm</b> · heaviest <b>${nice(s.d)}</b> ${s.mm} mm`;
- $('#src').textContent=RAIN.live?'Rain: Open-Meteo, live':'Rain: demo values';
- const openWO=S.wos.filter(w=>w.status==='Open').length;
- const T=[['todo','To do',todo().length],['all','All nets',S.nets.length],['wo','Work orders',openWO],['done','Done',S.log.length]];
- $('#tabs').innerHTML=T.map(([k,l,c])=>`<button data-t="${k}" class="${tab===k?'on':''}">${l}<span class="n">${c}</span></button>`).join('');
- const v=$('#view');
- if(open){v.innerHTML=detail(S.nets.find(n=>n.id===open));return}
- if(tab==='todo'){const L=todo();v.innerHTML=L.length?`<div class="list">${L.map(card).join('')}</div>`:`<div class="empty">Nothing needs action.</div>`}
- if(tab==='all'){const L=S.nets.map(n=>({n,a:assess(n)})).sort((x,y)=>y.a.lv-x.a.lv||(y.n.fill||0)-(x.n.fill||0));v.innerHTML=`<div class="list">${L.map(card).join('')}</div>`}
- if(tab==='wo'){const L=S.wos.filter(w=>w.status==='Open');v.innerHTML=L.length?`<div class="list">${L.map(woCard).join('')}</div>`:`<div class="empty">No open work orders.</div>`}
- if(tab==='done'){v.innerHTML=S.log.length?`<div class="list">${S.log.slice().reverse().map(l=>`<div class="wo"><div class="row"><b>${esc(l.site)}</b><span class="no">${esc(l.no)} · ${nice(l.date)}</span></div><span>${esc(l.text)}</span></div>`).join('')}</div>`:`<div class="empty">Completed work appears here.</div>`}
+ $('#date').textContent=nice(iso(TODAY));
+ const st=storm();
+ $('#wx').innerHTML=`<span>Today <b>${RAIN.days[0].mm} mm</b></span><span>Next 7 days <b>${rain7()} mm</b></span><span>Heaviest <b>${short(st.d)} · ${st.mm} mm</b></span>`;
+ $('#wxsrc').textContent=RAIN.live?'Open-Meteo, live':'demo forecast';
+ $('#src2').textContent=RAIN.live?'Rain: Open-Meteo':'Rain: demo values';
+ // tiles
+ const groups={};S.nets.forEach(n=>{const b=bucket(n);(groups[b]=groups[b]||[]).push(n)});
+ const open=S.wos.filter(w=>w.status==='Open');
+ $('#actions').innerHTML=Object.entries(B).map(([k,v])=>{const g=groups[k]||[];
+  return`<button class="tile ${g.length?'':'zero'} ${lane===k?'on':''}" style="--c:var(${v.c})" data-lane="${k}"><span class="num">${g.length}</span><span class="lbl">${v.lbl}</span><span class="who">${g.length?esc(g.map(n=>n.name).join(', ')):'Nothing to do'}</span>${g.length?'<span class="go">Act →</span>':''}</button>`}).join('')+
+  `<button class="tile ${open.length?'':'zero'}" style="--c:var(--accent)" data-scroll="wos"><span class="num">${open.length}</span><span class="lbl">With contractor</span><span class="who">${open.length?esc(open.map(w=>w.site).join(', ')):'No open work orders'}</span></button>`;
+ // lane
+ if(lane&&(groups[lane]||[]).length){const v=B[lane],g=groups[lane];
+  $('#lane').innerHTML=`<div class="hd" style="--c:var(${v.c})"><b>${v.lbl}</b><div class="btns"><button class="btn pri" data-raiseall="${lane}">Raise ${g.length} work order${g.length>1?'s':''}</button><button class="btn q" data-lane="${lane}">Close</button></div></div><div class="cards">${g.map(n=>ncard(n,v)).join('')}</div>`;
+ }else{lane=null;$('#lane').innerHTML=''}
+ drawPins();rainChart();projChart();wos();history();
+ if(drawerId)drawer(drawerId);
 }
-function card({n,a}){return`<button class="item lv${a.lv}" data-o="${n.id}"><img src="img/${n.id}.jpg" alt=""><div><b>${esc(n.name)}</b><span>${esc(a.why||a.state)}</span></div><div class="act">${esc(a.act)}</div></button>`}
-function woCard(w){return`<div class="wo"><div class="row"><b>${esc(w.site)}</b><span class="no">${w.no}</span></div><span>${esc(w.task)} · ${w.priority} · due ${nice(w.due)}</span><div class="btns"><button class="btn pri" data-done="${w.no}">Record completion</button><button class="btn quiet" data-copy="${w.no}">Copy</button></div><div id="f-${w.no}"></div></div>`}
-function detail(n){
- const a=assess(n),img=n.big||`img/${n.id}.jpg`;
- const mark=n.mark?`<svg viewBox="0 0 100 75" preserveAspectRatio="none"><ellipse cx="${n.mark[0]}" cy="${n.mark[1]}" rx="10" ry="13" fill="none" stroke="#ff3b3b" stroke-width=".9"/></svg>`:'';
- const acts=a.lv>=2?`<button class="btn pri" data-raise="${n.id}">Raise work order</button><button class="btn" data-inspect="${n.id}">Send inspector</button><button class="btn quiet" data-defer="${n.id}">Defer 7 days</button>`:'';
- return`<button class="back" data-back>← Back</button><div class="sheet"><div class="fig"><div class="fw"><img src="${img}" alt="Latest camera image, ${esc(n.name)}">${mark}</div></div><div class="body">
- <div class="ttl"><h2>${esc(n.name)}</h2><span class="tag lv${a.lv}">${esc(a.state)}</span></div>
- ${a.lv>=2?`<div><b>${esc(a.act)}</b> · ${esc(a.why)}</div>`:''}
- <dl><dt>Fill</dt><dd>${n.fill==null?'Unknown':n.fill+'%'}${n.fill!=null?`<div class="meter"><i style="width:${n.fill}%"></i></div>`:''}</dd>
- <dt>Holds</dt><dd>${a.cap!=null?'~'+a.cap+' mm more rain':'—'}</dd>
- <dt>Forecast</dt><dd>${RAIN.days.map(x=>short(x.d)+' '+x.mm+' mm').join(' · ')}</dd>
- <dt>Last cleaned</dt><dd>${nice(n.last)}</dd></dl>
- <div class="btns">${acts}</div><div id="wo-out"></div></div></div>`;
+function img(n){return n.big||`img/${n.id}.jpg`}
+function ncard(n,v){const f=n.fill??0;
+ return`<div class="nc" style="--c:var(${v.c})"><div class="ph" data-open="${n.id}"><img src="${img(n)}" alt="${esc(n.name)} camera"><span class="badge">${n.fill==null?'NO VIEW':n.fill+'%'}</span><div class="fillb"><i style="width:${f}%"></i></div></div>
+ <div class="bd"><b>${esc(n.name)}</b><span class="why">${esc(why(n))}</span><div class="btns"><button class="btn pri" data-raise="${n.id}">Raise work order</button><button class="btn" data-inspect="${n.id}">Inspect</button><button class="btn q" data-defer="${n.id}">Defer</button></div></div></div>`}
+function rainChart(){
+ const W=360,H=150,pb=26,pt=16,max=Math.max(30,...RAIN.days.map(x=>x.mm)),bw=W/7;
+ const bars=RAIN.days.map((x,i)=>{const h=(H-pb-pt)*x.mm/max,y=H-pb-h;
+  return`<rect x="${i*bw+8}" y="${y}" width="${bw-16}" height="${Math.max(h,1)}" fill="var(--rain)" opacity="${.35+.65*x.p/100}"/><text x="${i*bw+bw/2}" y="${y-4}" text-anchor="middle" font-size="11" style="fill:var(--fg)">${x.mm}</text><text x="${i*bw+bw/2}" y="${H-8}" text-anchor="middle" font-size="10">${i?short(x.d).split(' ')[0]:'Today'}</text>`}).join('');
+ $('#rainchart').innerHTML=`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Rain forecast by day in millimetres">${bars}<line x1="0" x2="${W}" y1="${H-pb}" y2="${H-pb}" stroke="var(--line)"/></svg>`;
 }
-function woText(w){return`WORK ORDER ${w.no}
-Site: ${w.site}
-Asset: End-of-pipe litter net (GPT)
-Task: ${w.task}
-Priority: ${w.priority}
-Complete by: ${nice(w.due)}
-Reason: ${w.reason}
-Photo: latest camera frame, ${nice(w.created)}
-Raised by: Stormwater officer, City of Parramatta`}
+function projChart(){
+ const L=S.nets.filter(n=>n.fill!=null&&!openWO(n)).map(n=>({n,p:project(n),h:hit80(n)})).sort((a,b)=>(a.h||'9')<(b.h||'9')?-1:(a.h||'9')>(b.h||'9')?1:b.n.fill-a.n.fill).slice(0,8);
+ $('#proj').innerHTML=L.map(({n,p,h})=>{const b=bucket(n),c=`var(${colOf(b)})`,end=p[p.length-1];
+  return`<div class="row" data-open="${n.id}" style="--c:${c}"><span>${esc(n.name)}</span><div class="bar"><i style="width:${n.fill}%;background:${c}"></i><u style="left:${n.fill}%;width:${Math.max(0,end-n.fill)}%"></u><s></s></div><span class="when" style="color:${h?c:'var(--muted)'}">${n.fill>=80?'now':h?short(h):'> 7 days'}</span></div>`}).join('')+`<div style="font-size:.74rem;color:var(--muted);margin-top:6px">Solid: today · hatched: forecast rain · dashed line: 80%</div>`;
+}
+function wos(){
+ const L=S.wos.filter(w=>w.status==='Open');
+ $('#wos').innerHTML=L.length?L.map(w=>{const b=bucket(S.nets.find(n=>n.id===w.net));
+  return`<div class="wo" style="--c:var(${w.c})"><span class="dot"></span><div><b>${esc(w.site)}</b> · ${esc(w.task)}<div class="no">${w.no} · ${w.pri} · due ${short(w.due)}</div></div><div class="btns"><button class="btn pri" data-done="${w.no}">Complete</button></div><div id="f-${w.no}" style="grid-column:1/-1"></div></div>`}).join(''):'<div class="empty">No open work orders. Raise one from an action above.</div>';
+ $('#copyRun').disabled=!L.length;
+}
+function history(){
+ const ev=[];S.nets.forEach(n=>n.hist.forEach(h=>ev.push({...h,site:n.name,id:n.id})));ev.sort((a,b)=>a.date<b.date?1:-1);
+ // kg per month, last 12 months
+ const months=[...Array(12)].map((_,i)=>{const d=new Date(TODAY.getFullYear(),TODAY.getMonth()-11+i,1);return{k:iso(d).slice(0,7),l:d.toLocaleDateString('en-AU',{month:'short'}).slice(0,1),kg:0,n:0}});
+ ev.forEach(e=>{const m=months.find(m=>m.k===e.date.slice(0,7));if(m){m.kg+=e.kg;m.n++}});
+ const W=360,H=110,pb=20,max=Math.max(100,...months.map(m=>m.kg)),bw=W/12;
+ $('#histchart').innerHTML=`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Kilograms of litter removed per month">${months.map((m,i)=>{const h=(H-pb-10)*m.kg/max;return`<rect x="${i*bw+4}" y="${H-pb-h}" width="${bw-8}" height="${Math.max(h,1)}" fill="var(--accent)" opacity="${i===11?1:.7}"><title>${m.k}: ${m.kg} kg, ${m.n} jobs</title></rect><text x="${i*bw+bw/2}" y="${H-6}" text-anchor="middle" font-size="10">${m.l}</text>`}).join('')}</svg>`;
+ const yr=months.reduce((a,m)=>a+m.kg,0);$('#kgtot').textContent=`${(yr/1000).toFixed(1)} t removed · 12 months`;
+ $('#hist').innerHTML=ev.slice(0,8).map(e=>`<div class="ev" style="--c:var(${e.task.startsWith('Repair')?'--repair':e.task.startsWith('Clear')?'--view':e.task.startsWith('Inspect')?'--muted':'--accent'})" data-open="${e.id}"><span class="d">${dmy(e.date)}</span><span class="k"></span><span>${esc(e.site)} · ${esc(e.task)}</span><span class="kg">${e.kg?e.kg+' kg':''}</span></div>`).join('');
+}
+function gauge(f,c){const r=38,C=2*Math.PI*r,v=f==null?0:f;
+ return`<svg viewBox="0 0 92 92"><circle cx="46" cy="46" r="${r}" fill="none" stroke="var(--chip)" stroke-width="9"/><circle cx="46" cy="46" r="${r}" fill="none" stroke="${c}" stroke-width="9" stroke-dasharray="${C*v/100} ${C}" transform="rotate(-90 46 46)"/><text x="46" y="52" text-anchor="middle" font-size="19" style="fill:var(--fg);font-weight:600">${f==null?'?':f+'%'}</text></svg>`}
+function drawer(id){
+ drawerId=id;const n=S.nets.find(x=>x.id===id),b=bucket(n),c=`var(${colOf(b)})`,p=project(n);
+ const mark=n.mark&&n.damaged?`<svg viewBox="0 0 100 75" preserveAspectRatio="none"><ellipse cx="${n.mark[0]}" cy="${n.mark[1]}" rx="10" ry="13" fill="none" stroke="#ff3b3b" stroke-width=".9"/></svg>`:'';
+ const act=['repair','now','soon','view'].includes(b);
+ const pc=p?`<svg class="chart" viewBox="0 0 360 90" role="img" aria-label="Projected fill"><line x1="0" x2="360" y1="${80-80*.7}" y2="${80-80*.7}" stroke="var(--fg)" stroke-dasharray="4 4" opacity=".4"/><polyline fill="none" stroke="${c}" stroke-width="3" points="${[n.fill,...p].map((v,i)=>`${i*360/7},${80-v*.7}`).join(' ')}"/>${RAIN.days.map((x,i)=>`<text x="${(i+1)*360/7}" y="88" text-anchor="end" font-size="9">${short(x.d).split(' ')[0]}</text>`).join('')}</svg>`:'';
+ let el=$('.drawer');if(!el){el=document.createElement('div');el.className='drawer';document.body.appendChild(el)}
+ el.innerHTML=`<div class="in" role="dialog" aria-label="${esc(n.name)}"><div class="fig"><button class="x" data-close aria-label="Close">×</button><div class="fw"><img src="${img(n)}" alt="Latest camera image, ${esc(n.name)}">${mark}</div></div>
+ <div class="pad" style="display:grid;gap:12px">
+  <div class="gauge">${gauge(n.fill,c)}<div><div style="font-size:1.2rem;font-weight:700">${esc(n.name)}</div><div style="color:var(--muted);font-size:.86rem">${esc(n.sub)}</div><div style="color:${c};font-weight:600;margin-top:4px">${esc(why(n))}</div></div></div>
+  ${act?`<div class="btns"><button class="btn pri" data-raise="${n.id}">Raise work order</button><button class="btn" data-inspect="${n.id}">Inspect</button><button class="btn q" data-defer="${n.id}">Defer 7 days</button></div>`:''}
+  <div id="wo-out"></div>
+  ${pc?`<div><div class="date" style="margin-bottom:4px">FILL FORECAST · 80% LINE</div>${pc}</div>`:''}
+  <dl class="kv"><dt>Holds</dt><dd>${n.fill==null?'—':'~'+Math.round((100-n.fill)/100*n.mm)+' mm more rain'}</dd><dt>Fills in</dt><dd>~${n.mm} mm of rain from empty</dd><dt>Last cleaned</dt><dd>${nice(n.last)}</dd></dl>
+  <div><div class="date" style="margin-bottom:4px">HISTORY</div><div class="tl" style="padding:0">${n.hist.map(e=>`<div class="ev" style="--c:var(${e.task.startsWith('Repair')?'--repair':'--accent'})"><span class="d">${dmy(e.date)}</span><span class="k"></span><span>${esc(e.task)}</span><span class="kg">${e.kg?e.kg+' kg':''}</span></div>`).join('')}</div></div>
+ </div></div>`;
+}
+function closeDrawer(){drawerId=null;const el=$('.drawer');if(el)el.remove()}
+
+/* ---------- actions ---------- */
 function raise(id,kind){
- const n=S.nets.find(x=>x.id===id),a=assess(n);
- const no='WO-'+String(TODAY.getFullYear()).slice(2)+'-'+String(S.seq++).padStart(4,'0');
- const task=kind==='inspect'?'Inspect net and camera':a.task;
- const due=a.lv===3||kind==='inspect'?iso(D(2)):stormDay().d<iso(D(1))?iso(D(1)):(()=>{const x=P(stormDay().d);x.setDate(x.getDate()-1);return iso(x)})();
- const w={no,net:id,site:n.name,task,priority:a.lv===3?'Urgent':'High',due,created:iso(TODAY),reason:a.why,status:'Open'};
- S.wos.push(w);save();
- $('#wo-out').innerHTML=`<pre>${esc(woText(w))}</pre><div class="btns"><button class="btn pri" data-copy="${no}">Copy work order</button><button class="btn quiet" data-back>Done</button></div>`;
- $('#wo-out').scrollIntoView({behavior:'smooth',block:'nearest'});
- document.querySelectorAll('[data-raise],[data-inspect],[data-defer]').forEach(b=>b.disabled=true);
+ const n=S.nets.find(x=>x.id===id),b=bucket(n);if(openWO(n))return null;
+ const v=B[b]||B.soon,no='WO-'+String(TODAY.getFullYear()).slice(2)+'-'+String(S.seq++).padStart(4,'0');
+ const task=kind==='inspect'?'Inspect net and camera':v.task;
+ let due=iso(D(2));if(b==='soon'){const h=P(hit80(n));h.setDate(h.getDate()-1);due=iso(h<D(1)?D(1):h)}
+ const w={no,net:id,site:n.name,task,pri:kind==='inspect'?'Normal':v.pri,due,created:iso(TODAY),reason:why(n),status:'Open',c:kind==='inspect'?'--muted':v.c};
+ S.wos.push(w);save();return w;
 }
+function woText(w){return`${w.no} · ${w.site} · ${w.task} · ${w.pri} · by ${nice(w.due)} · ${w.reason}`}
+function runSheet(){const {out,km}=route();return`CONTRACTOR RUN · ${nice(iso(TODAY))} · ~${km} km\nStart: ${DEPOT.name}\n`+out.map((n,i)=>{const w=openWO(n);return`${i+1}. ${n.name} (${n.sub}) · ${w.task} · ${w.pri} · ${w.no}`}).join('\n')+`\nReturn: ${DEPOT.name}`}
 function complete(no){
- $('#f-'+no).innerHTML=`<form class="form" data-f="${no}"><label>Removed (kg)<input id="kg-${no}" type="number" min="0" value="60"></label><label>Net after visit<select id="st-${no}"><option>Emptied, net intact</option><option>Repaired or replaced</option><option>Camera view cleared</option><option>No action needed</option></select></label><button class="btn pri">Close work order</button></form>`;
+ $('#f-'+no).innerHTML=`<form data-f="${no}"><label>Removed (kg)<input id="kg-${no}" type="number" min="0" value="60" style="width:90px"></label><label>Result<select id="st-${no}"><option>Emptied, net intact</option><option>Repaired or replaced</option><option>Camera view cleared</option><option>Inspected, no action</option></select></label><button class="btn pri">Close ${no}</button></form>`;
 }
+function copy(t,msg){(navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>toast(msg)).catch(()=>toast('Copy blocked: select the text instead'))}
+function toast(t){const e=$('#toast');e.textContent=t;e.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>e.hidden=true,2400)}
+
 document.addEventListener('click',e=>{
- const t=e.target.closest('button');if(!t)return;const d=t.dataset;
- if(d.t){tab=d.t;open=null;render()}
- else if(d.o){open=d.o;render();window.scrollTo(0,0)}
- else if('back' in d){open=null;render()}
- else if(d.raise)raise(d.raise,'clean');
- else if(d.inspect)raise(d.inspect,'inspect');
- else if(d.defer){const n=S.nets.find(x=>x.id===d.defer);n.defer=iso(D(7));save();open=null;render();toast('Deferred 7 days')}
- else if(d.copy){const w=S.wos.find(x=>x.no===d.copy);const txt=woText(w);
-  (navigator.clipboard?navigator.clipboard.writeText(txt):Promise.reject()).then(()=>toast('Copied '+w.no)).catch(()=>toast('Select the text to copy'))}
+ const t=e.target.closest('[data-lane],[data-open],[data-raise],[data-raiseall],[data-inspect],[data-defer],[data-done],[data-close],[data-scroll]');
+ if(!t){if(e.target.classList.contains('drawer'))closeDrawer();return}
+ const d=t.dataset;
+ if(d.lane){lane=lane===d.lane?null:d.lane;render();if(lane)$('#lane').scrollIntoView({behavior:'smooth',block:'start'})}
+ else if(d.scroll){$('#'+d.scroll).scrollIntoView({behavior:'smooth',block:'center'})}
+ else if(d.open){map&&map.closePopup();drawer(d.open)}
+ else if('close' in d)closeDrawer();
+ else if(d.raise||d.inspect){const w=raise(d.raise||d.inspect,d.inspect?'inspect':'');if(w){render();toast(`${w.no} raised · ${w.site}`);if(drawerId)$('#wo-out').innerHTML=`<pre>${esc(woText(w))}</pre>`;if(runLine)toggleRun(true)}}
+ else if(d.raiseall){const g=S.nets.filter(n=>bucket(n)===d.raiseall);g.forEach(n=>raise(n.id));lane=null;render();toast(`${g.length} work orders raised`);if(runLine)toggleRun(true)}
+ else if(d.defer){S.nets.find(x=>x.id===d.defer).defer=iso(D(7));save();closeDrawer();render();toast('Deferred 7 days')}
  else if(d.done)complete(d.done);
 });
 document.addEventListener('submit',e=>{
  const f=e.target.closest('form[data-f]');if(!f)return;e.preventDefault();
  const no=f.dataset.f,w=S.wos.find(x=>x.no===no),n=S.nets.find(x=>x.id===w.net);
- const kg=+document.getElementById('kg-'+no).value||0,st=document.getElementById('st-'+no).value;
- w.status='Closed';
- if(st!=='No action needed'){n.fill=st==='Camera view cleared'?n.fill??30:5;n.damaged=false;n.blind=0;if(st!=='Camera view cleared')n.last=iso(TODAY)}
- if(n.fill==null)n.fill=30;
- S.log.push({no,site:w.site,date:iso(TODAY),text:`${w.task} · ${st}${kg?` · ${kg} kg removed`:''}`});
- save();render();toast(no+' closed');
+ const kg=+$('#kg-'+no).value||0,st=$('#st-'+no).value;w.status='Closed';
+ if(st==='Emptied, net intact'||st==='Repaired or replaced'){n.fill=5;n.damaged=false;n.last=iso(TODAY);if(n.big&&n.big.includes('sim-net'))n.big='img/sim-net-empty.jpg'}
+ if(st==='Repaired or replaced'&&n.big&&n.big.includes('lackey'))n.big=null;
+ if(st==='Camera view cleared'){n.blind=0;if(n.fill==null)n.fill=35;n.big=null}
+ n.hist.unshift({date:iso(TODAY),task:st,kg,by:'Contractor'});
+ save();render();if(runLine)toggleRun(true);toast(no+' closed');
 });
-$('#reset').onclick=()=>{S=fresh();save();tab='todo';open=null;render();toast('Demo reset')};
-render();getRain();
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeDrawer()});
+$('#tRadar').onclick=toggleRadar;$('#tRun').onclick=()=>toggleRun();
+$('#copyRun').onclick=()=>copy(runSheet(),'Run sheet copied');
+$('#reset').onclick=()=>{S=fresh();save();lane=null;closeDrawer();if(runLine){runLine.remove();runLine=null;$('#tRun').classList.remove('on')}render();toast('Demo reset')};
+initMap();render();getRain();
 </script>
 </body>
 </html>
