@@ -7,7 +7,7 @@ GPT Cameras page screenshots (13 Nov 2026).
 """
 import os, html, shutil, re
 HERE = os.path.dirname(os.path.abspath(__file__))
-OUT = os.path.join(HERE, 'docs')
+OUT = os.path.join(HERE, 'docs', 'brief')
 os.makedirs(os.path.join(OUT, 'types'), exist_ok=True)
 os.makedirs(os.path.join(OUT, 'assets'), exist_ok=True)
 
