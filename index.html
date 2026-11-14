@@ -4,16 +4,15 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Net Watch</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.heat/0.2.0/leaflet-heat.js"></script>
 <style>
-:root{--bg:#eef1f0;--card:#fff;--fg:#13222c;--muted:#61707a;--line:#d6dde0;--accent:#0f6b67;--accent-fg:#fff;--ink:#0f2f52;
---repair:#c03a6b;--now:#d2392f;--soon:#e58a10;--view:#5b6f7c;--ok:#2f8a58;--rain:#2a7fd4;--chip:#e6ecec;
---sans:"IBM Plex Sans",system-ui,sans-serif;--mono:"IBM Plex Mono",ui-monospace,monospace}
-@media (prefers-color-scheme:dark){:root{--bg:#0b1820;--card:#13242f;--fg:#edf1f1;--muted:#9fb1ba;--line:#24394a;--accent:#4fc2b8;--accent-fg:#0b1820;--ink:#d8e6f2;
---repair:#ec6f9c;--now:#f0675e;--soon:#f5ab3e;--view:#93a7b3;--ok:#6fc48f;--rain:#62a8ef;--chip:#1c3342;color-scheme:dark}}
+:root{--bg:#F4F6F8;--card:#fff;--fg:#1F3A5F;--muted:#5A6B7D;--line:#DDE3EA;--accent:#1F3A5F;--accent-fg:#fff;--ink:#1F3A5F;--wo:#4DB8B8;--build:#F5A04A;
+--repair:#B3266B;--now:#C2352B;--soon:#A8580A;--view:#5A6B7D;--ok:#2E7D50;--rain:#2F7FD8;--chip:#E8EDF2;
+--sans:Arial,"Helvetica Neue",Helvetica,sans-serif;--mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+@media (prefers-color-scheme:dark){:root{--bg:#14284A;--card:#1A3358;--fg:#F4F6F8;--muted:#A9B6C4;--line:#2C4770;--accent:#4DB8B8;--accent-fg:#14284A;--ink:#A9C3E2;
+--repair:#F07AAA;--now:#F2766C;--soon:#F5A04A;--view:#A9B6C4;--ok:#6CC492;--rain:#6FA8EC;--chip:#22406A;color-scheme:dark}}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--fg);font:14.5px/1.45 var(--sans)}
 .app{max-width:1240px;margin:0 auto;padding:0 16px 40px}
@@ -151,6 +150,7 @@ table.t td.n{font-family:var(--mono);text-align:right;white-space:nowrap}
 .kpi span{font-size:.84rem;color:var(--muted)}
 .tblwrap{overflow-x:auto}
 .jobsheet{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;background:var(--chip);padding:8px 10px;font-size:.84rem}
+.wxp[hidden]{display:none}
 .wxp{display:grid;gap:8px;padding:10px 14px;border-top:1px solid var(--line)}
 .wxrow{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:end}
 .wxrow input[type=range]{width:100%;accent-color:var(--accent)}
@@ -315,7 +315,7 @@ function why(n){
  if(b==='defer')return`Deferred to ${nice(n.defer)}`;
  return n.fill==null?'No reading':`${n.fill}% full`;
 }
-const colOf=b=>({suspended:'--muted',report:'--rain',repair:'--repair',now:'--now',soon:'--soon',view:'--view',wo:'--accent',defer:'--muted',ok:'--ok'}[b]);
+const colOf=b=>({suspended:'--muted',report:'--rain',repair:'--repair',now:'--now',soon:'--soon',view:'--view',wo:'--wo',defer:'--muted',ok:'--ok'}[b]);
 
 /* ---------- map ---------- */
 let map,markers={},radar=null,runLine=null;
@@ -442,8 +442,8 @@ function projChart(){
  const L=S.nets.filter(n=>!openWO(n)&&!n.suspended).map(n=>({n,sc:score(n)})).sort((a,b)=>b.sc.total-a.sc.total).slice(0,9);
  const seg=(v,w,c)=>`<i style="position:relative;display:inline-block;height:100%;width:${v*w}%;background:var(${c})"></i>`;
  $('#proj').innerHTML=L.map(({n,sc})=>{const bd=band(sc.total);
-  return`<div class="row" data-open="${n.id}"><span>${esc(n.name)}</span><div class="bar" style="display:flex">${seg(sc.c,W8.c,'--now')}${seg(sc.w,W8.w,'--rain')}${seg(sc.k,W8.k,'--ink')}${seg(sc.a,W8.a,'--soon')}</div><span class="when" style="color:var(${bd.v});font-weight:700">${sc.total} · ${bd.l}</span></div>`}).join('')+
- `<div class="legend" style="border:0;padding:8px 0 0"><span><i style="background:var(--now)"></i>Condition</span><span><i style="background:var(--rain)"></i>Rain forecast</span><span><i style="background:var(--ink)"></i>Criticality</span><span><i style="background:var(--soon)"></i>Build-up</span></div>`;
+  return`<div class="row" data-open="${n.id}"><span>${esc(n.name)}</span><div class="bar" style="display:flex">${seg(sc.c,W8.c,'--now')}${seg(sc.w,W8.w,'--rain')}${seg(sc.k,W8.k,'--ink')}${seg(sc.a,W8.a,'--build')}</div><span class="when" style="color:var(${bd.v});font-weight:700">${sc.total} · ${bd.l}</span></div>`}).join('')+
+ `<div class="legend" style="border:0;padding:8px 0 0"><span><i style="background:var(--now)"></i>Condition</span><span><i style="background:var(--rain)"></i>Rain forecast</span><span><i style="background:var(--ink)"></i>Criticality</span><span><i style="background:var(--build)"></i>Build-up</span></div>`;
 }
 function wos(){
  const L=S.wos.filter(w=>w.status!=='Closed').sort((a,b)=>a.status==='Done'?-1:b.status==='Done'?1:0);
@@ -497,7 +497,7 @@ function scoreBlock(n){const sc=score(n),bd=band(sc.total);
  ${row('Current condition',sc.c,W8.c,'--now',n.damaged?'Net torn or off the pipe':n.blind>=2?'No clear image: unknown state is a risk':`${n.fill}% full`)}
  ${row('Forecast rain',sc.w,W8.w,'--rain',`${rain3()} mm in 3 days vs ~${sc.cap} mm it can still hold`)}
  ${row('Asset criticality',sc.k,W8.k,'--ink',`Tier ${n.crit}: ${esc(n.critWhy)}`)}
- ${row('Build-up context',sc.a,W8.a,'--soon',openReport(n)?'Resident report open':`${sc.days} days since clean · ${n.load==='med'?'medium':n.load} litter catchment`)}</div>`}
+ ${row('Build-up context',sc.a,W8.a,'--build',openReport(n)?'Resident report open':`${sc.days} days since clean · ${n.load==='med'?'medium':n.load} litter catchment`)}</div>`}
 function closeDrawer(){drawerId=null;const el=$('.drawer');if(el)el.remove()}
 
 /* ---------- arriving from an email ---------- */
