@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Inbox · Net Watch alerts</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{--bg:#f3f4f6;--pane:#fff;--fg:#1b2730;--muted:#66737c;--line:#dfe3e6;--sel:#e3f0ef;--accent:#0f6b67;--sans:"IBM Plex Sans",system-ui,sans-serif;--mono:"IBM Plex Mono",ui-monospace,monospace}
+@media (prefers-color-scheme:dark){:root{--bg:#0e1a22;--pane:#15252f;--fg:#edf1f1;--muted:#9fb1ba;--line:#26394a;--sel:#1d3a40;--accent:#4fc2b8;color-scheme:dark}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:14px/1.4 var(--sans);height:100vh;display:grid;grid-template-rows:auto 1fr}
+.top{display:flex;align-items:center;gap:14px;padding:10px 16px;background:#0f2f52;color:#fff}
+.top b{font-size:15px}.top span{font-size:12px;opacity:.75;font-family:var(--mono)}
+.top a{margin-left:auto;color:#9fd8d0;font-size:13px}
+.mail{display:grid;grid-template-columns:330px 1fr;min-height:0}
+.list{background:var(--pane);border-right:1px solid var(--line);overflow:auto}
+.list h2{margin:0;padding:12px 16px;font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-family:var(--mono);font-weight:500;border-bottom:1px solid var(--line)}
+.msg{display:grid;gap:2px;padding:12px 16px;border-bottom:1px solid var(--line);border-left:4px solid transparent;cursor:pointer;background:none;width:100%;text-align:left;font:inherit;color:inherit;border-top:0;border-right:0}
+.msg.on{background:var(--sel);border-left-color:var(--accent)}
+.msg .from{display:flex;justify-content:space-between;font-weight:600}
+.msg .from small{font-weight:400;color:var(--muted);font-family:var(--mono);font-size:.74rem}
+.msg .sub{font-weight:600;color:var(--fg)}
+.msg .pre{color:var(--muted);font-size:.86rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.msg .tag{justify-self:start;font-size:.7rem;font-weight:600;color:#fff;padding:1px 6px;margin-top:3px}
+.read{display:grid;grid-template-rows:auto 1fr;min-height:0}
+.head{padding:12px 18px;background:var(--pane);border-bottom:1px solid var(--line)}
+.head b{font-size:1.1rem;display:block}
+.head span{color:var(--muted);font-size:.84rem}
+iframe{border:0;width:100%;height:100%;background:#eef1f0}
+@media (max-width:760px){body{height:auto}.mail{grid-template-columns:1fr}.list{border-right:0}iframe{height:1100px}}
+</style>
+</head>
+<body>
+<div class="top"><b>Outlook</b><span>stormwater.officer@cityofparramatta</span><a href="./">Open Net Watch</a></div>
+<div class="mail">
+ <div class="list">
+  <h2>Inbox</h2>
+  <button class="msg on" data-m="urgent"><span class="from">Net Watch<small>07:30</small></span><span class="sub">Repair: Lackey St West net is torn</span><span class="pre">Repair before Tuesday's 26 mm of rain.</span><span class="tag" style="background:#c03a6b">Urgent</span></button>
+  <button class="msg" data-m="digest"><span class="from">Net Watch<small>Mon 07:00</small></span><span class="sub">5 nets need action before Tuesday's rain</span><span class="pre">Bettington Rd, James Ruse Dr 1, Norwood Ave, Lackey St East, Ridge St</span><span class="tag" style="background:#e58a10">Weekly</span></button>
+ </div>
+ <div class="read">
+  <div class="head"><b id="hsub">Repair: Lackey St West net is torn</b><span>From Net Watch &lt;alerts@netwatch&gt; · To Stormwater officer on duty</span></div>
+  <iframe id="frame" src="email/urgent.html" title="Email body"></iframe>
+ </div>
+</div>
+<script>
+const SUB={urgent:'Repair: Lackey St West net is torn',digest:"5 nets need action before Tuesday's rain"};
+document.querySelectorAll('.msg').forEach(b=>b.onclick=()=>{
+ document.querySelectorAll('.msg').forEach(x=>x.classList.toggle('on',x===b));
+ document.getElementById('frame').src='email/'+b.dataset.m+'.html';
+ document.getElementById('hsub').textContent=SUB[b.dataset.m];
+});
+</script>
+</body>
+</html>
