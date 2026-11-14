@@ -7,6 +7,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.heat/0.2.0/leaflet-heat.js"></script>
 <style>
 :root{--bg:#eef1f0;--card:#fff;--fg:#13222c;--muted:#61707a;--line:#d6dde0;--accent:#0f6b67;--accent-fg:#fff;--ink:#0f2f52;
 --repair:#c03a6b;--now:#d2392f;--soon:#e58a10;--view:#5b6f7c;--ok:#2f8a58;--rain:#2a7fd4;--chip:#e6ecec;
@@ -150,6 +151,13 @@ table.t td.n{font-family:var(--mono);text-align:right;white-space:nowrap}
 .kpi span{font-size:.84rem;color:var(--muted)}
 .tblwrap{overflow-x:auto}
 .jobsheet{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;background:var(--chip);padding:8px 10px;font-size:.84rem}
+.wxp{display:grid;gap:8px;padding:10px 14px;border-top:1px solid var(--line)}
+.wxrow{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:end}
+.wxrow input[type=range]{width:100%;accent-color:var(--accent)}
+.wxsum{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:.86rem}
+.wxleg{display:flex;align-items:center;gap:8px;font-size:.76rem;color:var(--muted)}
+.wxleg .gk{display:inline-block;width:9px;height:9px;border:2px solid;border-radius:50%;margin-left:10px}
+.wxleg i{flex:1;max-width:260px;height:10px;background:linear-gradient(90deg,#CDEDED,#4DB8B8,#F5A04A,#C2352B,#8E1F56)}
 </style>
 </head>
 <body>
@@ -167,8 +175,16 @@ table.t td.n{font-family:var(--mono);text-align:right;white-space:nowrap}
 
 <section class="grid">
  <div class="card">
-  <div class="hd"><h2>Map</h2><div class="tog"><button id="tRadar">Rain radar</button><button id="tRun">Contractor run</button></div></div>
+  <div class="hd"><h2>Map</h2><div class="tog"><button id="tWx">Weather impact</button><button id="tRadar">Rain radar</button><button id="tRun">Contractor run</button></div></div>
   <div id="map"></div>
+  <div id="wxpanel" class="wxp" hidden>
+   <div class="wxrow"><label class="f">Weather<select id="wxScen"></select></label>
+   <label class="f" style="flex:1;min-width:200px">Time ahead · <b id="wxH" style="color:var(--fg)">+24 h</b><input type="range" id="wxRange" min="0" max="72" step="3" value="24" aria-label="Hours ahead"></label>
+   <button class="btn" id="wxPlay" type="button">Play</button></div>
+   <div class="wxsum" id="wxSum"></div>
+   <div class="wxleg"><span>Low</span><i></i><span>High impact</span><b class="gk" style="border-color:#14284A;background:#fff;width:12px;height:12px"></b><span>Water level gauge</span><b class="gk" style="border-color:#2567B5;background:#CFE0F5"></b><span>Rain gauge</span></div>
+   <div class="date" id="wxSrc" style="line-height:1.4"></div>
+  </div>
   <div class="legend" id="legend"></div>
  </div>
  <div style="display:grid;gap:12px;align-content:start">
@@ -189,6 +205,7 @@ table.t td.n{font-family:var(--mono);text-align:right;white-space:nowrap}
 <div class="toast" id="toast" hidden></div>
 
 <script src="data/model-results.js"></script>
+<script src="data/weather.js"></script>
 <script>
 /* ---------- dates ---------- */
 const TODAY=new Date();TODAY.setHours(0,0,0,0);
@@ -309,6 +326,7 @@ function initMap(){
  L.marker(DEPOT.ll,{icon:L.divIcon({className:'',html:'<div style="width:14px;height:14px;background:#0f2f52;border:2px solid #fff;transform:rotate(45deg)"></div>',iconSize:[14,14]})}).addTo(map).bindTooltip('Depot · '+DEPOT.name);
 }
 function drawPins(){
+ if(WX&&WX.on)setTimeout(drawWeather,0);
  if(!map)return;
  Object.values(markers).forEach(m=>m.remove());markers={};
  S.nets.forEach(n=>{const b=bucket(n),c=cssv(colOf(b));
@@ -344,6 +362,49 @@ function toggleRun(force){
  runLine=L.polyline([DEPOT.ll,...out.map(n=>n.ll),DEPOT.ll],{color:cssv('--accent'),weight:4,dashArray:'8 6'}).addTo(map);
  map.fitBounds(runLine.getBounds(),{padding:[30,30]});$('#tRun').classList.add('on');
 }
+
+/* ---------- weather impact heatmap ---------- */
+let heat=null,gaugeLayer=null,WX={on:false,scen:'forecast',h:24,timer:null};
+const SCEN={forecast:{l:'Forecast'},s25:{l:'Typical storm · 25 mm in 6 h',mm:25},s60:{l:'Heavy storm · 60 mm in 6 h',mm:60},s120:{l:'Severe storm · 120 mm in 6 h',mm:120}};
+function hourly(lat,lon){
+ if(WX.scen==='forecast'){
+  const F=window.WEATHER&&WEATHER.forecast;
+  if(F&&F.points&&F.points.length){let best=F.points[0],bd=1e9;F.points.forEach(p=>{const d=(p.lat-lat)**2+(p.lon-lon)**2;if(d<bd){bd=d;best=p}});return best.mm.slice(0,72)}
+  const out=[];for(let d=0;d<3;d++){const mm=(RAIN.days[d+1]||{mm:0}).mm;for(let h=0;h<24;h++)out.push(mm/24)}return out;
+ }
+ const tot=SCEN[WX.scen].mm,out=Array(72).fill(0),prof=[.08,.17,.3,.22,.15,.08];
+ const f=1+Math.max(-.15,Math.min(.15,(-33.80-lat)*6+(151.0-lon)*1.5)); // hills to the north and west catch a little more
+ prof.forEach((p,i)=>out[12+i]=tot*p*f);return out;
+}
+const cum=(arr,h)=>arr.slice(0,h).reduce((a,b)=>a+b,0);
+function netImpact(n,h){const r=cum(hourly(n.ll[0],n.ll[1]),h);if(n.damaged)return{v:1,r};if(n.fill==null)return{v:.6,r};const f=Math.min(100,n.fill+r/n.mm*100);return{v:Math.min(1,f/100),f:Math.round(f),r}}
+function gaugeImpact(g,h){const r=cum(hourly(g.lat,g.lon),h);
+ if(g.kind==='rain')return{v:Math.min(1,((g.rain_24h||0)+r)/80),r};
+ if(g.above_zero==null)return{v:Math.min(.6,r/120),r};
+ const k=/CBD|Riverside|Marsden/.test(g.name)?0.012:0.02,d=g.above_zero+r*k;return{v:Math.min(1,d/2.5),d:+d.toFixed(2),r}}
+const whenAt=h=>{const t=new Date();t.setMinutes(0,0,0);t.setHours(t.getHours()+h);return t.toLocaleString('en-AU',{weekday:'short',hour:'numeric'})};
+function drawWeather(){
+ if(!map||!window.L||!L.heatLayer)return;
+ if(heat){heat.remove();heat=null}if(gaugeLayer){gaugeLayer.remove();gaugeLayer=null}
+ if(!WX.on){$('#wxpanel').hidden=true;$('#tWx').classList.remove('on');return}
+ $('#wxpanel').hidden=false;$('#tWx').classList.add('on');
+ const G=(window.WEATHER&&WEATHER.gauges)||[],h=WX.h,pts=[];
+ S.nets.forEach(n=>{const x=netImpact(n,h);pts.push([n.ll[0],n.ll[1],x.v])});
+ G.forEach(g=>{const x=gaugeImpact(g,h);pts.push([g.lat,g.lon,g.kind==='rain'?x.v*.7:x.v])});
+ heat=L.heatLayer(pts,{radius:42,blur:32,maxZoom:14,max:1,minOpacity:.25,gradient:{.15:'#CDEDED',.4:'#4DB8B8',.6:'#F5A04A',.8:'#C2352B',1:'#8E1F56'}}).addTo(map);
+ gaugeLayer=L.layerGroup(G.map(g=>{const x=gaugeImpact(g,h),lv=g.kind==='level';
+  const m=L.circleMarker([g.lat,g.lon],{radius:lv?6:4,color:lv?'#14284A':'#2567B5',weight:2,fillColor:lv?'#FFFFFF':'#CFE0F5',fillOpacity:1});
+  m.bindPopup(`<b>${esc(g.name)}</b>${lv?`Water level ${g.level} m AHD${g.above_zero!=null?` · ${g.above_zero} m above gauge zero`:''}${g.change_24h!=null?` · ${g.change_24h>=0?'+':''}${g.change_24h} m in 24 h`:''}`:`Rain last 24 h: ${g.rain_24h} mm`}<br><span style="color:#5A6B7D">FloodSmart gauge, ${WEATHER.mode==='live'?'live':'snapshot'} ${tstamp(WEATHER.retrieved)}</span>${g.flag?`<br><span style="color:#C2352B">${esc(g.flag)}</span>`:''}${h?`<br><b>+${h} h:</b> ${Math.round(x.r)} mm more rain${x.d!=null?` · about ${x.d} m above zero (estimate)`:''}`:''}`);return m}));
+ gaugeLayer.addTo(map);
+ const hot=S.nets.map(n=>({n,x:netImpact(n,h)})).filter(o=>o.n.damaged||(o.x.f!=null&&o.x.f>=80));
+ const high=G.filter(g=>g.kind==='level').map(g=>({g,x:gaugeImpact(g,h)})).filter(o=>o.x.d!=null&&o.x.d>=1.5);
+ const avg=Math.round(S.nets.reduce((a,n)=>a+netImpact(n,h).r,0)/S.nets.length);
+ $('#wxH').textContent=h?`+${h} h · ${whenAt(h)}`:'Now';
+ $('#wxSum').innerHTML=`<span><b>${avg} mm</b> more rain by then</span><span><b>${hot.length}</b> nets full or damaged${hot.length?`: ${esc(hot.slice(0,5).map(o=>o.n.name).join(', '))}${hot.length>5?'…':''}`:''}</span><span><b>${high.length}</b> creek gauges 1.5 m+ above zero${high.length?`: ${esc(high.map(o=>o.g.name.split(' (')[0]).join(', '))}`:''}</span>`;
+ $('#wxSrc').textContent=`Gauges: City of Parramatta FloodSmart (${G.filter(g=>g.kind==='level').length} water level, ${G.filter(g=>g.kind==='rain').length} rain), ${WEATHER.mode} ${tstamp(WEATHER.retrieved)}. Rain: ${WX.scen==='forecast'?(WEATHER.forecast?'Open-Meteo hourly forecast':'demo forecast'):'scenario'}. Future impact is an illustrative estimate, not Council’s FLASH flood forecast.`;
+}
+function wxPlay(){if(WX.timer){clearInterval(WX.timer);WX.timer=null;$('#wxPlay').textContent='Play';return}
+ $('#wxPlay').textContent='Pause';WX.h=0;WX.timer=setInterval(()=>{WX.h+=3;if(WX.h>72){WX.h=72;wxPlay();}$('#wxRange').value=WX.h;drawWeather()},500)}
 
 /* ---------- render ---------- */
 let lane=null,drawerId=null;
@@ -560,7 +621,7 @@ function vData(){
   ['GPT asset','asset ID, type (GPT, uGPT, pGPT, Boom, Trash Rack), location, criticality tier','OneCouncil asset register; ESRI GIS; 2022 GPT Audit','14 camera sites, approximate locations, tiers assumed'],
   ['Camera frame','camera ID, asset ID, time, image, quality','SCADA (about 15 cameras, 1 photo a day)','8 Council frames, 14 thumbnails, 10 simulated'],
   ['Net reading','state, fill %, confidence, model version, corrected by','New: model output plus officer correction','Demo values; corrections logged'],
-  ['Rain','catchment, forecast mm by day, observed mm','BoM forecast; FloodSmart gauges in SCADA','Open-Meteo forecast or demo values'],
+  ['Rain and water level','gauge, time, rain mm, level m AHD, gauge zero','FloodSmart: about 20 water level and 21 rain gauges on the Lizard platform; BoM forecasts feed Council’s FLASH flood model','Real gauge readings (public Lizard API) refreshed every 30 minutes; Open-Meteo hourly forecast'],
   ['Priority score','asset, score, four part scores, time','New: calculated, not stored long term','Calculated in the browser'],
   ['Work order','number, asset, task, priority, due, status, job sheet','OneCouncil Works and Assets','Raised and closed in the demo'],
   ['Resident report','CRM number, asset, type, channel, status','Infor CRM','Logged by customer service, no names'],
@@ -573,7 +634,8 @@ function vData(){
   ['Net locations',PC,'SCADA site names geocoded by hand','14 Nov 2026','Street-level placement','Approximate'],
   ['Fill levels, history, kg',DM,'Seeded in the app','14 Nov 2026','Plausible ranges from the SME session','Not observed'],
   ['Criticality tiers, litter load',PC,'Team 101 from the 2022 audit and land use','14 Nov 2026','Downstream sensitivity and audit status','To be set with Council'],
-  ['Rain forecast',L,'Open-Meteo API, CC BY 4.0','Live, daily','Parramatta point forecast','Falls back to demo values offline'],
+  ['FloodSmart gauges',C,'City of Parramatta via the public Lizard API (parramatta.lizard.net)','Every 30 min; snapshot 14 Nov 2026','Gauge zero taken from the gauge name','Some gauges not Council-owned; Briens Road zero looks wrong'],
+  ['Rain forecast',L,'Open-Meteo API, CC BY 4.0','Hourly, 72 h','Nearest of 8 points across the LGA','Demo values if unavailable'],
   ['Rain radar',P,'RainViewer, free tier with attribution','Live','Latest frame only','Zoom 7 and below'],
   ['Base map',L,'OpenStreetMap, ODbL','Live','—','—'],
   ['Council records',P,'Asset Management Plan 2027–36; Annual Report 2024/25; GIPA register; GPT Audit minutes','2024–26','Context only','Not operational data'],
@@ -594,6 +656,8 @@ function vData(){
   ['13 Nov','Thumbnails in one screenshot','Cropped per site; site names read from tiles'],
   ['14 Nov','Number plates visible on Sturt St frame','Road area blurred before use'],
   ['14 Nov','Dates shifted by time zone','Fixed to local dates'],
+  ['14 Nov','Briens Road gauge reads 19.3 m AHD but its name gives a zero of 9.345 m','Excluded from depth estimates; flagged on the map for Council to confirm'],
+  ['14 Nov','Browser cannot call the gauge or forecast services directly','A scheduled job fetches both every 30 minutes and publishes a file the app reads'],
   ['14 Nov','Forecast service unreachable on some networks','Times out after 6 s; demo values shown and labelled']])}
  <div class="rolehd"><h2>Bias and coverage check</h2><span>Who or what the data could miss</span></div>
  ${tbl(['Risk','What we found','What we do about it'],[
@@ -764,6 +828,11 @@ document.addEventListener('submit',e=>{
   save();show();toast(`${no} logged and sent to the stormwater officer`)}
 });
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeDrawer()});
+$('#wxScen').innerHTML=Object.entries(SCEN).map(([k,v])=>`<option value="${k}">${v.l}</option>`).join('');
+$('#tWx').onclick=()=>{WX.on=!WX.on;drawWeather()};
+$('#wxScen').onchange=e=>{WX.scen=e.target.value;drawWeather()};
+$('#wxRange').oninput=e=>{WX.h=+e.target.value;drawWeather()};
+$('#wxPlay').onclick=wxPlay;
 $('#tRadar').onclick=toggleRadar;$('#tRun').onclick=()=>toggleRun();
 $('#copyRun').onclick=()=>copy(runSheet(),'Run sheet copied');
 $('#reset').onclick=()=>{S=fresh();log('Demo reset');save();lane=null;closeDrawer();if(runLine){runLine.remove();runLine=null;$('#tRun').classList.remove('on')}show();toast('Demo reset')};
