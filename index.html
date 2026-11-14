@@ -66,6 +66,11 @@ svg text{font-family:var(--mono);fill:var(--muted)}
 .lane{margin:12px 0}
 .lane .hd{background:var(--card);border:1px solid var(--line);border-left:6px solid var(--c)}
 .lane .hd b{font-size:1.05rem}
+.fromemail{display:grid;gap:8px;background:var(--chip);border-left:5px solid var(--accent);padding:10px 12px;font-size:.9rem}
+.fromemail .src{font-family:var(--mono);font-size:.72rem;color:var(--muted);letter-spacing:.04em}
+.fromemail b{font-size:1rem}
+.banner{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;justify-content:space-between;background:var(--accent);color:var(--accent-fg);padding:10px 14px;margin-bottom:12px;font-size:.92rem}
+.banner button{background:none;border:1px solid currentColor;color:inherit;font:600 .8rem var(--sans);padding:4px 10px;cursor:pointer}
 .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:10px;margin-top:10px}
 .nc{background:var(--card);border:1px solid var(--line);display:grid;grid-template-rows:auto 1fr}
 .nc .ph{position:relative;aspect-ratio:4/3;background:#000;cursor:pointer;max-width:100%}
@@ -121,6 +126,7 @@ footer button,footer a{background:none;border:0;padding:0;color:var(--muted);fon
  <div class="wx" id="wx"></div>
 </header>
 
+<div id="banner"></div>
 <section class="actions" id="actions"></section>
 <section class="lane" id="lane"></section>
 
@@ -141,7 +147,7 @@ footer button,footer a{background:none;border:0;padding:0;color:var(--muted);fon
  <div class="card"><div class="hd"><h2>Work order history</h2><span class="date" id="kgtot"></span></div><div class="pad" id="histchart"></div><div class="tl" id="hist"></div></div>
 </section>
 
-<footer><span>Demo data · approximate locations</span><span id="src2"></span><button id="reset">Reset demo</button><a href="brief/">Brief</a></footer>
+<footer><span>Demo data · approximate locations</span><span id="src2"></span><button id="reset">Reset demo</button><a href="email.html">Email alerts</a><a href="brief/">Brief</a></footer>
 </div>
 <div class="toast" id="toast" hidden></div>
 
@@ -293,7 +299,7 @@ function render(){
  if(lane&&(groups[lane]||[]).length){const v=B[lane],g=groups[lane];
   $('#lane').innerHTML=`<div class="hd" style="--c:var(${v.c})"><b>${v.lbl}</b><div class="btns"><button class="btn pri" data-raiseall="${lane}">Raise ${g.length} work order${g.length>1?'s':''}</button><button class="btn q" data-lane="${lane}">Close</button></div></div><div class="cards">${g.map(n=>ncard(n,v)).join('')}</div>`;
  }else{lane=null;$('#lane').innerHTML=''}
- drawPins();rainChart();projChart();wos();history();
+ drawPins();rainChart();projChart();wos();woHistory();
  if(drawerId)drawer(drawerId);
 }
 function img(n){return n.big||`img/${n.id}.jpg`}
@@ -317,7 +323,7 @@ function wos(){
   return`<div class="wo" style="--c:var(${w.c})"><span class="dot"></span><div><b>${esc(w.site)}</b> · ${esc(w.task)}<div class="no">${w.no} · ${w.pri} · due ${short(w.due)}</div></div><div class="btns"><button class="btn pri" data-done="${w.no}">Complete</button></div><div id="f-${w.no}" style="grid-column:1/-1"></div></div>`}).join(''):'<div class="empty">No open work orders. Raise one from an action above.</div>';
  $('#copyRun').disabled=!L.length;
 }
-function history(){
+function woHistory(){
  const ev=[];S.nets.forEach(n=>n.hist.forEach(h=>ev.push({...h,site:n.name,id:n.id})));ev.sort((a,b)=>a.date<b.date?1:-1);
  // kg per month, last 12 months
  const months=[...Array(12)].map((_,i)=>{const d=new Date(TODAY.getFullYear(),TODAY.getMonth()-11+i,1);return{k:iso(d).slice(0,7),l:d.toLocaleDateString('en-AU',{month:'short'}).slice(0,1),kg:0,n:0}});
@@ -336,9 +342,9 @@ function drawer(id){
  const pc=p?`<svg class="chart" viewBox="0 0 360 90" role="img" aria-label="Projected fill"><line x1="0" x2="360" y1="${80-80*.7}" y2="${80-80*.7}" stroke="var(--fg)" stroke-dasharray="4 4" opacity=".4"/><polyline fill="none" stroke="${c}" stroke-width="3" points="${[n.fill,...p].map((v,i)=>`${i*360/7},${80-v*.7}`).join(' ')}"/>${RAIN.days.map((x,i)=>`<text x="${(i+1)*360/7}" y="88" text-anchor="end" font-size="9">${short(x.d).split(' ')[0]}</text>`).join('')}</svg>`:'';
  let el=$('.drawer');if(!el){el=document.createElement('div');el.className='drawer';document.body.appendChild(el)}
  el.innerHTML=`<div class="in" role="dialog" aria-label="${esc(n.name)}"><div class="fig"><button class="x" data-close aria-label="Close">×</button><div class="fw"><img src="${img(n)}" alt="Latest camera image, ${esc(n.name)}">${mark}</div></div>
- <div class="pad" style="display:grid;gap:12px">
+ <div class="pad" style="display:grid;gap:12px">${EMAIL&&EMAIL.net===n.id&&!EMAIL.done?emailBlock(n):""}
   <div class="gauge">${gauge(n.fill,c)}<div><div style="font-size:1.2rem;font-weight:700">${esc(n.name)}</div><div style="color:var(--muted);font-size:.86rem">${esc(n.sub)}</div><div style="color:${c};font-weight:600;margin-top:4px">${esc(why(n))}</div></div></div>
-  ${act?`<div class="btns"><button class="btn pri" data-raise="${n.id}">Raise work order</button><button class="btn" data-inspect="${n.id}">Inspect</button><button class="btn q" data-defer="${n.id}">Defer 7 days</button></div>`:''}
+  ${act&&!(EMAIL&&EMAIL.net===n.id&&!EMAIL.done)?`<div class="btns"><button class="btn pri" data-raise="${n.id}">Raise work order</button><button class="btn" data-inspect="${n.id}">Inspect</button><button class="btn q" data-defer="${n.id}">Defer 7 days</button></div>`:''}
   <div id="wo-out"></div>
   ${pc?`<div><div class="date" style="margin-bottom:4px">FILL FORECAST · 80% LINE</div>${pc}</div>`:''}
   <dl class="kv"><dt>Holds</dt><dd>${n.fill==null?'—':'~'+Math.round((100-n.fill)/100*n.mm)+' mm more rain'}</dd><dt>Fills in</dt><dd>~${n.mm} mm of rain from empty</dd><dt>Last cleaned</dt><dd>${nice(n.last)}</dd></dl>
@@ -346,6 +352,19 @@ function drawer(id){
  </div></div>`;
 }
 function closeDrawer(){drawerId=null;const el=$('.drawer');if(el)el.remove()}
+
+/* ---------- arriving from an email ---------- */
+let EMAIL=null;
+const ACTLBL={raise:'Raise work order',inspect:'Send inspector',defer:'Defer 7 days'};
+function emailBlock(n){const a=EMAIL.do||'raise',b=bucket(n),task=a==='inspect'?'Inspect net and camera':(B[b]||B.soon).task;
+ if(!['repair','now','soon','view'].includes(b)&&a!=='inspect')return`<div class="fromemail"><span class="src">OPENED FROM EMAIL ALERT</span><b>Already actioned</b><span>${esc(why(n))}</span></div>`;
+ return`<div class="fromemail"><span class="src">OPENED FROM EMAIL ALERT</span><b>${a==='defer'?'Defer this net for 7 days?':`Confirm: ${esc(task)}`}</b><span>${esc(why(n))}</span><div class="btns"><button class="btn pri" data-confirm="${a}">${a==='defer'?'Confirm defer':'Confirm and raise'}</button><button class="btn q" data-close>Not now</button></div></div>`}
+function fromEmail(){
+ const q=new URLSearchParams(location.search),net=q.get('net'),act=q.get('do'),ln=q.get('lane');
+ if(ln&&B[ln]){lane=ln;$('#banner').innerHTML=`<div class="banner"><span>Opened from email: ${esc(B[ln].lbl.toLowerCase())}. Review the nets below, then raise the work orders.</span><button data-dismiss>Dismiss</button></div>`;render();$('#lane').scrollIntoView({block:'start'})}
+ if(net&&S.nets.find(n=>n.id===net)){EMAIL={net,do:act&&ACTLBL[act]?act:'raise'};drawer(net)}
+ if(net||ln)history.replaceState(null,'',location.pathname);
+}
 
 /* ---------- actions ---------- */
 function raise(id,kind){
@@ -365,7 +384,7 @@ function copy(t,msg){(navigator.clipboard?navigator.clipboard.writeText(t):Promi
 function toast(t){const e=$('#toast');e.textContent=t;e.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>e.hidden=true,2400)}
 
 document.addEventListener('click',e=>{
- const t=e.target.closest('[data-lane],[data-open],[data-raise],[data-raiseall],[data-inspect],[data-defer],[data-done],[data-close],[data-scroll]');
+ const t=e.target.closest('[data-lane],[data-open],[data-raise],[data-raiseall],[data-inspect],[data-defer],[data-done],[data-close],[data-scroll],[data-confirm],[data-dismiss]');
  if(!t){if(e.target.classList.contains('drawer'))closeDrawer();return}
  const d=t.dataset;
  if(d.lane){lane=lane===d.lane?null:d.lane;render();if(lane)$('#lane').scrollIntoView({behavior:'smooth',block:'start'})}
@@ -376,6 +395,10 @@ document.addEventListener('click',e=>{
  else if(d.raiseall){const g=S.nets.filter(n=>bucket(n)===d.raiseall);g.forEach(n=>raise(n.id));lane=null;render();toast(`${g.length} work orders raised`);if(runLine)toggleRun(true)}
  else if(d.defer){S.nets.find(x=>x.id===d.defer).defer=iso(D(7));save();closeDrawer();render();toast('Deferred 7 days')}
  else if(d.done)complete(d.done);
+ else if(d.confirm){const id=EMAIL.net;EMAIL.done=true;
+  if(d.confirm==='defer'){S.nets.find(x=>x.id===id).defer=iso(D(7));save();closeDrawer();render();toast('Deferred 7 days')}
+  else{const w=raise(id,d.confirm==='inspect'?'inspect':'');render();if(w){toast(`${w.no} raised · ${w.site}`);$('#wo-out').innerHTML=`<pre>${esc(woText(w))}</pre>`}}}
+ else if('dismiss' in d){$('#banner').innerHTML=''}
 });
 document.addEventListener('submit',e=>{
  const f=e.target.closest('form[data-f]');if(!f)return;e.preventDefault();
@@ -391,7 +414,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeDrawer()});
 $('#tRadar').onclick=toggleRadar;$('#tRun').onclick=()=>toggleRun();
 $('#copyRun').onclick=()=>copy(runSheet(),'Run sheet copied');
 $('#reset').onclick=()=>{S=fresh();save();lane=null;closeDrawer();if(runLine){runLine.remove();runLine=null;$('#tRun').classList.remove('on')}render();toast('Demo reset')};
-initMap();render();getRain();
+initMap();render();fromEmail();getRain();
 </script>
 </body>
 </html>
