@@ -235,7 +235,7 @@ let map,markers={},radar=null,runLine=null;
 function initMap(){
  if(!window.L){$('#map').innerHTML='<div class="empty">Map unavailable offline.</div>';return}
  map=L.map('map',{scrollWheelZoom:false}).setView([-33.795,151.02],12);
- L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{attribution:'© OpenStreetMap © CARTO',maxZoom:18}).addTo(map);
+ L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap contributors',maxZoom:18}).addTo(map);
  L.marker(DEPOT.ll,{icon:L.divIcon({className:'',html:'<div style="width:14px;height:14px;background:#0f2f52;border:2px solid #fff;transform:rotate(45deg)"></div>',iconSize:[14,14]})}).addTo(map).bindTooltip('Depot · '+DEPOT.name);
 }
 function drawPins(){
@@ -254,7 +254,7 @@ async function toggleRadar(){
  try{const ac=new AbortController();setTimeout(()=>ac.abort(),6000);
   const j=await (await fetch('https://api.rainviewer.com/public/weather-maps.json',{signal:ac.signal})).json();
   const f=j.radar.past[j.radar.past.length-1];
-  radar=L.tileLayer(`${j.host}${f.path}/256/{z}/{x}/{y}/2/1_1.png`,{opacity:.6,attribution:'Radar © RainViewer'}).addTo(map);
+  radar=L.tileLayer(`${j.host}${f.path}/256/{z}/{x}/{y}/2/1_1.png`,{opacity:.65,maxNativeZoom:7,maxZoom:18,attribution:'Radar © RainViewer'}).addTo(map);
   $('#tRadar').classList.add('on');toast('Radar '+new Date(f.time*1000).toLocaleTimeString('en-AU',{hour:'numeric',minute:'2-digit'}));
  }catch(e){toast('Radar unavailable right now')}
 }
