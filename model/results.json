@@ -1,0 +1,474 @@
+{
+ "model": "Baseline: colour, sharpness and texture features with logistic regression",
+ "scheme": "Leave one camera out over 8 Council frames; train on simulated and other cameras (augmented); test frames never augmented",
+ "abstain": 0.5,
+ "classes": [
+  "empty",
+  "part_full",
+  "full",
+  "damaged",
+  "cant_see"
+ ],
+ "accuracy": 0.12,
+ "n_test": 8,
+ "n_train_sources": 17,
+ "confusion": {
+  "empty": {
+   "empty": 0,
+   "part_full": 0,
+   "full": 0,
+   "damaged": 0,
+   "cant_see": 1
+  },
+  "part_full": {
+   "empty": 0,
+   "part_full": 1,
+   "full": 1,
+   "damaged": 0,
+   "cant_see": 1
+  },
+  "full": {
+   "empty": 0,
+   "part_full": 0,
+   "full": 0,
+   "damaged": 0,
+   "cant_see": 0
+  },
+  "damaged": {
+   "empty": 1,
+   "part_full": 1,
+   "full": 0,
+   "damaged": 0,
+   "cant_see": 0
+  },
+  "cant_see": {
+   "empty": 0,
+   "part_full": 1,
+   "full": 1,
+   "damaged": 0,
+   "cant_see": 0
+  }
+ },
+ "per_class": {
+  "empty": {
+   "support": 1,
+   "tp": 0,
+   "fp": 1,
+   "fn": 1
+  },
+  "part_full": {
+   "support": 3,
+   "tp": 1,
+   "fp": 2,
+   "fn": 2
+  },
+  "full": {
+   "support": 0,
+   "tp": 0,
+   "fp": 2,
+   "fn": 0
+  },
+  "damaged": {
+   "support": 2,
+   "tp": 0,
+   "fp": 0,
+   "fn": 2
+  },
+  "cant_see": {
+   "support": 2,
+   "tp": 0,
+   "fp": 2,
+   "fn": 2
+  }
+ },
+ "results": [
+  {
+   "id": "cam0014-2025-02-04",
+   "site": "Unknown site",
+   "camera": "0014",
+   "date": "2025-02-04",
+   "note": "Net hidden in vegetation; outlet barely visible",
+   "truth": "cant_see",
+   "pred": "full",
+   "conf": 0.84,
+   "probs": {
+    "empty": 0.0,
+    "part_full": 0.16,
+    "full": 0.84,
+    "damaged": 0.0,
+    "cant_see": 0.0
+   },
+   "routed": "auto-flag",
+   "correct": false,
+   "trained_on": 17,
+   "train_images": 142,
+   "train_classes": [
+    "cant_see",
+    "damaged",
+    "empty",
+    "full",
+    "part_full"
+   ]
+  },
+  {
+   "id": "lackey-st-east-2026-11-04",
+   "site": "Lackey St East",
+   "camera": "LACKEST 010",
+   "date": "2026-11-04",
+   "note": "Leaves across the lens hide the net",
+   "truth": "cant_see",
+   "pred": "part_full",
+   "conf": 0.67,
+   "probs": {
+    "empty": 0.01,
+    "part_full": 0.67,
+    "full": 0.25,
+    "damaged": 0.06,
+    "cant_see": 0.01
+   },
+   "routed": "auto-flag",
+   "correct": false,
+   "trained_on": 17,
+   "train_images": 142,
+   "train_classes": [
+    "cant_see",
+    "damaged",
+    "empty",
+    "full",
+    "part_full"
+   ]
+  },
+  {
+   "id": "lackey-st-west-2026-11-04",
+   "site": "Lackey St West",
+   "camera": "LACKEST 009",
+   "date": "2026-11-04",
+   "note": "Net intact, lower part holding leaves",
+   "truth": "part_full",
+   "pred": "cant_see",
+   "conf": 0.45,
+   "probs": {
+    "empty": 0.29,
+    "part_full": 0.05,
+    "full": 0.02,
+    "damaged": 0.2,
+    "cant_see": 0.45
+   },
+   "routed": "review",
+   "correct": false,
+   "trained_on": 16,
+   "train_images": 136,
+   "train_classes": [
+    "cant_see",
+    "damaged",
+    "empty",
+    "full",
+    "part_full"
+   ]
+  },
+  {
+   "id": "lake-parra-res-2026-11-04",
+   "site": "Lake Parra Res",
+   "camera": "LAKEPAR 013",
+   "date": "2026-11-04",
+   "note": "Basket trap with a leaf layer",
+   "truth": "part_full",
+   "pred": "full",
+   "conf": 0.94,
+   "probs": {
+    "empty": 0.0,
+    "part_full": 0.01,
+    "full": 0.94,
+    "damaged": 0.0,
+    "cant_see": 0.06
+   },
+   "routed": "auto-flag",
+   "correct": false,
+   "trained_on": 17,
+   "train_images": 144,
+   "train_classes": [
+    "cant_see",
+    "damaged",
+    "empty",
+    "full",
+    "part_full"
+   ]
+  },
+  {
+   "id": "cam018-2024-06-12",
+   "site": "Unknown site",
+   "camera": "018",
+   "date": "2024-06-12",
+   "note": "Net off the pipe on the rocks; lens fogged",
+   "truth": "damaged",
+   "pred": "part_full",
+   "conf": 0.98,
+   "probs": {
+    "empty": 0.01,
+    "part_full": 0.98,
+    "full": 0.0,
+    "damaged": 0.01,
+    "cant_see": 0.0
+   },
+   "routed": "auto-flag",
+   "correct": false,
+   "trained_on": 17,
+   "train_images": 144,
+   "train_classes": [
+    "cant_see",
+    "damaged",
+    "empty",
+    "full",
+    "part_full"
+   ]
+  },
+  {
+   "id": "sturt-st-2026-11-04",
+   "site": "Sturt St",
+   "camera": "STURST 022",
+   "date": "2026-11-04",
+   "note": "Net intact and slack",
+   "truth": "empty",
+   "pred": "cant_see",
+   "conf": 0.8,
+   "probs": {
+    "empty": 0.12,
+    "part_full": 0.01,
+    "full": 0.07,
+    "damaged": 0.01,
+    "cant_see": 0.8
+   },
+   "routed": "auto-flag",
+   "correct": false,
+   "trained_on": 17,
+   "train_images": 144,
+   "train_classes": [
+    "cant_see",
+    "damaged",
+    "empty",
+    "full",
+    "part_full"
+   ]
+  },
+  {
+   "id": "willmott-ave-2026-11-04",
+   "site": "Willmott Ave",
+   "camera": "WILLAV 050",
+   "date": "2026-11-04",
+   "note": "Trash rack with a debris band along the bars",
+   "truth": "part_full",
+   "pred": "part_full",
+   "conf": 0.39,
+   "probs": {
+    "empty": 0.03,
+    "part_full": 0.39,
+    "full": 0.02,
+    "damaged": 0.26,
+    "cant_see": 0.31
+   },
+   "routed": "review",
+   "correct": true,
+   "trained_on": 12,
+   "train_images": 102,
+   "train_classes": [
+    "cant_see",
+    "damaged",
+    "empty",
+    "full",
+    "part_full"
+   ]
+  },
+  {
+   "id": "lackey-st-west-2026-11-13",
+   "site": "Lackey St West",
+   "camera": "LACKEST 009",
+   "date": "2026-11-13",
+   "note": "Net torn and hanging off the pipe",
+   "truth": "damaged",
+   "pred": "empty",
+   "conf": 0.59,
+   "probs": {
+    "empty": 0.59,
+    "part_full": 0.06,
+    "full": 0.04,
+    "damaged": 0.22,
+    "cant_see": 0.08
+   },
+   "routed": "auto-flag",
+   "correct": false,
+   "trained_on": 16,
+   "train_images": 136,
+   "train_classes": [
+    "cant_see",
+    "damaged",
+    "empty",
+    "full",
+    "part_full"
+   ]
+  }
+ ],
+ "frames": [
+  {
+   "id": "cam0014-2025-02-04",
+   "site": "Unknown site",
+   "camera": "0014",
+   "date": "2025-02-04",
+   "label": "cant_see",
+   "note": "Net hidden in vegetation; outlet barely visible",
+   "kind": "council"
+  },
+  {
+   "id": "lackey-st-east-2026-11-04",
+   "site": "Lackey St East",
+   "camera": "LACKEST 010",
+   "date": "2026-11-04",
+   "label": "cant_see",
+   "note": "Leaves across the lens hide the net",
+   "kind": "council"
+  },
+  {
+   "id": "lackey-st-west-2026-11-04",
+   "site": "Lackey St West",
+   "camera": "LACKEST 009",
+   "date": "2026-11-04",
+   "label": "part_full",
+   "note": "Net intact, lower part holding leaves",
+   "kind": "council"
+  },
+  {
+   "id": "lake-parra-res-2026-11-04",
+   "site": "Lake Parra Res",
+   "camera": "LAKEPAR 013",
+   "date": "2026-11-04",
+   "label": "part_full",
+   "note": "Basket trap with a leaf layer",
+   "kind": "council"
+  },
+  {
+   "id": "cam018-2024-06-12",
+   "site": "Unknown site",
+   "camera": "018",
+   "date": "2024-06-12",
+   "label": "damaged",
+   "note": "Net off the pipe on the rocks; lens fogged",
+   "kind": "council"
+  },
+  {
+   "id": "sturt-st-2026-11-04",
+   "site": "Sturt St",
+   "camera": "STURST 022",
+   "date": "2026-11-04",
+   "label": "empty",
+   "note": "Net intact and slack",
+   "kind": "council"
+  },
+  {
+   "id": "willmott-ave-2026-11-04",
+   "site": "Willmott Ave",
+   "camera": "WILLAV 050",
+   "date": "2026-11-04",
+   "label": "part_full",
+   "note": "Trash rack with a debris band along the bars",
+   "kind": "council"
+  },
+  {
+   "id": "lackey-st-west-2026-11-13",
+   "site": "Lackey St West",
+   "camera": "LACKEST 009",
+   "date": "2026-11-13",
+   "label": "damaged",
+   "note": "Net torn and hanging off the pipe",
+   "kind": "council"
+  },
+  {
+   "id": "sim-rack-empty",
+   "site": "Simulated",
+   "camera": "WILLAV 050",
+   "date": "2026-11-09",
+   "label": "empty",
+   "note": "Simulated empty state built from a Council rack frame",
+   "kind": "simulated"
+  },
+  {
+   "id": "sim-rack-partial",
+   "site": "Simulated",
+   "camera": "WILLAV 050",
+   "date": "2026-11-09",
+   "label": "part_full",
+   "note": "Simulated partial state built from a Council rack frame",
+   "kind": "simulated"
+  },
+  {
+   "id": "sim-rack-full",
+   "site": "Simulated",
+   "camera": "WILLAV 050",
+   "date": "2026-11-09",
+   "label": "full",
+   "note": "Simulated full state built from a Council rack frame",
+   "kind": "simulated"
+  },
+  {
+   "id": "sim-rack-blocked",
+   "site": "Simulated",
+   "camera": "WILLAV 050",
+   "date": "2026-11-09",
+   "label": "full",
+   "note": "Simulated blocked state built from a Council rack frame",
+   "kind": "simulated"
+  },
+  {
+   "id": "sim-rack-unusable",
+   "site": "Simulated",
+   "camera": "WILLAV 050",
+   "date": "2026-11-09",
+   "label": "cant_see",
+   "note": "Simulated unusable state built from a Council rack frame",
+   "kind": "simulated"
+  },
+  {
+   "id": "sim-net-empty",
+   "site": "Simulated",
+   "camera": "outlet net",
+   "date": "2026-11-09",
+   "label": "empty",
+   "note": "Simulated empty state built from a Council net frame",
+   "kind": "simulated"
+  },
+  {
+   "id": "sim-net-partial",
+   "site": "Simulated",
+   "camera": "outlet net",
+   "date": "2026-11-09",
+   "label": "part_full",
+   "note": "Simulated partial state built from a Council net frame",
+   "kind": "simulated"
+  },
+  {
+   "id": "sim-net-full",
+   "site": "Simulated",
+   "camera": "outlet net",
+   "date": "2026-11-09",
+   "label": "full",
+   "note": "Simulated full state built from a Council net frame",
+   "kind": "simulated"
+  },
+  {
+   "id": "sim-net-blocked",
+   "site": "Simulated",
+   "camera": "outlet net",
+   "date": "2026-11-09",
+   "label": "full",
+   "note": "Simulated blocked state built from a Council net frame",
+   "kind": "simulated"
+  },
+  {
+   "id": "sim-net-unusable",
+   "site": "Simulated",
+   "camera": "outlet net",
+   "date": "2026-11-09",
+   "label": "cant_see",
+   "note": "Simulated unusable state built from a Council net frame",
+   "kind": "simulated"
+  }
+ ]
+}

@@ -1,0 +1,164 @@
+[
+ {
+  "id": "cam0014-2025-02-04",
+  "site": "Unknown site",
+  "camera": "0014",
+  "date": "2025-02-04",
+  "label": "cant_see",
+  "note": "Net hidden in vegetation; outlet barely visible",
+  "kind": "council"
+ },
+ {
+  "id": "lackey-st-east-2026-11-04",
+  "site": "Lackey St East",
+  "camera": "LACKEST 010",
+  "date": "2026-11-04",
+  "label": "cant_see",
+  "note": "Leaves across the lens hide the net",
+  "kind": "council"
+ },
+ {
+  "id": "lackey-st-west-2026-11-04",
+  "site": "Lackey St West",
+  "camera": "LACKEST 009",
+  "date": "2026-11-04",
+  "label": "part_full",
+  "note": "Net intact, lower part holding leaves",
+  "kind": "council"
+ },
+ {
+  "id": "lake-parra-res-2026-11-04",
+  "site": "Lake Parra Res",
+  "camera": "LAKEPAR 013",
+  "date": "2026-11-04",
+  "label": "part_full",
+  "note": "Basket trap with a leaf layer",
+  "kind": "council"
+ },
+ {
+  "id": "cam018-2024-06-12",
+  "site": "Unknown site",
+  "camera": "018",
+  "date": "2024-06-12",
+  "label": "damaged",
+  "note": "Net off the pipe on the rocks; lens fogged",
+  "kind": "council"
+ },
+ {
+  "id": "sturt-st-2026-11-04",
+  "site": "Sturt St",
+  "camera": "STURST 022",
+  "date": "2026-11-04",
+  "label": "empty",
+  "note": "Net intact and slack",
+  "kind": "council"
+ },
+ {
+  "id": "willmott-ave-2026-11-04",
+  "site": "Willmott Ave",
+  "camera": "WILLAV 050",
+  "date": "2026-11-04",
+  "label": "part_full",
+  "note": "Trash rack with a debris band along the bars",
+  "kind": "council"
+ },
+ {
+  "id": "lackey-st-west-2026-11-13",
+  "site": "Lackey St West",
+  "camera": "LACKEST 009",
+  "date": "2026-11-13",
+  "label": "damaged",
+  "note": "Net torn and hanging off the pipe",
+  "kind": "council"
+ },
+ {
+  "id": "sim-rack-empty",
+  "site": "Simulated",
+  "camera": "WILLAV 050",
+  "date": "2026-11-09",
+  "label": "empty",
+  "note": "Simulated empty state built from a Council rack frame",
+  "kind": "simulated"
+ },
+ {
+  "id": "sim-rack-partial",
+  "site": "Simulated",
+  "camera": "WILLAV 050",
+  "date": "2026-11-09",
+  "label": "part_full",
+  "note": "Simulated partial state built from a Council rack frame",
+  "kind": "simulated"
+ },
+ {
+  "id": "sim-rack-full",
+  "site": "Simulated",
+  "camera": "WILLAV 050",
+  "date": "2026-11-09",
+  "label": "full",
+  "note": "Simulated full state built from a Council rack frame",
+  "kind": "simulated"
+ },
+ {
+  "id": "sim-rack-blocked",
+  "site": "Simulated",
+  "camera": "WILLAV 050",
+  "date": "2026-11-09",
+  "label": "full",
+  "note": "Simulated blocked state built from a Council rack frame",
+  "kind": "simulated"
+ },
+ {
+  "id": "sim-rack-unusable",
+  "site": "Simulated",
+  "camera": "WILLAV 050",
+  "date": "2026-11-09",
+  "label": "cant_see",
+  "note": "Simulated unusable state built from a Council rack frame",
+  "kind": "simulated"
+ },
+ {
+  "id": "sim-net-empty",
+  "site": "Simulated",
+  "camera": "outlet net",
+  "date": "2026-11-09",
+  "label": "empty",
+  "note": "Simulated empty state built from a Council net frame",
+  "kind": "simulated"
+ },
+ {
+  "id": "sim-net-partial",
+  "site": "Simulated",
+  "camera": "outlet net",
+  "date": "2026-11-09",
+  "label": "part_full",
+  "note": "Simulated partial state built from a Council net frame",
+  "kind": "simulated"
+ },
+ {
+  "id": "sim-net-full",
+  "site": "Simulated",
+  "camera": "outlet net",
+  "date": "2026-11-09",
+  "label": "full",
+  "note": "Simulated full state built from a Council net frame",
+  "kind": "simulated"
+ },
+ {
+  "id": "sim-net-blocked",
+  "site": "Simulated",
+  "camera": "outlet net",
+  "date": "2026-11-09",
+  "label": "full",
+  "note": "Simulated blocked state built from a Council net frame",
+  "kind": "simulated"
+ },
+ {
+  "id": "sim-net-unusable",
+  "site": "Simulated",
+  "camera": "outlet net",
+  "date": "2026-11-09",
+  "label": "cant_see",
+  "note": "Simulated unusable state built from a Council net frame",
+  "kind": "simulated"
+ }
+]

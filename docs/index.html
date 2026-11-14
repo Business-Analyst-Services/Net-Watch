@@ -188,6 +188,7 @@ table.t td.n{font-family:var(--mono);text-align:right;white-space:nowrap}
 </div>
 <div class="toast" id="toast" hidden></div>
 
+<script src="data/model-results.js"></script>
 <script>
 /* ---------- dates ---------- */
 const TODAY=new Date();TODAY.setHours(0,0,0,0);
@@ -204,9 +205,9 @@ const cssv=v=>getComputedStyle(document.documentElement).getPropertyValue(v).tri
 
 /* ---------- demo nets (real SCADA thumbnails; locations approximate until Council supplies lat/longs) ---------- */
 const SEED=[
- {id:'lackey-st-west',crit:1,critWhy:'Lake Parramatta catchment; 2022 audit: replace',load:'med',name:'Lackey St West',sub:'North Parramatta',ll:[-33.7962,151.0068],fill:45,mm:70,damaged:true,big:'img/lackey-st-west-full.jpg',mark:[57,52]},
- {id:'lackey-st-east',crit:1,critWhy:'Lake Parramatta catchment; 2022 audit: replace',load:'med',name:'Lackey St East',sub:'North Parramatta',ll:[-33.7953,151.0102],fill:58,mm:60},
- {id:'lake-parra-res',crit:1,critWhy:'Swimming lake downstream',load:'low',name:'Lake Parra Res',sub:'North Parramatta',ll:[-33.7905,151.0040],fill:20,mm:120},
+ {id:'lackey-st-west',crit:1,critWhy:'Lake Parramatta catchment; 2022 audit: replace',load:'med',name:'Lackey St West',sub:'North Parramatta',ll:[-33.7962,151.0068],fill:45,mm:70,damaged:true,big:'img/lackey-st-west-full.jpg',mark:[57,52],cap:'Council camera LACKEST 009 · 13 Nov 2026',prev:{img:'img/frames/lackey-st-west-2026-11-04.jpg',cap:'Same camera, 4 Nov 2026: net intact'}},
+ {id:'lackey-st-east',crit:1,critWhy:'Lake Parramatta catchment; 2022 audit: replace',load:'med',name:'Lackey St East',sub:'North Parramatta',ll:[-33.7953,151.0102],fill:null,blind:2,mm:60,big:'img/frames/lackey-st-east-2026-11-04.jpg',cap:'Council camera LACKEST 010 · 4 Nov 2026: leaves across the lens'},
+ {id:'lake-parra-res',crit:1,critWhy:'Swimming lake downstream',load:'low',name:'Lake Parra Res',sub:'North Parramatta',ll:[-33.7905,151.0040],fill:45,mm:120,big:'img/frames/lake-parra-res-2026-11-04.jpg',cap:'Council camera LAKEPAR 013 · 4 Nov 2026'},
  {id:'bettington-rd',crit:2,critWhy:'Creek reserve with public access',load:'med',name:'Bettington Rd',sub:'Oatlands',ll:[-33.7906,151.0305],fill:86,mm:90,big:'img/sim-net-blocked.jpg'},
  {id:'james-ruse-dr-1',crit:2,critWhy:'Arterial road catchment',load:'high',name:'James Ruse Dr 1',sub:'Northmead',ll:[-33.7985,151.0005],fill:76,mm:80,big:'img/sim-net-full.jpg'},
  {id:'james-ruse-dr-2',crit:2,critWhy:'Arterial road catchment',load:'high',name:'James Ruse Dr 2',sub:'Rosehill',ll:[-33.8205,151.0200],fill:30,mm:80},
@@ -215,8 +216,8 @@ const SEED=[
  {id:'shirley-st',crit:3,critWhy:'Local street catchment',load:'med',name:'Shirley St',sub:'Carlingford',ll:[-33.7810,151.0480],fill:40,mm:110},
  {id:'anthony-st',crit:2,critWhy:'2022 audit: replace',load:'med',name:'Anthony St',sub:'Carlingford',ll:[-33.7840,151.0420],fill:25,mm:90},
  {id:'forest-cl',crit:3,critWhy:'Bushland creek',load:'low',name:'Forest Cl',sub:'Toongabbie Creek',ll:[-33.7870,150.9830],fill:15,mm:100},
- {id:'sturt-st',crit:3,critWhy:'Local street catchment',load:'low',name:'Sturt St',sub:'Telopea',ll:[-33.7935,151.0430],fill:10,mm:100,big:'img/sim-net-empty.jpg'},
- {id:'willmott-ave',crit:3,critWhy:'Bushland creek',load:'low',name:'Willmott Ave',sub:'Winston Hills',ll:[-33.7790,150.9880],fill:30,mm:120},
+ {id:'sturt-st',crit:3,critWhy:'Local street catchment',load:'low',name:'Sturt St',sub:'Telopea',ll:[-33.7935,151.0430],fill:10,mm:100,big:'img/frames/sturt-st-2026-11-04.jpg',cap:'Council camera STURST 022 · 4 Nov 2026 · road blurred'},
+ {id:'willmott-ave',crit:3,critWhy:'Bushland creek',load:'low',name:'Willmott Ave',sub:'Winston Hills',ll:[-33.7790,150.9880],fill:45,mm:120,big:'img/frames/willmott-ave-2026-11-04.jpg',cap:'Council camera WILLAV 050 · 4 Nov 2026 · trash rack'},
  {id:'charles-st',crit:1,critWhy:'Parramatta River at the CBD',load:'high',name:'Charles St',sub:'Parramatta River',ll:[-33.8150,151.0080],fill:15,mm:150}
 ];
 const DEPOT={name:'Rydalmere Operations Centre',ll:[-33.8110,151.0330]};
@@ -224,14 +225,14 @@ function rnd(seed){let h=0;for(const c of seed)h=(h*31+c.charCodeAt(0))>>>0;retu
 function seedHistory(n){const r=rnd(n.id),h=[];let day=-Math.round(20+r()*70);for(let i=0;i<5;i++){const repair=r()<.15;h.push({date:iso(D(day)),task:repair?'Repair net':'Empty net',kg:repair?0:Math.round(25+r()*n.mm*0.9),by:'Contractor'});day-=Math.round(70+r()*40)}return h}
 
 /* ---------- state ---------- */
-const KEY='netwatch-v4';let S;
+const KEY='netwatch-v5';let S;
 function fresh(){const nets=SEED.map(n=>{const h=seedHistory(n);return{...n,hist:h,last:h[0].date}});
  const wos=[
   {no:'WO-26-0901',net:'sturt-st',site:'Sturt St',task:'Empty net',pri:'High',due:iso(D(0)),created:iso(D(-3)),reason:'72% full before rain',status:'Done',c:'--soon',job:{kg:48,result:'Emptied, net intact',defects:[],note:'Mostly leaves.',photo:'img/sim-net-empty.jpg',at:iso(D(-1))}},
   {no:'WO-26-0902',net:'willmott-ave',site:'Willmott Ave',task:'Inspect net and camera',pri:'Normal',due:iso(D(2)),created:iso(D(-1)),reason:'Camera angle moved',status:'Open',c:'--muted'}];
  const reports=[{no:'CRM-26-0412',net:'lake-parra-res',type:'Litter in the creek below the net',via:'Phone',details:'Plastic bottles caught on rocks downstream of the outlet.',date:iso(D(-1)),status:'New'}];
- return{nets,wos,reports,seq:1,crm:413}}
-function load(){try{const s=JSON.parse(localStorage.getItem(KEY));if(s&&s.nets&&s.reports)return s}catch(e){}return fresh()}
+ return{nets,wos,reports,seq:1,crm:413,audit:[],labels:{},tests:[]}}
+function load(){try{const s=JSON.parse(localStorage.getItem(KEY));if(s&&s.nets&&s.reports&&s.audit)return s}catch(e){}return fresh()}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
 S=load();
 
@@ -261,6 +262,7 @@ const B={
 };
 function bucket(n){
  if(openWO(n))return'wo';
+ if(n.suspended)return'suspended';
  if(n.defer&&n.defer>iso(TODAY))return'defer';
  if(n.damaged)return'repair';
  if(n.fill>=80)return'now';
@@ -287,7 +289,8 @@ const band=t=>t>=70?{l:'Act now',v:'--now'}:t>=50?{l:'This week',v:'--soon'}:t>=
 function why(n){
  const b=bucket(n),h=hit80(n);
  if(b==='repair')return'Net torn or pulled off the pipe';
- if(b==='view')return`No clear image for ${n.blind} days`;
+ if(b==='view')return n.removed?'Frame removed by officer; waiting for a new image':`No clear image for ${n.blind} days`;
+ if(b==='suspended')return'Auto-flagging suspended; checked by hand';
  if(b==='report'){const r=openReport(n);return`${r.no}: ${r.type}`}
  if(b==='now')return`${n.fill}% full · overflows in the next storm`;
  if(b==='soon')return`${n.fill}% now · hits 80% ${short(h)}`;
@@ -295,7 +298,7 @@ function why(n){
  if(b==='defer')return`Deferred to ${nice(n.defer)}`;
  return n.fill==null?'No reading':`${n.fill}% full`;
 }
-const colOf=b=>({report:'--rain',repair:'--repair',now:'--now',soon:'--soon',view:'--view',wo:'--accent',defer:'--muted',ok:'--ok'}[b]);
+const colOf=b=>({suspended:'--muted',report:'--rain',repair:'--repair',now:'--now',soon:'--soon',view:'--view',wo:'--accent',defer:'--muted',ok:'--ok'}[b]);
 
 /* ---------- map ---------- */
 let map,markers={},radar=null,runLine=null;
@@ -366,7 +369,7 @@ function render(){
 }
 function img(n){return n.big||`img/${n.id}.jpg`}
 function ncard(n,v){const f=n.fill??0;
- return`<div class="nc" style="--c:var(${v.c})"><div class="ph" data-open="${n.id}"><img src="${img(n)}" alt="${esc(n.name)} camera"><span class="badge">${n.fill==null?'NO VIEW':n.fill+'%'}</span><span class="pscore" style="--b:var(${band(score(n).total).v})">${score(n).total}</span><div class="fillb"><i style="width:${f}%"></i></div></div>
+ return`<div class="nc" style="--c:var(${v.c})"><div class="ph" data-open="${n.id}"><img src="${img(n)}" alt="${esc(n.name)} camera"><span class="badge">${n.fill==null?'NO VIEW':n.fill+'%'+(n.corrected?' · checked':' · demo')}</span><span class="pscore" style="--b:var(${band(score(n).total).v})">${score(n).total}</span><div class="fillb"><i style="width:${f}%"></i></div></div>
  <div class="bd"><b>${esc(n.name)}</b><span class="why">${esc(why(n))}</span><div class="btns"><button class="btn pri" data-raise="${n.id}">Raise work order</button><button class="btn" data-inspect="${n.id}">Inspect</button>${bucket(n)==='report'?`<button class="btn q" data-noaction="${n.id}">No action</button>`:`<button class="btn q" data-defer="${n.id}">Defer</button>`}</div></div></div>`}
 function rainChart(){
  const W=360,H=150,pb=26,pt=16,max=Math.max(30,...RAIN.days.map(x=>x.mm)),bw=W/7;
@@ -375,7 +378,7 @@ function rainChart(){
  $('#rainchart').innerHTML=`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Rain forecast by day in millimetres">${bars}<line x1="0" x2="${W}" y1="${H-pb}" y2="${H-pb}" stroke="var(--line)"/></svg>`;
 }
 function projChart(){
- const L=S.nets.filter(n=>!openWO(n)).map(n=>({n,sc:score(n)})).sort((a,b)=>b.sc.total-a.sc.total).slice(0,9);
+ const L=S.nets.filter(n=>!openWO(n)&&!n.suspended).map(n=>({n,sc:score(n)})).sort((a,b)=>b.sc.total-a.sc.total).slice(0,9);
  const seg=(v,w,c)=>`<i style="position:relative;display:inline-block;height:100%;width:${v*w}%;background:var(${c})"></i>`;
  $('#proj').innerHTML=L.map(({n,sc})=>{const bd=band(sc.total);
   return`<div class="row" data-open="${n.id}"><span>${esc(n.name)}</span><div class="bar" style="display:flex">${seg(sc.c,W8.c,'--now')}${seg(sc.w,W8.w,'--rain')}${seg(sc.k,W8.k,'--ink')}${seg(sc.a,W8.a,'--soon')}</div><span class="when" style="color:var(${bd.v});font-weight:700">${sc.total} · ${bd.l}</span></div>`}).join('')+
@@ -413,15 +416,18 @@ function drawer(id){
  const act=['repair','now','soon','view','report'].includes(b);
  const pc=p?`<svg class="chart" viewBox="0 0 360 90" role="img" aria-label="Projected fill"><line x1="0" x2="360" y1="${80-80*.7}" y2="${80-80*.7}" stroke="var(--fg)" stroke-dasharray="4 4" opacity=".4"/><polyline fill="none" stroke="${c}" stroke-width="3" points="${[n.fill,...p].map((v,i)=>`${i*360/7},${80-v*.7}`).join(' ')}"/>${RAIN.days.map((x,i)=>`<text x="${(i+1)*360/7}" y="88" text-anchor="end" font-size="9">${short(x.d).split(' ')[0]}</text>`).join('')}</svg>`:'';
  let el=$('.drawer');if(!el){el=document.createElement('div');el.className='drawer';document.body.appendChild(el)}
- el.innerHTML=`<div class="in" role="dialog" aria-label="${esc(n.name)}"><div class="fig"><button class="x" data-close aria-label="Close">×</button><div class="fw"><img src="${img(n)}" alt="Latest camera image, ${esc(n.name)}">${mark}</div></div>
+ el.innerHTML=`<div class="in" role="dialog" aria-label="${esc(n.name)}"><div class="fig"><button class="x" data-close aria-label="Close">×</button><div class="fw"><img src="${img(n)}" alt="Latest camera image, ${esc(n.name)}">${mark}</div><span style="position:absolute;left:0;right:0;bottom:0;background:rgba(0,0,0,.6);color:#fff;font:.74rem var(--mono);padding:4px 8px">${esc(caption(n))}</span></div>
  <div class="pad" style="display:grid;gap:12px">${EMAIL&&EMAIL.net===n.id&&!EMAIL.done?emailBlock(n):""}
-  <div class="gauge">${gauge(n.fill,c)}<div><div style="font-size:1.2rem;font-weight:700">${esc(n.name)}</div><div style="color:var(--muted);font-size:.86rem">${esc(n.sub)}</div><div style="color:${c};font-weight:600;margin-top:4px">${esc(why(n))}</div></div></div>
+  <div class="gauge">${gauge(n.fill,c)}<div><div style="font-size:1.2rem;font-weight:700">${esc(n.name)}</div><div style="color:var(--muted);font-size:.86rem">${esc(n.sub)} · reading: ${esc(readingSrc(n))}</div><div style="color:${c};font-weight:600;margin-top:4px">${esc(why(n))}</div></div></div>
   ${act&&!(EMAIL&&EMAIL.net===n.id&&!EMAIL.done)?`<div class="btns"><button class="btn pri" data-raise="${n.id}">Raise work order</button><button class="btn" data-inspect="${n.id}">Inspect</button><button class="btn q" data-defer="${n.id}">Defer 7 days</button></div>`:''}
   <div id="wo-out"></div>
   ${scoreBlock(n)}
+  ${n.prev?`<div><div class="date" style="margin-bottom:4px">COMPARE · ${esc(n.prev.cap)}</div><img src="${n.prev.img}" alt="${esc(n.prev.cap)}" style="width:100%;display:block"></div>`:''}
+  ${correctBlock(n)}
   ${pc?`<div><div class="date" style="margin-bottom:4px">FILL FORECAST · 80% LINE</div>${pc}</div>`:''}
   <dl class="kv"><dt>Holds</dt><dd>${n.fill==null?'—':'~'+Math.round((100-n.fill)/100*n.mm)+' mm more rain'}</dd><dt>Fills in</dt><dd>~${n.mm} mm of rain from empty</dd><dt>Last cleaned</dt><dd>${nice(n.last)}</dd></dl>
   <div><div class="date" style="margin-bottom:4px">HISTORY</div><div class="tl" style="padding:0">${n.hist.map(e=>`<div class="ev" style="--c:var(${e.task.startsWith('Repair')?'--repair':'--accent'})"><span class="d">${dmy(e.date)}</span><span class="k"></span><span>${esc(e.task)}</span><span class="kg">${e.kg?e.kg+' kg':''}</span></div>`).join('')}</div></div>
+  ${(S.audit||[]).some(a=>a.net===n.id)?`<div><div class="date" style="margin-bottom:4px">AUDIT</div><table class="t">${auditRows(S.audit.filter(a=>a.net===n.id))}</table></div>`:''}
  </div></div>`;
 }
 function scoreBlock(n){const sc=score(n),bd=band(sc.total);
@@ -454,7 +460,7 @@ function raise(id,kind){
  const task=kind==='inspect'?'Inspect net and camera':v.task;
  let due=iso(D(2));if(b==='soon'){const h=P(hit80(n));h.setDate(h.getDate()-1);due=iso(h<D(1)?D(1):h)}
  const w={no,net:id,site:n.name,task,pri:kind==='inspect'?'Normal':v.pri,due,created:iso(TODAY),reason:why(n),status:'Open',c:kind==='inspect'?'--muted':v.c};
- S.wos.push(w);linked.forEach(r=>{r.status='With contractor';r.wo=no});save();return w;
+ S.wos.push(w);linked.forEach(r=>{r.status='With contractor';r.wo=no});log(`Raised work order: ${task}`,id,no);save();return w;
 }
 function woText(w){return`${w.no} · ${w.site} · ${w.task} · ${w.pri} · by ${nice(w.due)} · ${w.reason}`}
 function runSheet(){const {out,km}=route();return`CONTRACTOR RUN · ${nice(iso(TODAY))} · ~${km} km\nStart: ${DEPOT.name}\n`+out.map((n,i)=>{const w=openWO(n);return`${i+1}. ${n.name} (${n.sub}) · ${w.task} · ${w.pri} · ${w.no}`}).join('\n')+`\nReturn: ${DEPOT.name}`}
@@ -467,21 +473,182 @@ function signoff(no){
  if(j.defects.includes('Net damaged'))n.damaged=true;
  if(j.defects.includes('Camera blocked'))n.blind=Math.max(n.blind||0,2);
  n.hist.unshift({date:j.at,task:st,kg:j.kg,by:'Contractor'});
- w.status='Closed';w.closed=iso(TODAY);
+ w.status='Closed';w.closed=iso(TODAY);log(`Signed off: ${st}${j.kg?`, ${j.kg} kg`:''}`,w.net,no);
  S.reports.filter(r=>r.wo===no).forEach(r=>r.status='Resolved');
  save();render();if(runLine)toggleRun(true);toast(no+' signed off and closed');
 }
 
+
+/* ---------- audit trail ---------- */
+const WHO={officer:'Stormwater officer',contractor:'Contractor',cs:'Customer service',manager:'Manager',model:'Stormwater officer',data:'Manager',test:'Tester'};
+function log(what,net,ref){S.audit=S.audit||[];S.audit.push({at:new Date().toISOString(),who:WHO[ROLE]||'Stormwater officer',what,net:net||null,ref:ref||''});}
+const tstamp=a=>new Date(a).toLocaleString('en-AU',{day:'numeric',month:'short',hour:'numeric',minute:'2-digit'});
+function auditRows(L){return L.slice().reverse().map(a=>{const n=a.net&&S.nets.find(x=>x.id===a.net);return`<tr><td style="white-space:nowrap">${tstamp(a.at)}</td><td>${esc(a.who)}</td><td>${esc(a.what)}</td><td>${n?esc(n.name):''}</td><td class="n">${esc(a.ref)}</td></tr>`}).join('')}
+
+/* ---------- correct, remove, suspend ---------- */
+const STATES=[['empty','Empty',10],['filling','Filling',55],['due','Clean due',75],['over','Overdue',90],['cant','Can’t see',null],['dmg','Damaged',null]];
+function correctBlock(n){
+ return`<div style="display:grid;gap:8px;border:1px solid var(--line);padding:10px 12px">
+ <span class="date">CHECK THE READING · ${esc(readingSrc(n))}</span>
+ <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:end"><label class="f">Correct the state to<select id="fixsel">${STATES.map(([k,l])=>`<option value="${k}">${l}</option>`).join('')}</select></label><button class="btn" data-fix="${n.id}">Apply correction</button>
+ <button class="btn q" data-remove="${n.id}">${n.removed?'Frame removed':'Remove this frame'}</button>
+ <button class="btn q" data-suspend="${n.id}">${n.suspended?'Resume auto-flagging':'Suspend auto-flagging'}</button></div>
+ <span style="font-size:.78rem;color:var(--muted)">Corrections are logged and become training labels. Removing a frame drops it from scoring until a new image arrives. Suspending stops alerts for this net; it is checked by hand.</span></div>`}
+function readingSrc(n){return n.corrected?`corrected by officer ${tstamp(n.corrected)}`:n.removed?'frame removed':'demo value'}
+function applyFix(id,k){const n=S.nets.find(x=>x.id===id),st=STATES.find(s=>s[0]===k);const was=why(n);
+ n.damaged=k==='dmg';n.blind=k==='cant'?2:0;n.removed=false;if(st[2]!=null)n.fill=st[2];if(k==='cant')n.fill=null;n.corrected=new Date().toISOString();
+ log(`Corrected reading to ${st[1]} (was: ${was})`,id);save();render();drawer(id);toast('Correction saved and logged')}
+
+/* ---------- camera source captions ---------- */
+function caption(n){return n.cap||(n.big&&n.big.includes('sim-')?'Simulated image, not a Council frame':'Council SCADA thumbnail · 13 Nov 2026')}
+
+/* ---------- Model check ---------- */
+const CL={empty:'Empty',part_full:'Part full',full:'Full',damaged:'Damaged',cant_see:'Can’t see'};
+function vModel(){
+ const M=window.MODEL;if(!M)return'<div class="empty">Model results did not load.</div>';
+ const rv=S.labels||{},wrongSure=M.results.filter(r=>r.pred!==(rv[r.id]||r.truth)&&r.routed!=='review').length,rev=M.results.filter(r=>r.routed==='review').length;
+ const cards=M.results.map(r=>{const lab=rv[r.id]||r.truth,ok=r.pred===lab;
+  const outcome=ok?'Correct':`Missed ${CL[lab]} · false ${CL[r.pred]}`;
+  return`<div class="nc" style="--c:var(${ok?'--ok':'--now'})"><div class="ph"><img src="img/frames/${r.id}.jpg" alt="${esc(r.site)} camera frame"><span class="badge">${ok?'CORRECT':'WRONG'}</span><span class="pscore" style="--b:var(${r.routed==='review'?'--soon':'--ink'})">${r.routed==='review'?'Review':'Flag'}</span></div>
+  <div class="bd"><b>${esc(r.site)}</b><span class="why">${esc(r.camera)} · ${dmy(r.date)} · ${esc(r.note)}</span>
+  <div style="display:grid;grid-template-columns:auto 1fr;gap:2px 10px;font-size:.86rem"><span style="color:var(--muted)">Label</span><span><b>${CL[lab]}</b>${rv[r.id]?' (corrected)':' (Team 101 draft)'}</span><span style="color:var(--muted)">Model</span><span><b>${CL[r.pred]}</b> · ${Math.round(r.conf*100)}% sure</span></div>
+  <div style="height:8px;background:var(--chip)"><div style="height:100%;width:${r.conf*100}%;background:var(${r.conf<M.abstain?'--soon':'--ink'})"></div></div>
+  <span class="why" style="color:var(${ok?'--ok':'--now'});font-weight:600">${outcome}</span>
+  <div style="display:flex;gap:6px;align-items:end;flex-wrap:wrap"><select data-labsel="${r.id}" aria-label="Correct label">${Object.entries(CL).map(([k,l])=>`<option value="${k}"${k===lab?' selected':''}>${l}</option>`).join('')}</select><button class="btn q" data-label="${r.id}">Confirm label</button></div></div></div>`}).join('');
+ const cls=M.classes,cm={};cls.forEach(x=>{cm[x]={};cls.forEach(y=>cm[x][y]=0)});M.results.forEach(r=>cm[rv[r.id]||r.truth][r.pred]++);
+ const PER={};cls.forEach(c=>{const tp=cm[c][c];PER[c]={support:cls.reduce((a,y)=>a+cm[c][y],0),tp,fp:cls.reduce((a,x)=>a+cm[x][c],0)-tp};PER[c].fn=PER[c].support-tp});
+ const cmt=`<table class="t"><tr><th>Label ↓ · Model →</th>${cls.map(c=>`<th style="text-align:right">${CL[c]}</th>`).join('')}</tr>${cls.map(a=>`<tr><td><b>${CL[a]}</b></td>${cls.map(b=>`<td class="n" style="${cm[a][b]?`background:var(${a===b?'--ok':'--now'});color:#fff;font-weight:700`:''}">${cm[a][b]}</td>`).join('')}</tr>`).join('')}</table>`;
+ const pc=`<table class="t"><tr><th>State</th><th style="text-align:right">In test set</th><th style="text-align:right">Caught</th><th style="text-align:right">False positives</th><th style="text-align:right">Missed (false negatives)</th></tr>${cls.map(c=>{const x=PER[c];return`<tr><td>${CL[c]}</td><td class="n">${x.support}</td><td class="n">${x.tp}</td><td class="n">${x.fp}</td><td class="n">${x.fn}</td></tr>`}).join('')}</table>`;
+ const sims=M.frames.filter(f=>f.kind==='simulated');
+ return`<div class="banner" style="background:var(--soon);color:#13222c"><span><b>Small demonstration, not production accuracy.</b> 8 Council frames, labels drafted by Team 101 for Council to confirm.</span></div>
+ <div class="rolehd"><h2>Model check</h2><span>Task: classify each net frame as empty, part full, full, damaged or can’t see</span></div>
+ <div class="kpis">
+  <div class="kpi"><b>${M.results.filter(r=>r.pred===(rv[r.id]||r.truth)).length}/${M.n_test}</b><span>Council test frames classified correctly</span></div>
+  <div class="kpi"><b>${wrongSure}</b><span>Wrong but confident (the risky kind)</span></div>
+  <div class="kpi"><b>${rev}</b><span>Below ${Math.round(M.abstain*100)}% confidence, sent to a person</span></div>
+  <div class="kpi"><b>${sims.length} + ${M.n_test-1}</b><span>Training sources per run: simulated frames + other Council frames (augmented)</span></div>
+ </div>
+ <div class="two" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:12px;margin-bottom:12px">
+  <div class="card"><div class="hd"><h2>How it was tested</h2></div><div class="pad" style="font-size:.9rem;display:grid;gap:6px">
+   <span><b>Model:</b> ${esc(M.model)}.</span>
+   <span><b>Training and test kept apart:</b> each Council frame is tested by a model that never saw that camera. Frames from the same camera, including simulated ones built from it, are held out. Training images are augmented; test images are not.</span>
+   <span><b>Uncertainty:</b> below ${Math.round(M.abstain*100)}% confidence the frame goes to a person instead of raising a flag.</span>
+   <span><b>Reproduce:</b> <code>python3 model/baseline.py</code> in the repository.</span></div></div>
+  <div class="card"><div class="hd"><h2>What this tells us</h2></div><div class="pad" style="font-size:.9rem;display:grid;gap:6px">
+   <span>Whole-frame colour and texture features learn the scenery, not the net. Both damaged nets were missed with high confidence.</span>
+   <span>Leaves across the lens look sharp, so a sharpness check does not catch “can’t see”.</span>
+   <span>Not promising enough to automate. Promising enough to pilot a better method: crop to each camera’s net, compare with that camera’s last clean frame, and train on about 300 Council-labelled frames.</span>
+   <span>Until then every flag goes to an officer, and confident-but-wrong results are why the score never raises a job by itself.</span></div></div>
+ </div>
+ <div class="rolehd"><h2>Test frames</h2><span>Officer can confirm or correct each label; corrections are logged</span></div>
+ <div class="cards" style="margin-bottom:12px">${cards}</div>
+ <div class="two" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:12px">
+  <div class="card tblwrap"><div class="hd"><h2>Confusion matrix</h2></div>${cmt}</div>
+  <div class="card tblwrap"><div class="hd"><h2>False positives and false negatives</h2></div>${pc}</div>
+ </div>
+ <div class="rolehd" style="margin-top:16px"><h2>Training examples (simulated)</h2><span>Built from two Council frames; labelled as simulated everywhere</span></div>
+ <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px">${sims.map(f=>`<figure style="margin:0"><img src="img/frames/${f.id}.jpg" alt="${esc(f.note)}" style="width:100%;aspect-ratio:4/3;object-fit:cover;display:block"><figcaption style="font-size:.76rem;color:var(--muted)">${CL[f.label]} · ${f.camera==='WILLAV 050'?'rack':'net'}</figcaption></figure>`).join('')}</div>`;
+}
+
+/* ---------- Data and governance ---------- */
+function vData(){
+ const tbl=(h,rows)=>`<div class="card tblwrap" style="margin-bottom:12px"><table class="t"><tr>${h.map(x=>`<th>${x}</th>`).join('')}</tr>${rows.map(r=>`<tr>${r.map(c=>`<td>${c}</td>`).join('')}</tr>`).join('')}</table></div>`;
+ const pill=(t,c)=>`<span class="chipc" style="--c:var(${c})">${t}</span>`;
+ const P=pill('Public','--ok'),L=pill('Licensed','--rain'),C=pill('Council-provided','--ink'),PC=pill('Participant-created','--soon'),DM=pill('Dummy','--now');
+ return`<div class="rolehd"><h2>Data model</h2><span>Built on data Council already holds; no new sensor network assumed</span></div>
+ ${tbl(['Entity','Key fields','Existing source','In this demo'],[
+  ['GPT asset','asset ID, type (GPT, uGPT, pGPT, Boom, Trash Rack), location, criticality tier','OneCouncil asset register; ESRI GIS; 2022 GPT Audit','14 camera sites, approximate locations, tiers assumed'],
+  ['Camera frame','camera ID, asset ID, time, image, quality','SCADA (about 15 cameras, 1 photo a day)','8 Council frames, 14 thumbnails, 10 simulated'],
+  ['Net reading','state, fill %, confidence, model version, corrected by','New: model output plus officer correction','Demo values; corrections logged'],
+  ['Rain','catchment, forecast mm by day, observed mm','BoM forecast; FloodSmart gauges in SCADA','Open-Meteo forecast or demo values'],
+  ['Priority score','asset, score, four part scores, time','New: calculated, not stored long term','Calculated in the browser'],
+  ['Work order','number, asset, task, priority, due, status, job sheet','OneCouncil Works and Assets','Raised and closed in the demo'],
+  ['Resident report','CRM number, asset, type, channel, status','Infor CRM','Logged by customer service, no names'],
+  ['Audit event','time, role, action, asset, reference','New','Every action logged']])}
+ <div class="rolehd"><h2>Data register</h2><span>Source, licence, date, assumptions and limits</span></div>
+ ${tbl(['Dataset','Type','Source and licence','Date','Assumptions','Limitations'],[
+  ['Council camera frames (8)',C,'Challenge briefing pack and SCADA screenshot; for this challenge only','4 Nov 2026, 13 Nov 2026, older frames 2024–25','Site IDs read from the camera strip','Few frames; no full or overdue examples; plates blurred on Sturt St'],
+  ['SCADA thumbnails (14)',C,'SCADA GPT Cameras page screenshot','13 Nov 2026','One per camera site','Low resolution'],
+  ['Simulated frames (10)',PC,'Built by Team 101 from two Council frames','9 Nov 2026','Overlays approximate litter, water and fog','Synthetic; never shown as Council data'],
+  ['Net locations',PC,'SCADA site names geocoded by hand','14 Nov 2026','Street-level placement','Approximate'],
+  ['Fill levels, history, kg',DM,'Seeded in the app','14 Nov 2026','Plausible ranges from the SME session','Not observed'],
+  ['Criticality tiers, litter load',PC,'Team 101 from the 2022 audit and land use','14 Nov 2026','Downstream sensitivity and audit status','To be set with Council'],
+  ['Rain forecast',L,'Open-Meteo API, CC BY 4.0','Live, daily','Parramatta point forecast','Falls back to demo values offline'],
+  ['Rain radar',P,'RainViewer, free tier with attribution','Live','Latest frame only','Zoom 7 and below'],
+  ['Base map',L,'OpenStreetMap, ODbL','Live','—','—'],
+  ['Council records',P,'Asset Management Plan 2027–36; Annual Report 2024/25; GIPA register; GPT Audit minutes','2024–26','Context only','Not operational data'],
+  ['SME session notes',C,'Council SME breakout, 9 Nov 2026','9 Nov 2026','Facts as stated by the SME','Paraphrased']])}
+ <div class="rolehd"><h2>From dummy data to real data</h2><span>How a pilot would get each one lawfully</span></div>
+ ${tbl(['Dummy or assumed data','How we made it','Real source','How to get it','Indicative effort'],[
+  ['Fill levels','Plausible values per site','Model reading of each SCADA frame, confirmed by the officer','SCADA export via Council’s telemetry contact; read-only','1–2 days of telemetry staff time'],
+  ['Labelled frames','8 labelled by Team 101','About 300 historic frames labelled by stormwater staff','Labelling session in the app; corrections saved','2 staff × half a day'],
+  ['Net locations','Hand-placed from street names','Asset register lat/longs','Request through the project team (Paul has agreed in principle)','Under 1 hour'],
+  ['Cleaning history and kg','Seeded per site','Contractor job sheets and weighbridge tickets','Existing Part A reporting under the stormwater panel','Already collected; export only'],
+  ['Criticality tiers','Our reading of the audit','Stormwater team ranking','30-minute workshop','Under 1 hour'],
+  ['Rain','Open-Meteo or demo values','BoM forecasts and FloodSmart gauges already in SCADA','Existing internal feed','No new cost']])}
+ <div class="rolehd"><h2>Cleaning and quality log</h2><span>Every transformation, so others can check it</span></div>
+ ${tbl(['Date','Issue','Action'],[
+  ['9 Nov','Camera origin unclear','Confirmed with SME: Council installs, not the CSIRO trial'],
+  ['12 Nov','GPT count differs across sources (37, 40, 35–40, “more than 58”)','Use the SME figure of 35–40 nets and the AMP register of 40 GPTs'],
+  ['13 Nov','Viewer window around the Lackey St frame','Cropped to the camera image'],
+  ['13 Nov','Thumbnails in one screenshot','Cropped per site; site names read from tiles'],
+  ['14 Nov','Number plates visible on Sturt St frame','Road area blurred before use'],
+  ['14 Nov','Dates shifted by time zone','Fixed to local dates'],
+  ['14 Nov','Forecast service unreachable on some networks','Times out after 6 s; demo values shown and labelled']])}
+ <div class="rolehd"><h2>Bias and coverage check</h2><span>Who or what the data could miss</span></div>
+ ${tbl(['Risk','What we found','What we do about it'],[
+  ['Suburbs without cameras','Cameras cover about 10 of 35–40 nets, mostly in North Parramatta and Carlingford','Nets without cameras are scored on rain, history and criticality and say “no camera”, so they are not treated as empty'],
+  ['Image conditions','Leaves, fog and old frames break the baseline model','“Can’t see” is its own state with its own alert'],
+  ['Simulated data','Synthetic frames may not look like real litter','Kept out of test sets; always labelled'],
+  ['Residents','Reports by phone, counter, email or online','No digital-only channel; no names stored'],
+  ['Officers','Email first, works on a phone, keyboard and screen reader labels','Accessibility to be checked in the user test']])}
+ <div class="rolehd"><h2>Minimum viable data: before adding a sensor</h2><span>Each one needs a decision, an owner, upkeep and a retention rule</span></div>
+ ${tbl(['Sensor','Decision it improves','Owner','Upkeep','Keep data for','Needed now?'],[
+  ['Existing cameras','Clean, repair or restore view','Stormwater team','Existing repair runs','Frames 2 years; flagged frames with the work order','Yes, already in place'],
+  ['Fullness sensor on a net','Clean before rain where there is no camera','Stormwater team','Battery yearly','Readings 2 years','Only after the camera pilot'],
+  ['Tilt sensor on a net frame','Repair a detached net','Stormwater team','Battery yearly','Events 2 years','Only where detachment repeats'],
+  ['Pit level sensor','Inspect a blocked pit','Stormwater team','Clean yearly','Readings 2 years','Not in this pilot']])}
+ <div class="two" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px">
+  <div class="card"><div class="hd"><h2>Responsible AI</h2></div><div class="pad" style="font-size:.9rem;display:grid;gap:6px">
+   <span><b>Tools:</b> Claude for research, drafting and code; a baseline image model (see Model check).</span>
+   <span><b>AI does:</b> scores frames and ranks nets. <b>AI does not:</b> raise work orders, contact contractors or close jobs.</span>
+   <span><b>Accountable:</b> the stormwater officer confirms every work order and signs off every job.</span>
+   <span><b>Known risks:</b> confident wrong readings, leafy or fogged frames, simulated-data bias, over-trust in scores.</span></div></div>
+  <div class="card"><div class="hd"><h2>Correction and containment</h2></div><div class="pad" style="font-size:.9rem;display:grid;gap:6px">
+   <span><b>Correct:</b> an officer changes any reading; it is logged and becomes a training label.</span>
+   <span><b>Remove:</b> a bad frame is dropped from scoring until a new one arrives.</span>
+   <span><b>Suspend:</b> auto-flagging stops for a net, which is then checked by hand.</span>
+   <span><b>Review:</b> the audit log shows who did what and when. No personal data is stored; data stays in the browser in this demo.</span></div></div>
+ </div>`;
+}
+
+/* ---------- User test kit ---------- */
+const TASKS=['From the email alert, raise the repair work order for Lackey St West.','Find the net with the highest priority score and say why it is first.','Correct a reading you disagree with, or remove a bad frame.','As the contractor, complete a job and report an issue.','As the officer, sign off that job and find it in the audit log.'];
+function vTest(){
+ const T=S.tests||[];
+ const res=T.length?T.slice().reverse().map(t=>`<tr><td>${tstamp(t.at)}</td><td>${esc(t.role)}</td><td class="n">${t.done}/5</td><td class="n">${t.ease}/5</td><td>${esc(t.replace)}</td><td>${esc(t.comment)}</td></tr>`).join(''):'<tr><td colspan="6">No tests recorded yet.</td></tr>';
+ return`<div class="rolehd"><h2>User test</h2><span>About 15 minutes · one tester · no names recorded</span></div>
+ <div class="panel2"><form data-test>
+  <label class="f">Tester role<select name="role"><option>Stormwater officer</option><option>Council officer, other team</option><option>Contractor</option><option>Customer service</option><option>Team member</option></select></label>
+  <div style="grid-column:1/-1;display:grid;gap:8px">${TASKS.map((t,i)=>`<label style="display:flex;gap:10px;align-items:flex-start;font-size:.92rem;color:var(--fg)"><input type="checkbox" name="t${i}"><span><b>${i+1}.</b> ${t}</span></label>`).join('')}</div>
+  <label class="f">How easy was it overall? (1 hard, 5 easy)<select name="ease"><option>1</option><option>2</option><option selected>3</option><option>4</option><option>5</option></select></label>
+  <label class="f">Would this replace the daily image check?<select name="replace"><option>Yes</option><option>Partly</option><option>No</option></select></label>
+  <label class="f" style="grid-column:1/-1">What confused you, or what would you change?<textarea name="comment" placeholder="No names or contact details"></textarea></label>
+  <div class="btns"><button class="btn pri">Save test result</button><button class="btn q" type="button" data-copytests>Copy all results</button></div></form></div>
+ <div class="card tblwrap"><table class="t"><tr><th>When</th><th>Role</th><th style="text-align:right">Tasks done</th><th style="text-align:right">Ease</th><th>Replace daily check?</th><th>Comment</th></tr>${res}</table></div>`;
+}
+
 /* ---------- roles ---------- */
 const ROLES=[['officer','Stormwater officer'],['contractor','Contractor'],['cs','Customer service'],['manager','Manager']];
-let ROLE=(()=>{const q=new URLSearchParams(location.search).get('role');if(q&&ROLES.some(r=>r[0]===q))return q;try{return localStorage.getItem('netwatch-role')||'officer'}catch(e){return'officer'}})();
+const VIEWS=[['model','Model check'],['data','Data'],['test','User test']];
+let ROLE=(()=>{const q=new URLSearchParams(location.search).get('role');if(q&&ROLES.concat(VIEWS).some(r=>r[0]===q))return q;try{return localStorage.getItem('netwatch-role')||'officer'}catch(e){return'officer'}})();
 let PHOTO={};
 function setRole(r){ROLE=r;try{localStorage.setItem('netwatch-role',r)}catch(e){}closeDrawer();show()}
 function show(){
- $('#roles').innerHTML=ROLES.map(([k,l])=>`<button class="${ROLE===k?'on':''}" data-role="${k}">${l}</button>`).join('');
+ $('#roles').innerHTML=ROLES.map(([k,l])=>`<button class="${ROLE===k?'on':''}" data-role="${k}">${l}</button>`).join('')+'<span style="width:1px;background:var(--line);margin:0 4px"></span>'+VIEWS.map(([k,l])=>`<button class="${ROLE===k?'on':''}" data-role="${k}">${l}</button>`).join('');
  const off=ROLE==='officer';$('#vOfficer').hidden=!off;$('#vRole').hidden=off;
  if(off){render();if(map)setTimeout(()=>map.invalidateSize(),50)}
- else $('#vRole').innerHTML=ROLE==='contractor'?vContractor():ROLE==='cs'?vCS():vManager();
+ else $('#vRole').innerHTML={contractor:vContractor,cs:vCS,manager:vManager,model:vModel,data:vData,test:vTest}[ROLE]();
 }
 const RESULTS=['Emptied, net intact','Repaired or replaced','Camera view cleared','Inspected, no action'];
 function vContractor(){
@@ -544,9 +711,10 @@ function vManager(){
   <div class="kpi"><b>${repOpen}</b><span>Resident reports open</span></div>
  </div>
  <div class="grid">
-  <div class="card tblwrap"><div class="hd"><h2>Every net</h2></div><table class="t"><tr><th>Net</th><th style="text-align:right">Priority</th><th>Status</th><th style="text-align:right">Fill</th><th>Last cleaned</th><th style="text-align:right">Cleans 12m</th><th style="text-align:right">kg 12m</th></tr>${rows}</table></div>
+  <div class="card tblwrap"><div class="hd"><h2>Every net</h2></div><table class="t"><tr><th>Net</th><th style="text-align:right">Priority</th><th>Status</th><th style="text-align:right">Fill (demo)</th><th>Last cleaned</th><th style="text-align:right">Cleans 12m</th><th style="text-align:right">kg 12m</th></tr>${rows}</table></div>
   <div class="card"><div class="hd"><h2>Litter removed per month</h2></div><div class="pad">${kgSvg(m)}</div></div>
- </div>`;
+ </div>
+ <div class="card tblwrap" style="margin-top:12px"><div class="hd"><h2>Audit log</h2><span class="date">${(S.audit||[]).length} actions</span></div><table class="t"><tr><th>When</th><th>Who</th><th>What</th><th>Net</th><th style="text-align:right">Ref</th></tr>${auditRows((S.audit||[]).slice(-40))||'<tr><td colspan="5">No actions yet.</td></tr>'}</table></div>`;
 }
 function photoIn(input){
  const f=input.files&&input.files[0];if(!f)return;const no=input.dataset.photo,r=new FileReader();
@@ -557,7 +725,7 @@ function copy(t,msg){(navigator.clipboard?navigator.clipboard.writeText(t):Promi
 function toast(t){const e=$('#toast');e.textContent=t;e.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>e.hidden=true,2400)}
 
 document.addEventListener('click',e=>{
- const t=e.target.closest('[data-lane],[data-open],[data-raise],[data-raiseall],[data-inspect],[data-defer],[data-close],[data-scroll],[data-confirm],[data-dismiss],[data-role],[data-signoff],[data-sendback],[data-noaction],[data-jobform]');
+ const t=e.target.closest('[data-lane],[data-open],[data-raise],[data-raiseall],[data-inspect],[data-defer],[data-close],[data-scroll],[data-confirm],[data-dismiss],[data-role],[data-signoff],[data-sendback],[data-noaction],[data-jobform],[data-fix],[data-remove],[data-suspend],[data-label],[data-copytests]');
  if(!t){if(e.target.classList.contains('drawer'))closeDrawer();return}
  const d=t.dataset;
  if(d.role){setRole(d.role)}
@@ -567,11 +735,17 @@ document.addEventListener('click',e=>{
  else if('close' in d)closeDrawer();
  else if(d.raise||d.inspect){const w=raise(d.raise||d.inspect,d.inspect?'inspect':'');if(w){render();toast(`${w.no} raised · ${w.site}`);if(drawerId)$('#wo-out').innerHTML=`<pre>${esc(woText(w))}</pre>`;if(runLine)toggleRun(true)}}
  else if(d.raiseall){const g=S.nets.filter(n=>bucket(n)===d.raiseall);g.forEach(n=>raise(n.id));lane=null;render();toast(`${g.length} work orders raised`);if(runLine)toggleRun(true)}
- else if(d.defer){S.nets.find(x=>x.id===d.defer).defer=iso(D(7));save();closeDrawer();render();toast('Deferred 7 days')}
- else if(d.noaction){S.reports.filter(r=>r.net===d.noaction&&r.status==='New').forEach(r=>r.status='Closed, no action');save();closeDrawer();render();toast('Report closed, no action')}
+ else if(d.defer){S.nets.find(x=>x.id===d.defer).defer=iso(D(7));log('Deferred 7 days',d.defer);save();closeDrawer();render();toast('Deferred 7 days')}
+ else if(d.noaction){S.reports.filter(r=>r.net===d.noaction&&r.status==='New').forEach(r=>{r.status='Closed, no action';log('Closed resident report, no action',d.noaction,r.no)});save();closeDrawer();render();toast('Report closed, no action')}
  else if(d.signoff)signoff(d.signoff);
- else if(d.sendback){const w=S.wos.find(x=>x.no===d.sendback);w.status='Open';w.reason='Sent back: '+(w.job.note||'see Council');w.job=null;save();render();toast(w.no+' sent back to contractor')}
+ else if(d.sendback){const w=S.wos.find(x=>x.no===d.sendback);log('Sent job back to contractor',w.net,w.no);w.status='Open';w.reason='Sent back: '+(w.job.note||'see Council');w.job=null;save();render();toast(w.no+' sent back to contractor')}
  else if(d.jobform)jobForm(d.jobform);
+ else if(d.fix)applyFix(d.fix,$('#fixsel').value);
+ else if(d.remove){const n=S.nets.find(x=>x.id===d.remove);if(!n.removed){n.removed=true;n.fillWas=n.fill;n.fill=null;n.blind=Math.max(n.blind||0,2);log('Removed frame from scoring',n.id);save();render();drawer(n.id);toast('Frame removed from scoring')}}
+ else if(d.suspend){const n=S.nets.find(x=>x.id===d.suspend);n.suspended=!n.suspended;log(n.suspended?'Suspended auto-flagging':'Resumed auto-flagging',n.id);save();render();drawer(n.id);toast(n.suspended?'Auto-flagging suspended':'Auto-flagging resumed')}
+ else if(d.label){const r=window.MODEL.results.find(x=>x.id===d.label),v=document.querySelector(`[data-labsel="${d.label}"]`).value;S.labels=S.labels||{};
+  if(v!==r.truth)S.labels[d.label]=v;else delete S.labels[d.label];log(v===r.truth?`Confirmed label ${CL[v]}`:`Corrected label from ${CL[r.truth]} to ${CL[v]}`,null,r.id);save();show();toast('Label saved and logged')}
+ else if('copytests' in d){const T=S.tests||[];copy(T.map(t=>`${tstamp(t.at)} | ${t.role} | tasks ${t.done}/5 [${t.tasks.map(x=>x?'Y':'N').join('')}] | ease ${t.ease}/5 | replace: ${t.replace} | ${t.comment}`).join('\n')||'No tests yet','Test results copied')}
  else if(d.confirm){const id=EMAIL.net;EMAIL.done=true;
   if(d.confirm==='defer'){S.nets.find(x=>x.id===id).defer=iso(D(7));save();closeDrawer();render();toast('Deferred 7 days')}
   else{const w=raise(id,d.confirm==='inspect'?'inspect':'');render();if(w){toast(`${w.no} raised · ${w.site}`);$('#wo-out').innerHTML=`<pre>${esc(woText(w))}</pre>`}}}
@@ -581,16 +755,18 @@ document.addEventListener('change',e=>{if(e.target.dataset&&e.target.dataset.pho
 document.addEventListener('submit',e=>{
  const f=e.target;
  if(f.dataset.job!==undefined){e.preventDefault();const no=f.dataset.job,w=S.wos.find(x=>x.no===no),fd=new FormData(f);
-  w.job={result:fd.get('result'),kg:+fd.get('kg')||0,defects:fd.getAll('def'),note:fd.get('note')||'',photo:PHOTO[no]||null,at:iso(TODAY)};w.status='Done';delete PHOTO[no];
+  w.job={result:fd.get('result'),kg:+fd.get('kg')||0,defects:fd.getAll('def'),note:fd.get('note')||'',photo:PHOTO[no]||null,at:iso(TODAY)};w.status='Done';delete PHOTO[no];log(`Completed job: ${w.job.result}${w.job.defects.length?`; issues: ${w.job.defects.join(', ')}`:''}`,w.net,no);
   save();show();toast(`${no} sent to Council for sign-off`)}
+ else if(f.dataset.test!==undefined){e.preventDefault();const fd=new FormData(f),tasks=TASKS.map((_,i)=>!!fd.get('t'+i));
+  S.tests=S.tests||[];S.tests.push({at:new Date().toISOString(),role:fd.get('role'),tasks,done:tasks.filter(Boolean).length,ease:+fd.get('ease'),replace:fd.get('replace'),comment:(fd.get('comment')||'').slice(0,600)});log('Saved user test result',null,`${tasks.filter(Boolean).length}/5`);save();show();toast('Test result saved')}
  else if(f.dataset.report!==undefined){e.preventDefault();const fd=new FormData(f),no='CRM-'+String(TODAY.getFullYear()).slice(2)+'-'+String(S.crm++).padStart(4,'0');
-  S.reports.push({no,net:fd.get('net'),type:fd.get('type'),via:fd.get('via'),details:(fd.get('details')||'').slice(0,400),date:iso(TODAY),status:'New'});
+  S.reports.push({no,net:fd.get('net'),type:fd.get('type'),via:fd.get('via'),details:(fd.get('details')||'').slice(0,400),date:iso(TODAY),status:'New'});log(`Logged resident report: ${fd.get('type')}`,fd.get('net'),no);
   save();show();toast(`${no} logged and sent to the stormwater officer`)}
 });
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeDrawer()});
 $('#tRadar').onclick=toggleRadar;$('#tRun').onclick=()=>toggleRun();
 $('#copyRun').onclick=()=>copy(runSheet(),'Run sheet copied');
-$('#reset').onclick=()=>{S=fresh();save();lane=null;closeDrawer();if(runLine){runLine.remove();runLine=null;$('#tRun').classList.remove('on')}show();toast('Demo reset')};
+$('#reset').onclick=()=>{S=fresh();log('Demo reset');save();lane=null;closeDrawer();if(runLine){runLine.remove();runLine=null;$('#tRun').classList.remove('on')}show();toast('Demo reset')};
 initMap();if(new URLSearchParams(location.search).has('net')||new URLSearchParams(location.search).has('lane'))ROLE='officer';show();fromEmail();getRain();
 </script>
 </body>

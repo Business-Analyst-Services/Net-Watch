@@ -23,3 +23,7 @@ Plus a sensor matrix, the Wayfinder build plan and the evidence base.
 
 `python3 build.py` regenerates `docs/` from the data in `build.py` (the plan page is built from `wayfinder.html`).
 `./deploy.sh` rebuilds, pushes `main`, and publishes `docs/` to the `gh-pages` branch, which GitHub Pages serves.
+
+## Model check
+
+`python3 model/baseline.py` reruns the baseline net-state classifier on the labelled frames in `docs/img/frames/` (labels in `model/frames.json`) and writes `docs/data/model-results.js`. Leave-one-camera-out over 8 Council frames; simulated frames are training only. Small demonstration, not production accuracy.
