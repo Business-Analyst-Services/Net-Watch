@@ -117,15 +117,49 @@ pre{margin:0;background:var(--chip);padding:10px;font:.8rem/1.5 var(--mono);whit
 .toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:9px 16px;font-size:.88rem;z-index:3000}
 footer{margin-top:20px;font-family:var(--mono);font-size:.72rem;color:var(--muted);display:flex;gap:14px;flex-wrap:wrap}
 footer button,footer a{background:none;border:0;padding:0;color:var(--muted);font:inherit;text-decoration:underline;cursor:pointer}
+/* roles */
+.roles{display:flex;gap:4px;flex-wrap:wrap}
+.roles button{background:var(--card);border:1px solid var(--line);color:var(--muted);font:600 .82rem var(--sans);padding:6px 12px;cursor:pointer}
+.roles button.on{background:var(--ink);border-color:var(--ink);color:var(--card)}
+.rolehd{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:8px;margin:4px 0 12px}
+.rolehd h2{margin:0;font-size:1.25rem;letter-spacing:0;text-transform:none;font-family:var(--sans);color:var(--fg)}
+.rolehd span{font-family:var(--mono);font-size:.8rem;color:var(--muted)}
+.jobs{display:grid;gap:10px}
+.job{display:grid;grid-template-columns:44px 120px 1fr;gap:12px;align-items:start;background:var(--card);border:1px solid var(--line);border-left:6px solid var(--c);padding:12px}
+.job .stop{width:36px;height:36px;border-radius:50%;background:var(--c);color:#fff;font:700 1rem var(--mono);display:flex;align-items:center;justify-content:center}
+.job img{width:120px;height:90px;object-fit:cover;display:block}
+.job b{font-size:1.05rem}.job .meta{font-size:.84rem;color:var(--muted)}
+.job form{grid-column:1/-1;display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;align-items:end;border-top:1px solid var(--line);padding-top:10px}
+@media (max-width:560px){.job{grid-template-columns:36px 1fr}.job img{grid-column:1/-1;width:100%;height:160px}}
+label.f{display:grid;gap:3px;font-size:.78rem;color:var(--muted)}
+.checks{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:.86rem;align-items:center}
+.checks label{display:flex;gap:5px;align-items:center;color:var(--fg)}
+.thumb{width:90px;height:68px;object-fit:cover;border:1px solid var(--line)}
+.panel2{background:var(--card);border:1px solid var(--line);padding:14px 16px;margin-bottom:12px}
+.panel2 form{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;align-items:end}
+textarea{font:inherit;color:var(--fg);background:var(--bg);border:1px solid var(--line);padding:6px 8px;min-height:64px;resize:vertical}
+table.t{border-collapse:collapse;width:100%;font-size:.86rem}
+table.t th{text-align:left;font:500 .72rem var(--mono);letter-spacing:.05em;text-transform:uppercase;color:var(--muted);padding:8px 10px;border-bottom:1px solid var(--line)}
+table.t td{padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+table.t td.n{font-family:var(--mono);text-align:right;white-space:nowrap}
+.chipc{display:inline-block;font:600 .72rem var(--mono);padding:2px 7px;color:#fff;background:var(--c)}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin-bottom:12px}
+.kpi{background:var(--card);border:1px solid var(--line);padding:12px 14px;display:grid;gap:2px}
+.kpi b{font-size:1.9rem;line-height:1.1;font-variant-numeric:tabular-nums;color:var(--ink)}
+.kpi span{font-size:.84rem;color:var(--muted)}
+.tblwrap{overflow-x:auto}
+.jobsheet{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;background:var(--chip);padding:8px 10px;font-size:.84rem}
 </style>
 </head>
 <body>
 <div class="app">
 <header>
  <div class="brand"><h1>Net Watch</h1><span class="date" id="date"></span></div>
+ <nav class="roles" id="roles" aria-label="Switch user"></nav>
  <div class="wx" id="wx"></div>
 </header>
 
+<div id="vOfficer">
 <div id="banner"></div>
 <section class="actions" id="actions"></section>
 <section class="lane" id="lane"></section>
@@ -146,6 +180,8 @@ footer button,footer a{background:none;border:0;padding:0;color:var(--muted);fon
  <div class="card"><div class="hd"><h2>Open work orders</h2><div class="btns"><button class="btn q" id="copyRun">Copy run sheet</button></div></div><div id="wos"></div></div>
  <div class="card"><div class="hd"><h2>Work order history</h2><span class="date" id="kgtot"></span></div><div class="pad" id="histchart"></div><div class="tl" id="hist"></div></div>
 </section>
+</div>
+<div id="vRole" hidden></div>
 
 <footer><span>Demo data · approximate locations</span><span id="src2"></span><button id="reset">Reset demo</button><a href="email.html">Email alerts</a><a href="brief/">Brief</a></footer>
 </div>
@@ -187,9 +223,14 @@ function rnd(seed){let h=0;for(const c of seed)h=(h*31+c.charCodeAt(0))>>>0;retu
 function seedHistory(n){const r=rnd(n.id),h=[];let day=-Math.round(20+r()*70);for(let i=0;i<5;i++){const repair=r()<.15;h.push({date:iso(D(day)),task:repair?'Repair net':'Empty net',kg:repair?0:Math.round(25+r()*n.mm*0.9),by:'Contractor'});day-=Math.round(70+r()*40)}return h}
 
 /* ---------- state ---------- */
-const KEY='netwatch-v2';let S;
-function fresh(){const nets=SEED.map(n=>{const h=seedHistory(n);return{...n,hist:h,last:h[0].date}});return{nets,wos:[],seq:1}}
-function load(){try{const s=JSON.parse(localStorage.getItem(KEY));if(s&&s.nets)return s}catch(e){}return fresh()}
+const KEY='netwatch-v3';let S;
+function fresh(){const nets=SEED.map(n=>{const h=seedHistory(n);return{...n,hist:h,last:h[0].date}});
+ const wos=[
+  {no:'WO-26-0901',net:'sturt-st',site:'Sturt St',task:'Empty net',pri:'High',due:iso(D(0)),created:iso(D(-3)),reason:'72% full before rain',status:'Done',c:'--soon',job:{kg:48,result:'Emptied, net intact',defects:[],note:'Mostly leaves.',photo:'img/sim-net-empty.jpg',at:iso(D(-1))}},
+  {no:'WO-26-0902',net:'willmott-ave',site:'Willmott Ave',task:'Inspect net and camera',pri:'Normal',due:iso(D(2)),created:iso(D(-1)),reason:'Camera angle moved',status:'Open',c:'--muted'}];
+ const reports=[{no:'CRM-26-0412',net:'lake-parra-res',type:'Litter in the creek below the net',via:'Phone',details:'Plastic bottles caught on rocks downstream of the outlet.',date:iso(D(-1)),status:'New'}];
+ return{nets,wos,reports,seq:1,crm:413}}
+function load(){try{const s=JSON.parse(localStorage.getItem(KEY));if(s&&s.nets&&s.reports)return s}catch(e){}return fresh()}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
 S=load();
 
@@ -198,7 +239,7 @@ let RAIN={days:[0,1,2,3,4,5,6].map(i=>({d:iso(D(i)),mm:[0,2,5,26,9,1,0][i],p:[10
 async function getRain(){
  try{const ac=new AbortController();setTimeout(()=>ac.abort(),6000);
   const r=await fetch('https://api.open-meteo.com/v1/forecast?latitude=-33.80&longitude=151.02&daily=precipitation_sum,precipitation_probability_max&timezone=Australia%2FSydney&forecast_days=7',{signal:ac.signal});
-  const j=await r.json();RAIN={days:j.daily.time.map((d,i)=>({d,mm:Math.round(j.daily.precipitation_sum[i]||0),p:j.daily.precipitation_probability_max[i]||0})),live:true};render();
+  const j=await r.json();RAIN={days:j.daily.time.map((d,i)=>({d,mm:Math.round(j.daily.precipitation_sum[i]||0),p:j.daily.precipitation_probability_max[i]||0})),live:true};show();
  }catch(e){}
 }
 const storm=()=>RAIN.days.slice(1).reduce((a,b)=>b.mm>a.mm?b:a);
@@ -208,19 +249,22 @@ const rain7=()=>RAIN.days.reduce((a,x)=>a+x.mm,0);
 function project(n){ // fill per day over the forecast
  if(n.fill==null)return null;let f=n.fill;return RAIN.days.map(x=>(f=Math.min(100,f+x.mm/n.mm*100)))}
 function hit80(n){const p=project(n);if(!p)return null;const i=p.findIndex(v=>v>=80);return i<0?null:RAIN.days[i].d}
-function openWO(n){return S.wos.find(w=>w.net===n.id&&w.status==='Open')}
+function openWO(n){return S.wos.find(w=>w.net===n.id&&w.status!=='Closed')}
+function openReport(n){return S.reports.find(r=>r.net===n.id&&r.status==='New')}
 const B={
  repair:{lbl:'Repair torn nets',c:'--repair',task:'Repair or refit net',pri:'Urgent'},
  now:{lbl:'Empty full nets now',c:'--now',task:'Empty net',pri:'Urgent'},
  soon:{lbl:'Empty before the rain',c:'--soon',task:'Empty net',pri:'High'},
+ report:{lbl:'Check resident reports',c:'--rain',task:'Inspect and clear litter',pri:'High'},
  view:{lbl:'Fix blocked cameras',c:'--view',task:'Clear camera view',pri:'Normal'},
 };
 function bucket(n){
  if(openWO(n))return'wo';
  if(n.defer&&n.defer>iso(TODAY))return'defer';
  if(n.damaged)return'repair';
- if(n.blind>=2)return'view';
  if(n.fill>=80)return'now';
+ if(openReport(n))return'report';
+ if(n.blind>=2)return'view';
  const h=hit80(n);if(h&&h<=iso(D(7)))return'soon';
  return'ok';
 }
@@ -228,13 +272,14 @@ function why(n){
  const b=bucket(n),h=hit80(n);
  if(b==='repair')return'Net torn or pulled off the pipe';
  if(b==='view')return`No clear image for ${n.blind} days`;
+ if(b==='report'){const r=openReport(n);return`${r.no}: ${r.type}`}
  if(b==='now')return`${n.fill}% full · overflows in the next storm`;
  if(b==='soon')return`${n.fill}% now · hits 80% ${short(h)}`;
- if(b==='wo'){const w=openWO(n);return`${w.no} · ${w.task}`}
+ if(b==='wo'){const w=openWO(n);return`${w.no} · ${w.status==='Done'?'awaiting sign-off':w.task}`}
  if(b==='defer')return`Deferred to ${nice(n.defer)}`;
  return n.fill==null?'No reading':`${n.fill}% full`;
 }
-const colOf=b=>({repair:'--repair',now:'--now',soon:'--soon',view:'--view',wo:'--accent',defer:'--muted',ok:'--ok'}[b]);
+const colOf=b=>({report:'--rain',repair:'--repair',now:'--now',soon:'--soon',view:'--view',wo:'--accent',defer:'--muted',ok:'--ok'}[b]);
 
 /* ---------- map ---------- */
 let map,markers={},radar=null,runLine=null;
@@ -252,7 +297,7 @@ function drawPins(){
   const m=L.marker(n.ll,{icon:L.divIcon({className:'',html:`<div class="pin${pulse}" style="background:${c};--pc:${c}"></div>`,iconSize:[18,18],iconAnchor:[9,9]})}).addTo(map);
   m.bindPopup(`<b>${esc(n.name)}</b>${esc(why(n))}<br><button class="btn pri" data-open="${n.id}">Open</button>`);
   markers[n.id]=m;});
- $('#legend').innerHTML=[['repair','Repair'],['now','Empty now'],['soon','Before rain'],['view',"Can't see"],['wo','Work order'],['ok','OK']].map(([b,l])=>`<span><i style="background:var(${colOf(b)})"></i>${l}</span>`).join('');
+ $('#legend').innerHTML=[['repair','Repair'],['now','Empty now'],['soon','Before rain'],['report','Resident report'],['view',"Can't see"],['wo','Work order'],['ok','OK']].map(([b,l])=>`<span><i style="background:var(${colOf(b)})"></i>${l}</span>`).join('');
 }
 async function toggleRadar(){
  if(!map)return;
@@ -291,10 +336,11 @@ function render(){
  $('#src2').textContent=RAIN.live?'Rain: Open-Meteo':'Rain: demo values';
  // tiles
  const groups={};S.nets.forEach(n=>{const b=bucket(n);(groups[b]=groups[b]||[]).push(n)});
- const open=S.wos.filter(w=>w.status==='Open');
+ const open=S.wos.filter(w=>w.status==='Open'),done=S.wos.filter(w=>w.status==='Done');
  $('#actions').innerHTML=Object.entries(B).map(([k,v])=>{const g=groups[k]||[];
   return`<button class="tile ${g.length?'':'zero'} ${lane===k?'on':''}" style="--c:var(${v.c})" data-lane="${k}"><span class="num">${g.length}</span><span class="lbl">${v.lbl}</span><span class="who">${g.length?esc(g.map(n=>n.name).join(', ')):'Nothing to do'}</span>${g.length?'<span class="go">Act →</span>':''}</button>`}).join('')+
-  `<button class="tile ${open.length?'':'zero'}" style="--c:var(--accent)" data-scroll="wos"><span class="num">${open.length}</span><span class="lbl">With contractor</span><span class="who">${open.length?esc(open.map(w=>w.site).join(', ')):'No open work orders'}</span></button>`;
+  `<button class="tile ${open.length?'':'zero'}" style="--c:var(--accent)" data-scroll="wos"><span class="num">${open.length}</span><span class="lbl">With contractor</span><span class="who">${open.length?esc(open.map(w=>w.site).join(', ')):'No open work orders'}</span></button>`+
+  `<button class="tile ${done.length?'':'zero'}" style="--c:var(--ok)" data-scroll="wos"><span class="num">${done.length}</span><span class="lbl">Sign off completed jobs</span><span class="who">${done.length?esc(done.map(w=>w.site).join(', ')):'Nothing to sign off'}</span>${done.length?'<span class="go">Act →</span>':''}</button>`;
  // lane
  if(lane&&(groups[lane]||[]).length){const v=B[lane],g=groups[lane];
   $('#lane').innerHTML=`<div class="hd" style="--c:var(${v.c})"><b>${v.lbl}</b><div class="btns"><button class="btn pri" data-raiseall="${lane}">Raise ${g.length} work order${g.length>1?'s':''}</button><button class="btn q" data-lane="${lane}">Close</button></div></div><div class="cards">${g.map(n=>ncard(n,v)).join('')}</div>`;
@@ -305,7 +351,7 @@ function render(){
 function img(n){return n.big||`img/${n.id}.jpg`}
 function ncard(n,v){const f=n.fill??0;
  return`<div class="nc" style="--c:var(${v.c})"><div class="ph" data-open="${n.id}"><img src="${img(n)}" alt="${esc(n.name)} camera"><span class="badge">${n.fill==null?'NO VIEW':n.fill+'%'}</span><div class="fillb"><i style="width:${f}%"></i></div></div>
- <div class="bd"><b>${esc(n.name)}</b><span class="why">${esc(why(n))}</span><div class="btns"><button class="btn pri" data-raise="${n.id}">Raise work order</button><button class="btn" data-inspect="${n.id}">Inspect</button><button class="btn q" data-defer="${n.id}">Defer</button></div></div></div>`}
+ <div class="bd"><b>${esc(n.name)}</b><span class="why">${esc(why(n))}</span><div class="btns"><button class="btn pri" data-raise="${n.id}">Raise work order</button><button class="btn" data-inspect="${n.id}">Inspect</button>${bucket(n)==='report'?`<button class="btn q" data-noaction="${n.id}">No action</button>`:`<button class="btn q" data-defer="${n.id}">Defer</button>`}</div></div></div>`}
 function rainChart(){
  const W=360,H=150,pb=26,pt=16,max=Math.max(30,...RAIN.days.map(x=>x.mm)),bw=W/7;
  const bars=RAIN.days.map((x,i)=>{const h=(H-pb-pt)*x.mm/max,y=H-pb-h;
@@ -318,18 +364,26 @@ function projChart(){
   return`<div class="row" data-open="${n.id}" style="--c:${c}"><span>${esc(n.name)}</span><div class="bar"><i style="width:${n.fill}%;background:${c}"></i><u style="left:${n.fill}%;width:${Math.max(0,end-n.fill)}%"></u><s></s></div><span class="when" style="color:${h?c:'var(--muted)'}">${n.fill>=80?'now':h?short(h):'> 7 days'}</span></div>`}).join('')+`<div style="font-size:.74rem;color:var(--muted);margin-top:6px">Solid: today · hatched: forecast rain · dashed line: 80%</div>`;
 }
 function wos(){
- const L=S.wos.filter(w=>w.status==='Open');
- $('#wos').innerHTML=L.length?L.map(w=>{const b=bucket(S.nets.find(n=>n.id===w.net));
-  return`<div class="wo" style="--c:var(${w.c})"><span class="dot"></span><div><b>${esc(w.site)}</b> · ${esc(w.task)}<div class="no">${w.no} · ${w.pri} · due ${short(w.due)}</div></div><div class="btns"><button class="btn pri" data-done="${w.no}">Complete</button></div><div id="f-${w.no}" style="grid-column:1/-1"></div></div>`}).join(''):'<div class="empty">No open work orders. Raise one from an action above.</div>';
- $('#copyRun').disabled=!L.length;
+ const L=S.wos.filter(w=>w.status!=='Closed').sort((a,b)=>a.status==='Done'?-1:b.status==='Done'?1:0);
+ $('#wos').innerHTML=L.length?L.map(w=>{
+  if(w.status==='Done'){const j=w.job;
+   return`<div class="wo" style="--c:var(--ok)"><span class="dot"></span><div><b>${esc(w.site)}</b> · ${esc(w.task)}<div class="no">${w.no} · done ${short(j.at)} · awaiting your sign-off</div></div><div class="btns"><button class="btn pri" data-signoff="${w.no}">Sign off</button><button class="btn q" data-sendback="${w.no}">Send back</button></div>
+   <div class="jobsheet">${j.photo?`<img class="thumb" src="${j.photo}" alt="Contractor photo">`:''}<span><b>${esc(j.result)}</b>${j.kg?` · ${j.kg} kg`:''}${j.defects.length?` · Issues: ${esc(j.defects.join(', '))}`:''}${j.note?`<br>${esc(j.note)}`:''}</span></div></div>`}
+  return`<div class="wo" style="--c:var(${w.c})"><span class="dot"></span><div><b>${esc(w.site)}</b> · ${esc(w.task)}<div class="no">${w.no} · ${w.pri} · due ${short(w.due)} · with contractor</div></div><span></span></div>`}).join(''):'<div class="empty">No open work orders. Raise one from an action above.</div>';
+ $('#copyRun').disabled=!L.some(w=>w.status==='Open');
 }
+function months12(){const ev=[];S.nets.forEach(n=>n.hist.forEach(h=>ev.push(h)));
+ const months=[...Array(12)].map((_,i)=>{const d=new Date(TODAY.getFullYear(),TODAY.getMonth()-11+i,1);return{k:iso(d).slice(0,7),l:d.toLocaleDateString('en-AU',{month:'short'}).slice(0,1),kg:0,n:0}});
+ ev.forEach(e=>{const m=months.find(m=>m.k===e.date.slice(0,7));if(m){m.kg+=e.kg;m.n++}});return months}
+function kgSvg(months){const W=360,H=110,pb=20,max=Math.max(100,...months.map(m=>m.kg)),bw=W/12;
+ return`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Kilograms of litter removed per month">${months.map((m,i)=>{const h=(H-pb-10)*m.kg/max;return`<rect x="${i*bw+4}" y="${H-pb-h}" width="${bw-8}" height="${Math.max(h,1)}" fill="var(--accent)" opacity="${i===11?1:.7}"><title>${m.k}: ${m.kg} kg, ${m.n} jobs</title></rect><text x="${i*bw+bw/2}" y="${H-6}" text-anchor="middle" font-size="10">${m.l}</text>`}).join('')}</svg>`}
 function woHistory(){
  const ev=[];S.nets.forEach(n=>n.hist.forEach(h=>ev.push({...h,site:n.name,id:n.id})));ev.sort((a,b)=>a.date<b.date?1:-1);
  // kg per month, last 12 months
  const months=[...Array(12)].map((_,i)=>{const d=new Date(TODAY.getFullYear(),TODAY.getMonth()-11+i,1);return{k:iso(d).slice(0,7),l:d.toLocaleDateString('en-AU',{month:'short'}).slice(0,1),kg:0,n:0}});
  ev.forEach(e=>{const m=months.find(m=>m.k===e.date.slice(0,7));if(m){m.kg+=e.kg;m.n++}});
- const W=360,H=110,pb=20,max=Math.max(100,...months.map(m=>m.kg)),bw=W/12;
- $('#histchart').innerHTML=`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Kilograms of litter removed per month">${months.map((m,i)=>{const h=(H-pb-10)*m.kg/max;return`<rect x="${i*bw+4}" y="${H-pb-h}" width="${bw-8}" height="${Math.max(h,1)}" fill="var(--accent)" opacity="${i===11?1:.7}"><title>${m.k}: ${m.kg} kg, ${m.n} jobs</title></rect><text x="${i*bw+bw/2}" y="${H-6}" text-anchor="middle" font-size="10">${m.l}</text>`}).join('')}</svg>`;
+ $('#histchart').innerHTML=kgSvg(months);
+
  const yr=months.reduce((a,m)=>a+m.kg,0);$('#kgtot').textContent=`${(yr/1000).toFixed(1)} t removed · 12 months`;
  $('#hist').innerHTML=ev.slice(0,8).map(e=>`<div class="ev" style="--c:var(${e.task.startsWith('Repair')?'--repair':e.task.startsWith('Clear')?'--view':e.task.startsWith('Inspect')?'--muted':'--accent'})" data-open="${e.id}"><span class="d">${dmy(e.date)}</span><span class="k"></span><span>${esc(e.site)} · ${esc(e.task)}</span><span class="kg">${e.kg?e.kg+' kg':''}</span></div>`).join('');
 }
@@ -338,7 +392,7 @@ function gauge(f,c){const r=38,C=2*Math.PI*r,v=f==null?0:f;
 function drawer(id){
  drawerId=id;const n=S.nets.find(x=>x.id===id),b=bucket(n),c=`var(${colOf(b)})`,p=project(n);
  const mark=n.mark&&n.damaged?`<svg viewBox="0 0 100 75" preserveAspectRatio="none"><ellipse cx="${n.mark[0]}" cy="${n.mark[1]}" rx="10" ry="13" fill="none" stroke="#ff3b3b" stroke-width=".9"/></svg>`:'';
- const act=['repair','now','soon','view'].includes(b);
+ const act=['repair','now','soon','view','report'].includes(b);
  const pc=p?`<svg class="chart" viewBox="0 0 360 90" role="img" aria-label="Projected fill"><line x1="0" x2="360" y1="${80-80*.7}" y2="${80-80*.7}" stroke="var(--fg)" stroke-dasharray="4 4" opacity=".4"/><polyline fill="none" stroke="${c}" stroke-width="3" points="${[n.fill,...p].map((v,i)=>`${i*360/7},${80-v*.7}`).join(' ')}"/>${RAIN.days.map((x,i)=>`<text x="${(i+1)*360/7}" y="88" text-anchor="end" font-size="9">${short(x.d).split(' ')[0]}</text>`).join('')}</svg>`:'';
  let el=$('.drawer');if(!el){el=document.createElement('div');el.className='drawer';document.body.appendChild(el)}
  el.innerHTML=`<div class="in" role="dialog" aria-label="${esc(n.name)}"><div class="fig"><button class="x" data-close aria-label="Close">×</button><div class="fw"><img src="${img(n)}" alt="Latest camera image, ${esc(n.name)}">${mark}</div></div>
@@ -357,7 +411,7 @@ function closeDrawer(){drawerId=null;const el=$('.drawer');if(el)el.remove()}
 let EMAIL=null;
 const ACTLBL={raise:'Raise work order',inspect:'Send inspector',defer:'Defer 7 days'};
 function emailBlock(n){const a=EMAIL.do||'raise',b=bucket(n),task=a==='inspect'?'Inspect net and camera':(B[b]||B.soon).task;
- if(!['repair','now','soon','view'].includes(b)&&a!=='inspect')return`<div class="fromemail"><span class="src">OPENED FROM EMAIL ALERT</span><b>Already actioned</b><span>${esc(why(n))}</span></div>`;
+ if(!['repair','now','soon','view','report'].includes(b)&&a!=='inspect')return`<div class="fromemail"><span class="src">OPENED FROM EMAIL ALERT</span><b>Already actioned</b><span>${esc(why(n))}</span></div>`;
  return`<div class="fromemail"><span class="src">OPENED FROM EMAIL ALERT</span><b>${a==='defer'?'Defer this net for 7 days?':`Confirm: ${esc(task)}`}</b><span>${esc(why(n))}</span><div class="btns"><button class="btn pri" data-confirm="${a}">${a==='defer'?'Confirm defer':'Confirm and raise'}</button><button class="btn q" data-close>Not now</button></div></div>`}
 function fromEmail(){
  const q=new URLSearchParams(location.search),net=q.get('net'),act=q.get('do'),ln=q.get('lane');
@@ -369,52 +423,149 @@ function fromEmail(){
 /* ---------- actions ---------- */
 function raise(id,kind){
  const n=S.nets.find(x=>x.id===id),b=bucket(n);if(openWO(n))return null;
+ const linked=S.reports.filter(r=>r.net===id&&r.status==='New');
  const v=B[b]||B.soon,no='WO-'+String(TODAY.getFullYear()).slice(2)+'-'+String(S.seq++).padStart(4,'0');
  const task=kind==='inspect'?'Inspect net and camera':v.task;
  let due=iso(D(2));if(b==='soon'){const h=P(hit80(n));h.setDate(h.getDate()-1);due=iso(h<D(1)?D(1):h)}
  const w={no,net:id,site:n.name,task,pri:kind==='inspect'?'Normal':v.pri,due,created:iso(TODAY),reason:why(n),status:'Open',c:kind==='inspect'?'--muted':v.c};
- S.wos.push(w);save();return w;
+ S.wos.push(w);linked.forEach(r=>{r.status='With contractor';r.wo=no});save();return w;
 }
 function woText(w){return`${w.no} · ${w.site} · ${w.task} · ${w.pri} · by ${nice(w.due)} · ${w.reason}`}
 function runSheet(){const {out,km}=route();return`CONTRACTOR RUN · ${nice(iso(TODAY))} · ~${km} km\nStart: ${DEPOT.name}\n`+out.map((n,i)=>{const w=openWO(n);return`${i+1}. ${n.name} (${n.sub}) · ${w.task} · ${w.pri} · ${w.no}`}).join('\n')+`\nReturn: ${DEPOT.name}`}
-function complete(no){
- $('#f-'+no).innerHTML=`<form data-f="${no}"><label>Removed (kg)<input id="kg-${no}" type="number" min="0" value="60" style="width:90px"></label><label>Result<select id="st-${no}"><option>Emptied, net intact</option><option>Repaired or replaced</option><option>Camera view cleared</option><option>Inspected, no action</option></select></label><button class="btn pri">Close ${no}</button></form>`;
+/* ---------- sign-off (officer) ---------- */
+function signoff(no){
+ const w=S.wos.find(x=>x.no===no),n=S.nets.find(x=>x.id===w.net),j=w.job,st=j.result;
+ if(st==='Emptied, net intact'||st==='Repaired or replaced'){n.fill=5;n.damaged=false;n.last=j.at;if(n.big&&n.big.includes('sim-net'))n.big='img/sim-net-empty.jpg'}
+ if(st==='Repaired or replaced'&&n.big&&n.big.includes('lackey'))n.big=null;
+ if(st==='Camera view cleared'){n.blind=0;if(n.fill==null)n.fill=35;n.big=null}
+ if(j.defects.includes('Net damaged'))n.damaged=true;
+ if(j.defects.includes('Camera blocked'))n.blind=Math.max(n.blind||0,2);
+ n.hist.unshift({date:j.at,task:st,kg:j.kg,by:'Contractor'});
+ w.status='Closed';w.closed=iso(TODAY);
+ S.reports.filter(r=>r.wo===no).forEach(r=>r.status='Resolved');
+ save();render();if(runLine)toggleRun(true);toast(no+' signed off and closed');
 }
+
+/* ---------- roles ---------- */
+const ROLES=[['officer','Stormwater officer'],['contractor','Contractor'],['cs','Customer service'],['manager','Manager']];
+let ROLE=(()=>{const q=new URLSearchParams(location.search).get('role');if(q&&ROLES.some(r=>r[0]===q))return q;try{return localStorage.getItem('netwatch-role')||'officer'}catch(e){return'officer'}})();
+let PHOTO={};
+function setRole(r){ROLE=r;try{localStorage.setItem('netwatch-role',r)}catch(e){}closeDrawer();show()}
+function show(){
+ $('#roles').innerHTML=ROLES.map(([k,l])=>`<button class="${ROLE===k?'on':''}" data-role="${k}">${l}</button>`).join('');
+ const off=ROLE==='officer';$('#vOfficer').hidden=!off;$('#vRole').hidden=off;
+ if(off){render();if(map)setTimeout(()=>map.invalidateSize(),50)}
+ else $('#vRole').innerHTML=ROLE==='contractor'?vContractor():ROLE==='cs'?vCS():vManager();
+}
+const RESULTS=['Emptied, net intact','Repaired or replaced','Camera view cleared','Inspected, no action'];
+function vContractor(){
+ const {out,km}=route(),done=S.wos.filter(w=>w.status==='Done');
+ const jobs=out.map((n,i)=>{const w=openWO(n),b=w.c||'--accent';
+  return`<div class="job" style="--c:var(${b})"><span class="stop">${i+1}</span><img src="${img(n)}" alt="${esc(n.name)} camera">
+  <div style="display:grid;gap:4px"><b>${esc(n.name)}</b><span class="meta">${esc(n.sub)} · ${w.no}</span><span>${esc(w.task)} · <b>${w.pri}</b> · by ${short(w.due)}</span><span class="meta">${esc(w.reason)}</span>
+  <div class="btns"><a class="btn" href="https://www.google.com/maps/dir/?api=1&destination=${n.ll[0]},${n.ll[1]}" target="_blank" rel="noopener">Directions</a><button class="btn pri" data-jobform="${w.no}">Complete job</button></div></div>
+  <div id="jf-${w.no}" style="display:contents"></div></div>`}).join('');
+ return`<div class="rolehd"><h2>Today's run</h2><span>Urban Asset Solutions · ${out.length} job${out.length===1?'':'s'} · ~${km} km from ${esc(DEPOT.name)}</span></div>
+ <div class="jobs">${jobs||'<div class="empty">No jobs. Council has not raised any work orders.</div>'}</div>
+ <div class="rolehd" style="margin-top:20px"><h2>Waiting for Council sign-off</h2><span>${done.length}</span></div>
+ <div class="card">${done.length?done.map(w=>`<div class="wo" style="--c:var(--ok)"><span class="dot"></span><div><b>${esc(w.site)}</b> · ${esc(w.job.result)}${w.job.kg?` · ${w.job.kg} kg`:''}<div class="no">${w.no} · sent ${short(w.job.at)}</div></div><span></span></div>`).join(''):'<div class="empty">Nothing waiting.</div>'}</div>`;
+}
+function jobForm(no){
+ const w=S.wos.find(x=>x.no===no);
+ $('#jf-'+no).innerHTML=`<form data-job="${no}">
+  <label class="f">Result<select name="result">${RESULTS.map(r=>`<option${w.task.startsWith('Repair')&&r.startsWith('Repaired')||w.task.startsWith('Clear')&&r.startsWith('Camera')||w.task.startsWith('Inspect')&&r.startsWith('Inspected')?' selected':''}>${r}</option>`).join('')}</select></label>
+  <label class="f">Removed (kg)<input name="kg" type="number" min="0" step="1" value="${w.task.startsWith('Empty')?60:0}"></label>
+  <label class="f">Photo after<input name="photo" type="file" accept="image/*" capture="environment" data-photo="${no}"></label>
+  <div class="checks"><span style="color:var(--muted);font-size:.78rem">Issues found</span>${['Net damaged','Camera blocked','Access problem'].map(x=>`<label><input type="checkbox" name="def" value="${x}">${x}</label>`).join('')}</div>
+  <label class="f" style="grid-column:1/-1">Note<input name="note" placeholder="Optional"></label>
+  <div class="btns"><button class="btn pri">Send to Council</button></div></form>`;
+}
+function vCS(){
+ const opts=S.nets.map(n=>`<option value="${n.id}">${esc(n.name)} (${esc(n.sub)})</option>`).join('');
+ const rows=S.reports.slice().reverse().map(r=>{const n=S.nets.find(x=>x.id===r.net),c={New:'--soon','With contractor':'--accent',Resolved:'--ok','Closed, no action':'--muted'}[r.status]||'--muted';
+  return`<tr><td class="n">${r.no}</td><td>${short(r.date)}</td><td>${esc(n.name)}</td><td>${esc(r.type)}<div style="color:var(--muted);font-size:.8rem">${esc(r.details||'')}</div></td><td><span class="chipc" style="--c:var(${c})">${r.status}</span>${r.wo?`<div class="no" style="font-family:var(--mono);font-size:.74rem;color:var(--muted)">${r.wo}</div>`:''}</td></tr>`}).join('');
+ return`<div class="rolehd"><h2>Log a resident report</h2><span>Goes straight to the stormwater officer</span></div>
+ <div class="panel2"><form data-report>
+  <label class="f">Where<select name="net">${opts}</select></label>
+  <label class="f">What<select name="type"><option>Litter in the creek below the net</option><option>Net looks torn or loose</option><option>Flooding or ponding near the pipe</option><option>Bad smell</option><option>Other</option></select></label>
+  <label class="f">How reported<select name="via"><option>Phone</option><option>Online form</option><option>Email</option><option>Front counter</option></select></label>
+  <label class="f" style="grid-column:1/-1">Details<textarea name="details" placeholder="What the resident saw. Do not record names or contact details."></textarea></label>
+  <div class="btns"><button class="btn pri">Log report</button></div></form></div>
+ <div class="rolehd"><h2>Reports</h2><span>${S.reports.filter(r=>r.status!=='Resolved'&&r.status!=='Closed, no action').length} open</span></div>
+ <div class="card tblwrap"><table class="t"><tr><th>Ref</th><th>Logged</th><th>Where</th><th>What</th><th>Status</th></tr>${rows||'<tr><td colspan="5">No reports yet.</td></tr>'}</table></div>`;
+}
+function vManager(){
+ const act=S.nets.filter(n=>['repair','now','soon','view','report'].includes(bucket(n))).length;
+ const live=S.nets.filter(n=>!(n.blind>=2)).length;
+ const openW=S.wos.filter(w=>w.status!=='Closed').length,overdue=S.wos.filter(w=>w.status==='Open'&&w.due<iso(TODAY)).length;
+ const timed=S.wos.filter(w=>w.job&&w.created).map(w=>(P(w.job.at)-P(w.created))/864e5);
+ const avg=timed.length?(timed.reduce((a,b)=>a+b,0)/timed.length).toFixed(1):'—';
+ const m=months12(),t=(m.reduce((a,x)=>a+x.kg,0)/1000).toFixed(1);
+ const avoided=S.nets.filter(n=>bucket(n)==='ok'&&n.fill!=null&&n.fill<40).length;
+ const repOpen=S.reports.filter(r=>r.status==='New'||r.status==='With contractor').length;
+ const yr=iso(D(-365));
+ const rows=S.nets.map(n=>{const b=bucket(n),h=n.hist.filter(e=>e.date>=yr),kg=h.reduce((a,e)=>a+e.kg,0);
+  const lbl={repair:'Repair',now:'Empty now',soon:'Before rain',view:"Can't see",report:'Resident report',wo:'Work order',defer:'Deferred',ok:'OK'}[b];
+  return`<tr data-open="${n.id}" style="cursor:pointer"><td>${esc(n.name)}</td><td><span class="chipc" style="--c:var(${colOf(b)})">${lbl}</span></td><td class="n">${n.fill==null?'?':n.fill+'%'}</td><td>${dmy(n.last)}</td><td class="n">${h.length}</td><td class="n">${kg}</td></tr>`}).join('');
+ return`<div class="rolehd"><h2>Network overview</h2><span>${nice(iso(TODAY))}</span></div>
+ <div class="kpis">
+  <div class="kpi"><b>${live}/${S.nets.length}</b><span>Nets with a clear camera view</span></div>
+  <div class="kpi"><b>${act}</b><span>Nets needing action now</span></div>
+  <div class="kpi"><b>${openW}</b><span>Open work orders${overdue?` · ${overdue} overdue`:''}</span></div>
+  <div class="kpi"><b>${avg}</b><span>Days from raise to done (avg)</span></div>
+  <div class="kpi"><b>${t} t</b><span>Litter removed, 12 months</span></div>
+  <div class="kpi"><b>${avoided}</b><span>Quarterly visits not needed (under 40% full) · ~$${(avoided*1390).toLocaleString('en-AU')} est.</span></div>
+  <div class="kpi"><b>${repOpen}</b><span>Resident reports open</span></div>
+ </div>
+ <div class="grid">
+  <div class="card tblwrap"><div class="hd"><h2>Every net</h2></div><table class="t"><tr><th>Net</th><th>Status</th><th style="text-align:right">Fill</th><th>Last cleaned</th><th style="text-align:right">Cleans 12m</th><th style="text-align:right">kg 12m</th></tr>${rows}</table></div>
+  <div class="card"><div class="hd"><h2>Litter removed per month</h2></div><div class="pad">${kgSvg(m)}</div></div>
+ </div>`;
+}
+function photoIn(input){
+ const f=input.files&&input.files[0];if(!f)return;const no=input.dataset.photo,r=new FileReader();
+ r.onload=()=>{const im=new Image();im.onload=()=>{const sc=Math.min(1,480/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=im.width*sc;c.height=im.height*sc;c.getContext('2d').drawImage(im,0,0,c.width,c.height);PHOTO[no]=c.toDataURL('image/jpeg',.7);toast('Photo added')};im.src=r.result};r.readAsDataURL(f);
+}
+
 function copy(t,msg){(navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>toast(msg)).catch(()=>toast('Copy blocked: select the text instead'))}
 function toast(t){const e=$('#toast');e.textContent=t;e.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>e.hidden=true,2400)}
 
 document.addEventListener('click',e=>{
- const t=e.target.closest('[data-lane],[data-open],[data-raise],[data-raiseall],[data-inspect],[data-defer],[data-done],[data-close],[data-scroll],[data-confirm],[data-dismiss]');
+ const t=e.target.closest('[data-lane],[data-open],[data-raise],[data-raiseall],[data-inspect],[data-defer],[data-close],[data-scroll],[data-confirm],[data-dismiss],[data-role],[data-signoff],[data-sendback],[data-noaction],[data-jobform]');
  if(!t){if(e.target.classList.contains('drawer'))closeDrawer();return}
  const d=t.dataset;
- if(d.lane){lane=lane===d.lane?null:d.lane;render();if(lane)$('#lane').scrollIntoView({behavior:'smooth',block:'start'})}
+ if(d.role){setRole(d.role)}
+ else if(d.lane){lane=lane===d.lane?null:d.lane;render();if(lane)$('#lane').scrollIntoView({behavior:'smooth',block:'start'})}
  else if(d.scroll){$('#'+d.scroll).scrollIntoView({behavior:'smooth',block:'center'})}
  else if(d.open){map&&map.closePopup();drawer(d.open)}
  else if('close' in d)closeDrawer();
  else if(d.raise||d.inspect){const w=raise(d.raise||d.inspect,d.inspect?'inspect':'');if(w){render();toast(`${w.no} raised · ${w.site}`);if(drawerId)$('#wo-out').innerHTML=`<pre>${esc(woText(w))}</pre>`;if(runLine)toggleRun(true)}}
  else if(d.raiseall){const g=S.nets.filter(n=>bucket(n)===d.raiseall);g.forEach(n=>raise(n.id));lane=null;render();toast(`${g.length} work orders raised`);if(runLine)toggleRun(true)}
  else if(d.defer){S.nets.find(x=>x.id===d.defer).defer=iso(D(7));save();closeDrawer();render();toast('Deferred 7 days')}
- else if(d.done)complete(d.done);
+ else if(d.noaction){S.reports.filter(r=>r.net===d.noaction&&r.status==='New').forEach(r=>r.status='Closed, no action');save();closeDrawer();render();toast('Report closed, no action')}
+ else if(d.signoff)signoff(d.signoff);
+ else if(d.sendback){const w=S.wos.find(x=>x.no===d.sendback);w.status='Open';w.reason='Sent back: '+(w.job.note||'see Council');w.job=null;save();render();toast(w.no+' sent back to contractor')}
+ else if(d.jobform)jobForm(d.jobform);
  else if(d.confirm){const id=EMAIL.net;EMAIL.done=true;
   if(d.confirm==='defer'){S.nets.find(x=>x.id===id).defer=iso(D(7));save();closeDrawer();render();toast('Deferred 7 days')}
   else{const w=raise(id,d.confirm==='inspect'?'inspect':'');render();if(w){toast(`${w.no} raised · ${w.site}`);$('#wo-out').innerHTML=`<pre>${esc(woText(w))}</pre>`}}}
  else if('dismiss' in d){$('#banner').innerHTML=''}
 });
+document.addEventListener('change',e=>{if(e.target.dataset&&e.target.dataset.photo)photoIn(e.target)});
 document.addEventListener('submit',e=>{
- const f=e.target.closest('form[data-f]');if(!f)return;e.preventDefault();
- const no=f.dataset.f,w=S.wos.find(x=>x.no===no),n=S.nets.find(x=>x.id===w.net);
- const kg=+$('#kg-'+no).value||0,st=$('#st-'+no).value;w.status='Closed';
- if(st==='Emptied, net intact'||st==='Repaired or replaced'){n.fill=5;n.damaged=false;n.last=iso(TODAY);if(n.big&&n.big.includes('sim-net'))n.big='img/sim-net-empty.jpg'}
- if(st==='Repaired or replaced'&&n.big&&n.big.includes('lackey'))n.big=null;
- if(st==='Camera view cleared'){n.blind=0;if(n.fill==null)n.fill=35;n.big=null}
- n.hist.unshift({date:iso(TODAY),task:st,kg,by:'Contractor'});
- save();render();if(runLine)toggleRun(true);toast(no+' closed');
+ const f=e.target;
+ if(f.dataset.job!==undefined){e.preventDefault();const no=f.dataset.job,w=S.wos.find(x=>x.no===no),fd=new FormData(f);
+  w.job={result:fd.get('result'),kg:+fd.get('kg')||0,defects:fd.getAll('def'),note:fd.get('note')||'',photo:PHOTO[no]||null,at:iso(TODAY)};w.status='Done';delete PHOTO[no];
+  save();show();toast(`${no} sent to Council for sign-off`)}
+ else if(f.dataset.report!==undefined){e.preventDefault();const fd=new FormData(f),no='CRM-'+String(TODAY.getFullYear()).slice(2)+'-'+String(S.crm++).padStart(4,'0');
+  S.reports.push({no,net:fd.get('net'),type:fd.get('type'),via:fd.get('via'),details:(fd.get('details')||'').slice(0,400),date:iso(TODAY),status:'New'});
+  save();show();toast(`${no} logged and sent to the stormwater officer`)}
 });
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeDrawer()});
 $('#tRadar').onclick=toggleRadar;$('#tRun').onclick=()=>toggleRun();
 $('#copyRun').onclick=()=>copy(runSheet(),'Run sheet copied');
-$('#reset').onclick=()=>{S=fresh();save();lane=null;closeDrawer();if(runLine){runLine.remove();runLine=null;$('#tRun').classList.remove('on')}render();toast('Demo reset')};
-initMap();render();fromEmail();getRain();
+$('#reset').onclick=()=>{S=fresh();save();lane=null;closeDrawer();if(runLine){runLine.remove();runLine=null;$('#tRun').classList.remove('on')}show();toast('Demo reset')};
+initMap();if(new URLSearchParams(location.search).has('net')||new URLSearchParams(location.search).has('lane'))ROLE='officer';show();fromEmail();getRain();
 </script>
 </body>
 </html>
