@@ -1,77 +1,216 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Home · GPT which GPT?</title>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Net Watch</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
-:root{--bg:#f5f3ee;--paper:#fff;--fg:#14232e;--muted:#5c6b74;--line:#d8d3c8;--navy:#0f2f52;--teal:#126a6a;--gold:#c98a1c;--gold-soft:#fff1d6;--green:#2f8a58;--red:#c43c3c;--chip:#ece8df;--display:"IBM Plex Sans",system-ui,sans-serif;--mono:"IBM Plex Mono",ui-monospace,monospace}
-@media (prefers-color-scheme:dark){:root{--bg:#0f2f52;--paper:#143a5f;--fg:#f3f1ea;--muted:#bfd6e2;--line:#2a4f73;--navy:#0b2440;--teal:#9fd8d0;--gold:#ffb547;--gold-soft:#3a3214;--green:#6fc48f;--red:#f07a7a;--chip:#1d4670;color-scheme:dark}}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--display);line-height:1.5;padding:0 16px 40px}
-a{color:var(--teal)}.wrap{max-width:1120px;margin:0 auto}
-nav{display:flex;flex-wrap:wrap;gap:6px 18px;align-items:center;padding:14px 0;border-bottom:1px solid var(--line);font-family:var(--mono);font-size:.8rem}
-nav a{text-decoration:none;color:var(--fg)}nav a.brand{font-weight:600;color:var(--gold)}nav a.cur{text-decoration:underline;text-underline-offset:4px}
-h1{font-size:2rem;line-height:1.15;margin:28px 0 6px;text-wrap:balance}h2{font-family:var(--mono);font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:30px 0 10px;font-weight:500}
-.lede{color:var(--muted);max-width:72ch;margin:0 0 18px;font-size:1.05rem}
-.eyebrow{font-family:var(--mono);font-size:.76rem;letter-spacing:.08em;text-transform:uppercase;color:var(--teal)}
-.gate{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px}
-.gate a{display:grid;gap:6px;align-content:start;background:var(--paper);border:1px solid var(--line);border-top:6px solid var(--c,var(--gold));padding:16px;text-decoration:none;color:var(--fg)}
-.gate a:hover{border-color:var(--teal);border-top-color:var(--c,var(--gold))}.gate b{font-size:1.05rem;line-height:1.25}.gate span{color:var(--muted);font-size:.9rem}.gate small{font-family:var(--mono);font-size:.72rem;color:var(--muted)}
-.gate a.focus{grid-column:span 2;background:var(--gold-soft)}@media (max-width:640px){.gate a.focus{grid-column:auto}}
-.code{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:.74rem;font-weight:500}.code i{width:11px;height:11px;border-radius:50%;background:var(--c)}
-.flag{font-family:var(--mono);font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;color:var(--gold);font-weight:600}
-.states{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px}
-.st{background:var(--paper);border:1px solid var(--line);padding:10px 12px;border-left:5px solid var(--line)}
-.st.empty{border-left-color:#6fc48f}.st.partial{border-left-color:#ffb547}.st.full{border-left-color:#f08a5a}.st.blocked{border-left-color:#dc4646}.st.unusable{border-left-color:#8fb3c4}.st.damaged{border-left-color:#c9a3e8}
-.st b{display:block}.st i{font-style:normal;font-family:var(--mono);font-size:.74rem;color:var(--muted);display:block}.st span{font-size:.86rem}
-.panel{background:var(--paper);border:1px solid var(--line);padding:16px 18px;min-width:0}
-.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
-.three{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
-table{border-collapse:collapse;width:100%;font-size:.9rem}th,td{text-align:left;padding:8px 8px;border-top:1px solid var(--line);vertical-align:top}th{font-family:var(--mono);font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:500;border-top:0}
-td.role{font-family:var(--mono);font-size:.76rem;color:var(--teal)}td.cost{font-family:var(--mono);font-size:.76rem;color:var(--muted)}td.num{font-family:var(--mono);text-align:right;white-space:nowrap}
-.tbl{overflow-x:auto}ul{padding-left:18px;margin:0}li{margin-bottom:4px}
-.rule{background:var(--gold-soft);border-left:5px solid var(--gold);padding:10px 14px;font-size:.95rem}
-.chips{display:flex;flex-wrap:wrap;gap:6px}.chips span{background:var(--chip);font-family:var(--mono);font-size:.74rem;padding:3px 9px}
-img.fig{max-width:100%;border:1px solid var(--line);display:block}
-.cap{font-size:.82rem;color:var(--muted);margin-top:6px}
-footer{margin-top:40px;font-family:var(--mono);font-size:.74rem;color:var(--muted);line-height:1.6;max-width:100ch}
-.matrix td.y{color:var(--green);font-weight:600}.matrix td.n{color:var(--muted)}
-.quote{border-left:3px solid var(--teal);padding:4px 0 4px 14px;color:var(--fg);font-size:.98rem;max-width:70ch}
-.quote small{display:block;color:var(--muted);font-family:var(--mono);font-size:.72rem;margin-top:4px}
-.scn{background:var(--paper);border:1px solid var(--line);padding:14px 16px;display:grid;gap:6px;align-content:start}
-.scn .n{font-family:var(--mono);color:var(--gold);font-size:.8rem}.scn b{font-size:1.02rem}.scn span{font-size:.88rem;color:var(--muted)}
-.bar{height:10px;background:var(--chip);position:relative}.bar i{position:absolute;inset:0 auto 0 0;background:var(--gold)}
-/* email mock */
-.mail{background:var(--paper);border:1px solid var(--line);max-width:760px;font-size:.95rem}
-.mail .hd{padding:12px 18px;border-bottom:1px solid var(--line);display:grid;gap:2px;font-size:.86rem;color:var(--muted)}
-.mail .hd b{color:var(--fg);font-size:1.05rem}
-.mail .bd{padding:16px 18px;display:grid;gap:12px}
-.mail .pill{display:inline-block;font-family:var(--mono);font-size:.72rem;padding:2px 8px;border-radius:3px;color:#fff;background:var(--red)}
-.mail .why{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;font-size:.88rem}.mail .why dt{color:var(--muted);font-family:var(--mono);font-size:.76rem;padding-top:2px}.mail .why dd{margin:0}
-.mail .acts{display:flex;flex-wrap:wrap;gap:8px}.mail .acts span{border:1px solid var(--teal);color:var(--teal);padding:7px 12px;font-weight:600;font-size:.86rem}.mail .acts span.pri{background:var(--teal);color:var(--paper)}
-.figwrap{position:relative;max-width:640px}.figwrap svg{position:absolute;inset:0;width:100%;height:100%}
-</style></head><body><div class="wrap">
-<nav><a class="brand" href="index.html">GPT which GPT?</a><a href="index.html" class=cur>Home</a><a href="mvp.html">MVP</a><a href="alert.html">Sample alert</a><a href="sensors.html">Sensor matrix</a><a href="plan.html">Build plan</a><a href="evidence.html">Evidence</a></nav>
-
-<div class="eyebrow">City of Parramatta · about 35–40 GPTs · about 15 cameras, 10 working · one photo a day</div>
-<h1>Clean the net before the storm, not after it lets go</h1>
-<p class="lede">Council's litter nets are built to break away from the pipe when they are full and the next surge hits. Today one officer looks at the camera images for about 15 minutes each weekday; nobody looks on weekends or over Christmas, and that officer is on leave until mid-January. GPT which GPT? reads every image, scores how full each net is, checks the rain forecast, and emails an officer with the marked-up photo when a net needs cleaning or repair. The officer approves; the work order follows.</p>
-<h2 id="types">Start with the trap type</h2>
-<p style="margin:-4px 0 12px;color:var(--muted);font-size:.92rem">Council's own asset codes and map colours from the 2022 GPT Audit. Each type fills differently and needs a different sensor; the decision and email layer is the same for all of them.</p>
-<div class="gate"><a href="types/net.html" class="focus" style="--c:#7b4fc9"><span class=flag>MVP focus · Council asked for nets first</span><span class="code" style="--c:#7b4fc9"><i></i>Purple · GPT</span><b>End-of-pipe net or basket</b><span>A steel-cable net clamped to the end of a stormwater pipe, just before the creek</span><small>Primary signal: Existing trail camera</small></a><a href="types/trash-rack.html" class="" style="--c:#2f6fd6"><span class="code" style="--c:#2f6fd6"><i></i>Blue · Trash Rack</span><b>Trash rack across a waterway</b><span>A fixed steel rack across a channel; debris piles against it</span><small>Primary signal: Existing camera with AI debris coverage</small></a><a href="types/pit.html" class="" style="--c:#2f9a4a"><span class="code" style="--c:#2f9a4a"><i></i>Green · pGPT</span><b>Trap in a road-side pit</b><span>A basket or insert inside a kerbside drainage pit</span><small>Primary signal: Radar or ultrasonic pit level</small></a><a href="types/vault.html" class="" style="--c:#e0b020"><span class="code" style="--c:#e0b020"><i></i>Yellow · uGPT</span><b>Underground wet vault</b><span>A below-ground chamber with standing water; litter can be submerged</span><small>Primary signal: Rainfall + cleaning history model</small></a><a href="types/boom.html" class="" style="--c:#222222"><span class="code" style="--c:#222222"><i></i>Black · Boom</span><b>Floating boom across deep waterway</b><span>A floating barrier that corrals surface litter</span><small>Primary signal: Existing wide-angle camera</small></a></div>
-<h2>The six states a net is scored into</h2>
-<div class="states"><div class="st empty"><b>Empty</b><i>0–40%</i><span>No action. Log the frame.</span></div><div class="st partial"><b>Filling</b><i>40–70%</i><span>Watch. Re-score after the next rain.</span></div><div class="st full"><b>Clean due</b><i>70–80%</i><span>Email: clean before the next storm.</span></div><div class="st blocked"><b>Overdue</b><i>&gt;80% or overtopping</i><span>Email: urgent. A full net detaches in the next surge.</span></div><div class="st unusable"><b>Can't see</b><i>leaves, fog, dark, offline</i><span>Email after 2 days: restore the view.</span></div><div class="st damaged"><b>Damaged / detached</b><i>torn mesh, off the pipe</i><span>Email: repair job, not a clean.</span></div></div>
-<p style="color:var(--muted);font-size:.9rem;margin-top:10px">Council's target is to intervene at 70–80% full. The thresholds are a starting point for the open question "What counts as full?". <a href="assets/gpt-fullness-states.png">Simulated examples</a> built from two Council frames.</p>
-<div class="two" style="margin-top:28px">
-<div class="panel"><h2 style="margin-top:0">Today</h2><ul>
-<li>Camera nets: one person reviews the day's photos, weekdays only. The judgement lives in that person's head.</li>
-<li>Everything else: cleaned about every three months, after a big storm, or from experience ("that one fills after 20 mm, that one after 90 mm").</li>
-<li>Some nets are cleaned half empty; some have already overflowed or detached.</li>
-</ul><p><a href="assets/gpt-clean-process.png">Process as reconstructed</a> · <a href="assets/gpt-cost-estimate.png">Cost estimate</a></p></div>
-<div class="panel"><h2 style="margin-top:0">With GPT which GPT?</h2><ul>
-<li>Every image scored the day it arrives, weekends and holidays included.</li>
-<li>Rain-aware trigger: clean when the net can't hold the next forecast storm.</li>
-<li>One email with the photo, an arrow on the problem, the reason and the confidence. About one a week across the network.</li>
-<li>Officer approves, defers or asks for an inspection. The outcome is recorded, so each net's fill behaviour is learned over time.</li>
-</ul><p><a href="alert.html">See a sample alert</a> · <a href="mvp.html">What we are demoing</a></p></div>
+:root{--bg:#f4f2ed;--card:#fff;--fg:#15232d;--muted:#63717a;--line:#dcd7cc;--accent:#126a6a;--accent-fg:#fff;
+--l3:#c63d3d;--l2:#d98a12;--l1:#2f8a58;--l0:#8fa3ad;--chip:#ece8df;
+--sans:"IBM Plex Sans",system-ui,sans-serif;--mono:"IBM Plex Mono",ui-monospace,monospace}
+@media (prefers-color-scheme:dark){:root{--bg:#0e1d28;--card:#16293a;--fg:#eef0ee;--muted:#a3b4bd;--line:#284256;--accent:#5fc2b6;--accent-fg:#0e1d28;--l3:#f07272;--l2:#f2b14a;--l1:#6fc48f;--l0:#7f939d;--chip:#203a4f;color-scheme:dark}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.45 var(--sans)}
+.app{max-width:760px;margin:0 auto;padding:0 16px 48px}
+header{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:6px 16px;padding:18px 0 10px}
+h1{margin:0;font-size:1.35rem}
+.rain{font-family:var(--mono);font-size:.82rem;color:var(--muted)}
+.rain b{color:var(--fg);font-weight:500}
+nav{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:14px;overflow-x:auto}
+nav button{background:none;border:0;border-bottom:3px solid transparent;padding:10px 12px;font:500 .92rem var(--sans);color:var(--muted);cursor:pointer;white-space:nowrap}
+nav button.on{color:var(--fg);border-color:var(--accent)}
+nav .n{font-family:var(--mono);font-size:.78rem;margin-left:4px}
+.list{display:grid;gap:8px}
+.item{display:grid;grid-template-columns:64px 1fr auto;gap:12px;align-items:center;background:var(--card);border:1px solid var(--line);border-left:5px solid var(--l0);padding:8px 12px 8px 8px;cursor:pointer;text-align:left;width:100%;font:inherit;color:inherit}
+.item:hover{border-color:var(--accent)}
+.item img{width:64px;height:64px;object-fit:cover;display:block}
+.item b{display:block;font-weight:600}
+.item span{color:var(--muted);font-size:.86rem}
+.item .act{font-family:var(--mono);font-size:.76rem;font-weight:500;white-space:nowrap}
+.lv3{border-left-color:var(--l3)}.lv3 .act{color:var(--l3)}
+.lv2{border-left-color:var(--l2)}.lv2 .act{color:var(--l2)}
+.lv1{border-left-color:var(--l1)}.lv1 .act{color:var(--l1)}
+.empty{color:var(--muted);padding:28px 0;text-align:center}
+.sheet{background:var(--card);border:1px solid var(--line);margin-bottom:16px}
+.fig{background:#000;display:flex;justify-content:center}
+.fig .fw{position:relative;max-width:100%}
+.fig img{display:block;max-width:100%;max-height:420px;width:auto;height:auto}
+.fig svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.body{padding:14px 16px;display:grid;gap:12px}
+.ttl{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap}
+.ttl h2{margin:0;font-size:1.15rem}
+.tag{font-family:var(--mono);font-size:.74rem;padding:2px 8px;color:#fff;background:var(--l0)}
+.tag.lv3{background:var(--l3)}.tag.lv2{background:var(--l2)}.tag.lv1{background:var(--l1)}
+dl{display:grid;grid-template-columns:auto 1fr;gap:4px 16px;margin:0;font-size:.92rem}
+dt{color:var(--muted)}dd{margin:0;font-variant-numeric:tabular-nums}
+.meter{height:8px;background:var(--chip);margin-top:6px}.meter i{display:block;height:100%;background:var(--l2)}
+.btns{display:flex;flex-wrap:wrap;gap:8px}
+.btn{border:1px solid var(--accent);background:none;color:var(--accent);padding:9px 14px;font:600 .9rem var(--sans);cursor:pointer}
+.btn.pri{background:var(--accent);color:var(--accent-fg)}
+.btn.quiet{border-color:var(--line);color:var(--muted)}
+.btn:focus-visible,nav button:focus-visible,.item:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.back{background:none;border:0;color:var(--accent);font:500 .9rem var(--sans);padding:0 0 10px;cursor:pointer}
+pre{margin:0;background:var(--chip);padding:12px;font:.84rem/1.5 var(--mono);white-space:pre-wrap;overflow-x:auto}
+.form{display:grid;gap:10px}
+label{display:grid;gap:4px;font-size:.86rem;color:var(--muted)}
+input,select,textarea{font:inherit;color:var(--fg);background:var(--bg);border:1px solid var(--line);padding:8px}
+.wo{background:var(--card);border:1px solid var(--line);padding:12px 14px;display:grid;gap:8px}
+.wo .row{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.wo .no{font-family:var(--mono);font-size:.8rem;color:var(--muted)}
+footer{margin-top:28px;font-family:var(--mono);font-size:.74rem;color:var(--muted);display:flex;gap:14px;flex-wrap:wrap}
+footer button,footer a{background:none;border:0;padding:0;color:var(--muted);font:inherit;text-decoration:underline;cursor:pointer}
+.toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:8px 14px;font-size:.88rem}
+@media (max-width:480px){.item{grid-template-columns:52px 1fr}.item img{width:52px;height:52px}.item .act{grid-column:2}}
+</style>
+</head>
+<body>
+<div class="app">
+<header><h1>Net Watch</h1><div class="rain" id="rain">Rain forecast loading…</div></header>
+<nav id="tabs"></nav>
+<main id="view"></main>
+<footer><span>Demo data</span><span id="src"></span><button id="reset">Reset demo</button><a href="brief/">Brief</a></footer>
 </div>
+<div class="toast" id="toast" hidden></div>
+<script>
+const TODAY=new Date();TODAY.setHours(0,0,0,0);
+const D=n=>{const d=new Date(TODAY);d.setDate(d.getDate()+n);return d};
+const iso=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+const P=s=>new Date(s+'T00:00:00');
+const nice=s=>new Date(s+'T00:00:00').toLocaleDateString('en-AU',{weekday:'short',day:'numeric',month:'short'}).replace(',','');
+const short=s=>new Date(s+'T00:00:00').toLocaleDateString('en-AU',{weekday:'short',day:'numeric'}).replace(',','');
 
-<footer>GPT which GPT? is a Team 101 entry for the WSTI Festi 2026 Build with AI challenge, City Challenge track, Parramatta Possibilities Challenge 5 (AI for Smarter Asset and Environmental Management). Operating facts come from the Council SME breakout session with Dr Paul Hackney (9 Nov 2026) and City of Parramatta public records: GPT Audit (Council minutes 25 Mar 2024), Asset Management Plan 2027–2036, Annual Report 2024/25. Sensor costs are indicative, not quotes. Vendor names are examples from public sources, not endorsements. Camera frames are Council SCADA images shared for the challenge.</footer>
-</div></body></html>
+// Demo nets: real SCADA thumbnails; large frames are the real Lackey St West image or simulated states.
+const SEED=[
+ {id:'lackey-st-west',name:'Lackey St West',fill:45,mm:70,last:iso(D(-85)),damaged:true,big:'img/lackey-st-west-full.jpg',mark:[57,52]},
+ {id:'bettington-rd',name:'Bettington Rd',fill:86,mm:90,last:iso(D(-120)),big:'img/sim-net-blocked.jpg'},
+ {id:'james-ruse-dr-1',name:'James Ruse Dr 1',fill:76,mm:80,last:iso(D(-95)),big:'img/sim-net-full.jpg'},
+ {id:'norwood-ave',name:'Norwood Ave',fill:62,mm:55,last:iso(D(-70)),big:'img/sim-net-partial.jpg'},
+ {id:'ridge-st',name:'Ridge St',fill:null,mm:80,last:iso(D(-60)),blind:3,big:'img/sim-net-unusable.jpg'},
+ {id:'lackey-st-east',name:'Lackey St East',fill:35,mm:90,last:iso(D(-40))},
+ {id:'lake-parra-res',name:'Lake Parra Res',fill:20,mm:120,last:iso(D(-30))},
+ {id:'forest-cl',name:'Forest Cl',fill:15,mm:100,last:iso(D(-20))},
+ {id:'james-ruse-dr-2',name:'James Ruse Dr 2',fill:30,mm:80,last:iso(D(-50))},
+ {id:'shirley-st',name:'Shirley St',fill:40,mm:110,last:iso(D(-65))},
+ {id:'anthony-st',name:'Anthony St',fill:25,mm:90,last:iso(D(-45))},
+ {id:'sturt-st',name:'Sturt St',fill:10,mm:100,last:iso(D(-12)),big:'img/sim-net-empty.jpg'},
+ {id:'willmott-ave',name:'Willmott Ave',fill:30,mm:120,last:iso(D(-55))},
+ {id:'charles-st',name:'Charles St',fill:15,mm:150,last:iso(D(-25))}
+];
+const KEY='netwatch-v1';
+let S;
+function fresh(){return{nets:SEED.map(n=>({...n})),wos:[],log:[],seq:1}}
+function load(){try{const s=JSON.parse(localStorage.getItem(KEY));if(s&&s.nets)return s}catch(e){}return fresh()}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+S=load();
+
+// Rain: Open-Meteo daily totals for Parramatta, next 3 days. Falls back to a demo storm.
+let RAIN={days:[{d:iso(D(1)),mm:2},{d:iso(D(2)),mm:6},{d:iso(D(3)),mm:28}],live:false};
+const rainTotal=()=>RAIN.days.reduce((a,x)=>a+x.mm,0);
+const stormDay=()=>{const x=RAIN.days.find(x=>x.mm>=10)||RAIN.days.reduce((a,b)=>b.mm>a.mm?b:a);return x};
+async function getRain(){
+ try{const r=await fetch('https://api.open-meteo.com/v1/forecast?latitude=-33.815&longitude=151.003&daily=precipitation_sum&timezone=Australia%2FSydney&forecast_days=4');
+  const j=await r.json();const t=j.daily.time,p=j.daily.precipitation_sum;
+  RAIN={days:t.slice(1,4).map((d,i)=>({d,mm:Math.round(p[i+1]||0)})),live:true};
+ }catch(e){}
+ render();
+}
+
+function assess(n){
+ const open=S.wos.find(w=>w.net===n.id&&w.status==='Open');
+ if(open)return{lv:0,act:'Work order '+open.no,why:open.task,state:'With contractor'};
+ if(n.defer&&n.defer>iso(TODAY))return{lv:0,act:'Deferred to '+nice(n.defer),why:'',state:'Deferred'};
+ const cap0=n.fill==null?null:Math.round((100-n.fill)/100*n.mm);
+ if(n.damaged)return{lv:3,act:'Repair',task:'Repair or refit net',why:'Net torn or off the pipe',state:'Damaged',cap:cap0};
+ if(n.blind>=2)return{lv:2,act:'Restore view',task:'Clear camera view',why:`No clear image for ${n.blind} days`,state:"Can't see"};
+ const cap=Math.round((100-n.fill)/100*n.mm),s=stormDay(),tot=rainTotal();
+ if(n.fill>=80)return{lv:3,act:'Clean now',task:'Empty net',why:`${n.fill}% full`,state:'Overdue',cap};
+ if(n.fill>=70||tot>=cap)return{lv:2,act:'Clean by '+short(s.d),task:'Empty net',why:`${n.fill}% full · holds ~${cap} mm more · ${tot} mm forecast`,state:'Clean due',cap};
+ return{lv:1,act:'OK',why:`${n.fill}% full · holds ~${cap} mm more`,state:'OK',cap};
+}
+
+let tab='todo',open=null;
+const todo=()=>S.nets.map(n=>({n,a:assess(n)})).filter(x=>x.a.lv>=2).sort((x,y)=>y.a.lv-x.a.lv||(y.n.fill||0)-(x.n.fill||0));
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function toast(t){const e=$('#toast');e.textContent=t;e.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>e.hidden=true,2200)}
+
+function render(){
+ const s=stormDay();
+ $('#rain').innerHTML=`Rain next 3 days <b>${rainTotal()} mm</b> · heaviest <b>${nice(s.d)}</b> ${s.mm} mm`;
+ $('#src').textContent=RAIN.live?'Rain: Open-Meteo, live':'Rain: demo values';
+ const openWO=S.wos.filter(w=>w.status==='Open').length;
+ const T=[['todo','To do',todo().length],['all','All nets',S.nets.length],['wo','Work orders',openWO],['done','Done',S.log.length]];
+ $('#tabs').innerHTML=T.map(([k,l,c])=>`<button data-t="${k}" class="${tab===k?'on':''}">${l}<span class="n">${c}</span></button>`).join('');
+ const v=$('#view');
+ if(open){v.innerHTML=detail(S.nets.find(n=>n.id===open));return}
+ if(tab==='todo'){const L=todo();v.innerHTML=L.length?`<div class="list">${L.map(card).join('')}</div>`:`<div class="empty">Nothing needs action.</div>`}
+ if(tab==='all'){const L=S.nets.map(n=>({n,a:assess(n)})).sort((x,y)=>y.a.lv-x.a.lv||(y.n.fill||0)-(x.n.fill||0));v.innerHTML=`<div class="list">${L.map(card).join('')}</div>`}
+ if(tab==='wo'){const L=S.wos.filter(w=>w.status==='Open');v.innerHTML=L.length?`<div class="list">${L.map(woCard).join('')}</div>`:`<div class="empty">No open work orders.</div>`}
+ if(tab==='done'){v.innerHTML=S.log.length?`<div class="list">${S.log.slice().reverse().map(l=>`<div class="wo"><div class="row"><b>${esc(l.site)}</b><span class="no">${esc(l.no)} · ${nice(l.date)}</span></div><span>${esc(l.text)}</span></div>`).join('')}</div>`:`<div class="empty">Completed work appears here.</div>`}
+}
+function card({n,a}){return`<button class="item lv${a.lv}" data-o="${n.id}"><img src="img/${n.id}.jpg" alt=""><div><b>${esc(n.name)}</b><span>${esc(a.why||a.state)}</span></div><div class="act">${esc(a.act)}</div></button>`}
+function woCard(w){return`<div class="wo"><div class="row"><b>${esc(w.site)}</b><span class="no">${w.no}</span></div><span>${esc(w.task)} · ${w.priority} · due ${nice(w.due)}</span><div class="btns"><button class="btn pri" data-done="${w.no}">Record completion</button><button class="btn quiet" data-copy="${w.no}">Copy</button></div><div id="f-${w.no}"></div></div>`}
+function detail(n){
+ const a=assess(n),img=n.big||`img/${n.id}.jpg`;
+ const mark=n.mark?`<svg viewBox="0 0 100 75" preserveAspectRatio="none"><ellipse cx="${n.mark[0]}" cy="${n.mark[1]}" rx="10" ry="13" fill="none" stroke="#ff3b3b" stroke-width=".9"/></svg>`:'';
+ const acts=a.lv>=2?`<button class="btn pri" data-raise="${n.id}">Raise work order</button><button class="btn" data-inspect="${n.id}">Send inspector</button><button class="btn quiet" data-defer="${n.id}">Defer 7 days</button>`:'';
+ return`<button class="back" data-back>← Back</button><div class="sheet"><div class="fig"><div class="fw"><img src="${img}" alt="Latest camera image, ${esc(n.name)}">${mark}</div></div><div class="body">
+ <div class="ttl"><h2>${esc(n.name)}</h2><span class="tag lv${a.lv}">${esc(a.state)}</span></div>
+ ${a.lv>=2?`<div><b>${esc(a.act)}</b> · ${esc(a.why)}</div>`:''}
+ <dl><dt>Fill</dt><dd>${n.fill==null?'Unknown':n.fill+'%'}${n.fill!=null?`<div class="meter"><i style="width:${n.fill}%"></i></div>`:''}</dd>
+ <dt>Holds</dt><dd>${a.cap!=null?'~'+a.cap+' mm more rain':'—'}</dd>
+ <dt>Forecast</dt><dd>${RAIN.days.map(x=>short(x.d)+' '+x.mm+' mm').join(' · ')}</dd>
+ <dt>Last cleaned</dt><dd>${nice(n.last)}</dd></dl>
+ <div class="btns">${acts}</div><div id="wo-out"></div></div></div>`;
+}
+function woText(w){return`WORK ORDER ${w.no}
+Site: ${w.site}
+Asset: End-of-pipe litter net (GPT)
+Task: ${w.task}
+Priority: ${w.priority}
+Complete by: ${nice(w.due)}
+Reason: ${w.reason}
+Photo: latest camera frame, ${nice(w.created)}
+Raised by: Stormwater officer, City of Parramatta`}
+function raise(id,kind){
+ const n=S.nets.find(x=>x.id===id),a=assess(n);
+ const no='WO-'+String(TODAY.getFullYear()).slice(2)+'-'+String(S.seq++).padStart(4,'0');
+ const task=kind==='inspect'?'Inspect net and camera':a.task;
+ const due=a.lv===3||kind==='inspect'?iso(D(2)):stormDay().d<iso(D(1))?iso(D(1)):(()=>{const x=P(stormDay().d);x.setDate(x.getDate()-1);return iso(x)})();
+ const w={no,net:id,site:n.name,task,priority:a.lv===3?'Urgent':'High',due,created:iso(TODAY),reason:a.why,status:'Open'};
+ S.wos.push(w);save();
+ $('#wo-out').innerHTML=`<pre>${esc(woText(w))}</pre><div class="btns"><button class="btn pri" data-copy="${no}">Copy work order</button><button class="btn quiet" data-back>Done</button></div>`;
+ $('#wo-out').scrollIntoView({behavior:'smooth',block:'nearest'});
+ document.querySelectorAll('[data-raise],[data-inspect],[data-defer]').forEach(b=>b.disabled=true);
+}
+function complete(no){
+ $('#f-'+no).innerHTML=`<form class="form" data-f="${no}"><label>Removed (kg)<input id="kg-${no}" type="number" min="0" value="60"></label><label>Net after visit<select id="st-${no}"><option>Emptied, net intact</option><option>Repaired or replaced</option><option>Camera view cleared</option><option>No action needed</option></select></label><button class="btn pri">Close work order</button></form>`;
+}
+document.addEventListener('click',e=>{
+ const t=e.target.closest('button');if(!t)return;const d=t.dataset;
+ if(d.t){tab=d.t;open=null;render()}
+ else if(d.o){open=d.o;render();window.scrollTo(0,0)}
+ else if('back' in d){open=null;render()}
+ else if(d.raise)raise(d.raise,'clean');
+ else if(d.inspect)raise(d.inspect,'inspect');
+ else if(d.defer){const n=S.nets.find(x=>x.id===d.defer);n.defer=iso(D(7));save();open=null;render();toast('Deferred 7 days')}
+ else if(d.copy){const w=S.wos.find(x=>x.no===d.copy);const txt=woText(w);
+  (navigator.clipboard?navigator.clipboard.writeText(txt):Promise.reject()).then(()=>toast('Copied '+w.no)).catch(()=>toast('Select the text to copy'))}
+ else if(d.done)complete(d.done);
+});
+document.addEventListener('submit',e=>{
+ const f=e.target.closest('form[data-f]');if(!f)return;e.preventDefault();
+ const no=f.dataset.f,w=S.wos.find(x=>x.no===no),n=S.nets.find(x=>x.id===w.net);
+ const kg=+document.getElementById('kg-'+no).value||0,st=document.getElementById('st-'+no).value;
+ w.status='Closed';
+ if(st!=='No action needed'){n.fill=st==='Camera view cleared'?n.fill??30:5;n.damaged=false;n.blind=0;if(st!=='Camera view cleared')n.last=iso(TODAY)}
+ if(n.fill==null)n.fill=30;
+ S.log.push({no,site:w.site,date:iso(TODAY),text:`${w.task} · ${st}${kg?` · ${kg} kg removed`:''}`});
+ save();render();toast(no+' closed');
+});
+$('#reset').onclick=()=>{S=fresh();save();tab='todo';open=null;render();toast('Demo reset')};
+render();getRain();
+</script>
+</body>
+</html>
