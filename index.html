@@ -55,7 +55,7 @@ h1{margin:0;font-size:1.4rem;letter-spacing:-.01em}
 /* charts */
 svg text{font-family:var(--mono);fill:var(--muted)}
 .chart{display:block;width:100%;height:auto}
-.proj .row{display:grid;grid-template-columns:118px 1fr 70px;gap:8px;align-items:center;font-size:.84rem;padding:3px 0;cursor:pointer}
+.proj .row{display:grid;grid-template-columns:118px 1fr 108px;gap:8px;align-items:center;font-size:.84rem;padding:3px 0;cursor:pointer}
 .proj .row:hover{background:var(--chip)}
 .proj .bar{position:relative;height:14px;background:var(--chip)}
 .proj .bar i{position:absolute;left:0;top:0;bottom:0}
@@ -76,6 +76,7 @@ svg text{font-family:var(--mono);fill:var(--muted)}
 .nc .ph{position:relative;aspect-ratio:4/3;background:#000;cursor:pointer;max-width:100%}
 .nc .ph img{width:100%;height:100%;object-fit:cover;display:block}
 .nc .ph .badge{position:absolute;left:8px;top:8px;background:var(--c);color:#fff;font:600 .72rem var(--mono);padding:2px 7px}
+.nc .ph .pscore{position:absolute;right:8px;top:8px;background:var(--b);color:#fff;font:700 .9rem var(--mono);padding:3px 8px}
 .nc .ph .fillb{position:absolute;left:0;right:0;bottom:0;height:6px;background:rgba(0,0,0,.4)}
 .nc .ph .fillb i{display:block;height:100%;background:var(--c)}
 .nc .bd{padding:10px 12px;display:grid;gap:6px;align-content:start}
@@ -172,7 +173,7 @@ table.t td.n{font-family:var(--mono);text-align:right;white-space:nowrap}
  </div>
  <div style="display:grid;gap:12px;align-content:start">
   <div class="card"><div class="hd"><h2>Rain, next 7 days</h2><span class="date" id="wxsrc"></span></div><div class="pad" id="rainchart"></div></div>
-  <div class="card"><div class="hd"><h2>When each net hits 80%</h2></div><div class="pad proj" id="proj"></div></div>
+  <div class="card"><div class="hd"><h2>Priority ranking</h2><span class="date">50% condition · 25% rain · 15% criticality · 10% build-up</span></div><div class="pad proj" id="proj"></div></div>
  </div>
 </section>
 
@@ -203,27 +204,27 @@ const cssv=v=>getComputedStyle(document.documentElement).getPropertyValue(v).tri
 
 /* ---------- demo nets (real SCADA thumbnails; locations approximate until Council supplies lat/longs) ---------- */
 const SEED=[
- {id:'lackey-st-west',name:'Lackey St West',sub:'North Parramatta',ll:[-33.7962,151.0068],fill:45,mm:70,damaged:true,big:'img/lackey-st-west-full.jpg',mark:[57,52]},
- {id:'lackey-st-east',name:'Lackey St East',sub:'North Parramatta',ll:[-33.7953,151.0102],fill:58,mm:60},
- {id:'lake-parra-res',name:'Lake Parra Res',sub:'North Parramatta',ll:[-33.7905,151.0040],fill:20,mm:120},
- {id:'bettington-rd',name:'Bettington Rd',sub:'Oatlands',ll:[-33.7906,151.0305],fill:86,mm:90,big:'img/sim-net-blocked.jpg'},
- {id:'james-ruse-dr-1',name:'James Ruse Dr 1',sub:'Northmead',ll:[-33.7985,151.0005],fill:76,mm:80,big:'img/sim-net-full.jpg'},
- {id:'james-ruse-dr-2',name:'James Ruse Dr 2',sub:'Rosehill',ll:[-33.8205,151.0200],fill:30,mm:80},
- {id:'norwood-ave',name:'Norwood Ave',sub:'Beecroft',ll:[-33.7530,151.0690],fill:62,mm:55,big:'img/sim-net-partial.jpg'},
- {id:'ridge-st',name:'Ridge St',sub:'North Parramatta',ll:[-33.8010,151.0125],fill:null,mm:80,blind:3,big:'img/sim-net-unusable.jpg'},
- {id:'shirley-st',name:'Shirley St',sub:'Carlingford',ll:[-33.7810,151.0480],fill:40,mm:110},
- {id:'anthony-st',name:'Anthony St',sub:'Carlingford',ll:[-33.7840,151.0420],fill:25,mm:90},
- {id:'forest-cl',name:'Forest Cl',sub:'Toongabbie Creek',ll:[-33.7870,150.9830],fill:15,mm:100},
- {id:'sturt-st',name:'Sturt St',sub:'Telopea',ll:[-33.7935,151.0430],fill:10,mm:100,big:'img/sim-net-empty.jpg'},
- {id:'willmott-ave',name:'Willmott Ave',sub:'Winston Hills',ll:[-33.7790,150.9880],fill:30,mm:120},
- {id:'charles-st',name:'Charles St',sub:'Parramatta River',ll:[-33.8150,151.0080],fill:15,mm:150}
+ {id:'lackey-st-west',crit:1,critWhy:'Lake Parramatta catchment; 2022 audit: replace',load:'med',name:'Lackey St West',sub:'North Parramatta',ll:[-33.7962,151.0068],fill:45,mm:70,damaged:true,big:'img/lackey-st-west-full.jpg',mark:[57,52]},
+ {id:'lackey-st-east',crit:1,critWhy:'Lake Parramatta catchment; 2022 audit: replace',load:'med',name:'Lackey St East',sub:'North Parramatta',ll:[-33.7953,151.0102],fill:58,mm:60},
+ {id:'lake-parra-res',crit:1,critWhy:'Swimming lake downstream',load:'low',name:'Lake Parra Res',sub:'North Parramatta',ll:[-33.7905,151.0040],fill:20,mm:120},
+ {id:'bettington-rd',crit:2,critWhy:'Creek reserve with public access',load:'med',name:'Bettington Rd',sub:'Oatlands',ll:[-33.7906,151.0305],fill:86,mm:90,big:'img/sim-net-blocked.jpg'},
+ {id:'james-ruse-dr-1',crit:2,critWhy:'Arterial road catchment',load:'high',name:'James Ruse Dr 1',sub:'Northmead',ll:[-33.7985,151.0005],fill:76,mm:80,big:'img/sim-net-full.jpg'},
+ {id:'james-ruse-dr-2',crit:2,critWhy:'Arterial road catchment',load:'high',name:'James Ruse Dr 2',sub:'Rosehill',ll:[-33.8205,151.0200],fill:30,mm:80},
+ {id:'norwood-ave',crit:2,critWhy:'2022 audit: major work',load:'low',name:'Norwood Ave',sub:'Beecroft',ll:[-33.7530,151.0690],fill:62,mm:55,big:'img/sim-net-partial.jpg'},
+ {id:'ridge-st',crit:3,critWhy:'Local street catchment',load:'low',name:'Ridge St',sub:'North Parramatta',ll:[-33.8010,151.0125],fill:null,mm:80,blind:3,big:'img/sim-net-unusable.jpg'},
+ {id:'shirley-st',crit:3,critWhy:'Local street catchment',load:'med',name:'Shirley St',sub:'Carlingford',ll:[-33.7810,151.0480],fill:40,mm:110},
+ {id:'anthony-st',crit:2,critWhy:'2022 audit: replace',load:'med',name:'Anthony St',sub:'Carlingford',ll:[-33.7840,151.0420],fill:25,mm:90},
+ {id:'forest-cl',crit:3,critWhy:'Bushland creek',load:'low',name:'Forest Cl',sub:'Toongabbie Creek',ll:[-33.7870,150.9830],fill:15,mm:100},
+ {id:'sturt-st',crit:3,critWhy:'Local street catchment',load:'low',name:'Sturt St',sub:'Telopea',ll:[-33.7935,151.0430],fill:10,mm:100,big:'img/sim-net-empty.jpg'},
+ {id:'willmott-ave',crit:3,critWhy:'Bushland creek',load:'low',name:'Willmott Ave',sub:'Winston Hills',ll:[-33.7790,150.9880],fill:30,mm:120},
+ {id:'charles-st',crit:1,critWhy:'Parramatta River at the CBD',load:'high',name:'Charles St',sub:'Parramatta River',ll:[-33.8150,151.0080],fill:15,mm:150}
 ];
 const DEPOT={name:'Rydalmere Operations Centre',ll:[-33.8110,151.0330]};
 function rnd(seed){let h=0;for(const c of seed)h=(h*31+c.charCodeAt(0))>>>0;return()=>((h=(h*1103515245+12345)>>>0)%1000)/1000}
 function seedHistory(n){const r=rnd(n.id),h=[];let day=-Math.round(20+r()*70);for(let i=0;i<5;i++){const repair=r()<.15;h.push({date:iso(D(day)),task:repair?'Repair net':'Empty net',kg:repair?0:Math.round(25+r()*n.mm*0.9),by:'Contractor'});day-=Math.round(70+r()*40)}return h}
 
 /* ---------- state ---------- */
-const KEY='netwatch-v3';let S;
+const KEY='netwatch-v4';let S;
 function fresh(){const nets=SEED.map(n=>{const h=seedHistory(n);return{...n,hist:h,last:h[0].date}});
  const wos=[
   {no:'WO-26-0901',net:'sturt-st',site:'Sturt St',task:'Empty net',pri:'High',due:iso(D(0)),created:iso(D(-3)),reason:'72% full before rain',status:'Done',c:'--soon',job:{kg:48,result:'Emptied, net intact',defects:[],note:'Mostly leaves.',photo:'img/sim-net-empty.jpg',at:iso(D(-1))}},
@@ -268,6 +269,21 @@ function bucket(n){
  const h=hit80(n);if(h&&h<=iso(D(7)))return'soon';
  return'ok';
 }
+/* Priority score, 0-100: 50% current condition, 25% forecast weather, 15% asset criticality, 10% accumulation context */
+const W8={c:.5,w:.25,k:.15,a:.1};
+const rain3=()=>RAIN.days.slice(1,4).reduce((a,x)=>a+x.mm,0);
+function score(n){
+ const fill=n.fill==null?50:n.fill;
+ const c=n.damaged?100:n.blind>=2?70:fill;                                  // condition: damaged 100, can't see 70, else fill %
+ const cap=Math.max(1,(100-fill)/100*n.mm);                                 // mm of rain the net can still take
+ const w=Math.min(100,Math.round(rain3()/cap*100));                          // forecast: 3-day rain against remaining capacity
+ const k={1:100,2:60,3:30}[n.crit||3];                                      // criticality tier
+ const days=Math.max(0,(TODAY-P(n.last))/864e5),ld={high:100,med:60,low:30}[n.load||'low'];
+ const a=openReport(n)?100:Math.round(Math.min(100,days/90*100)*.6+ld*.4);  // accumulation: time since clean + catchment load; resident report = 100
+ const total=Math.round(c*W8.c+w*W8.w+k*W8.k+a*W8.a);
+ return{total,c:Math.round(c),w,k,a,cap:Math.round(cap),days:Math.round(days)};
+}
+const band=t=>t>=70?{l:'Act now',v:'--now'}:t>=50?{l:'This week',v:'--soon'}:t>=30?{l:'Watch',v:'--rain'}:{l:'Low',v:'--ok'};
 function why(n){
  const b=bucket(n),h=hit80(n);
  if(b==='repair')return'Net torn or pulled off the pipe';
@@ -295,7 +311,7 @@ function drawPins(){
  S.nets.forEach(n=>{const b=bucket(n),c=cssv(colOf(b));
   const pulse=['repair','now'].includes(b)?' pulse':'';
   const m=L.marker(n.ll,{icon:L.divIcon({className:'',html:`<div class="pin${pulse}" style="background:${c};--pc:${c}"></div>`,iconSize:[18,18],iconAnchor:[9,9]})}).addTo(map);
-  m.bindPopup(`<b>${esc(n.name)}</b>${esc(why(n))}<br><button class="btn pri" data-open="${n.id}">Open</button>`);
+  m.bindPopup(`<b>${esc(n.name)}</b>Priority ${score(n).total} · ${esc(why(n))}<br><button class="btn pri" data-open="${n.id}">Open</button>`);
   markers[n.id]=m;});
  $('#legend').innerHTML=[['repair','Repair'],['now','Empty now'],['soon','Before rain'],['report','Resident report'],['view',"Can't see"],['wo','Work order'],['ok','OK']].map(([b,l])=>`<span><i style="background:var(${colOf(b)})"></i>${l}</span>`).join('');
 }
@@ -335,7 +351,7 @@ function render(){
  $('#wxsrc').textContent=RAIN.live?'Open-Meteo, live':'demo forecast';
  $('#src2').textContent=RAIN.live?'Rain: Open-Meteo':'Rain: demo values';
  // tiles
- const groups={};S.nets.forEach(n=>{const b=bucket(n);(groups[b]=groups[b]||[]).push(n)});
+ const groups={};S.nets.slice().sort((x,y)=>score(y).total-score(x).total).forEach(n=>{const b=bucket(n);(groups[b]=groups[b]||[]).push(n)});
  const open=S.wos.filter(w=>w.status==='Open'),done=S.wos.filter(w=>w.status==='Done');
  $('#actions').innerHTML=Object.entries(B).map(([k,v])=>{const g=groups[k]||[];
   return`<button class="tile ${g.length?'':'zero'} ${lane===k?'on':''}" style="--c:var(${v.c})" data-lane="${k}"><span class="num">${g.length}</span><span class="lbl">${v.lbl}</span><span class="who">${g.length?esc(g.map(n=>n.name).join(', ')):'Nothing to do'}</span>${g.length?'<span class="go">Act →</span>':''}</button>`}).join('')+
@@ -350,7 +366,7 @@ function render(){
 }
 function img(n){return n.big||`img/${n.id}.jpg`}
 function ncard(n,v){const f=n.fill??0;
- return`<div class="nc" style="--c:var(${v.c})"><div class="ph" data-open="${n.id}"><img src="${img(n)}" alt="${esc(n.name)} camera"><span class="badge">${n.fill==null?'NO VIEW':n.fill+'%'}</span><div class="fillb"><i style="width:${f}%"></i></div></div>
+ return`<div class="nc" style="--c:var(${v.c})"><div class="ph" data-open="${n.id}"><img src="${img(n)}" alt="${esc(n.name)} camera"><span class="badge">${n.fill==null?'NO VIEW':n.fill+'%'}</span><span class="pscore" style="--b:var(${band(score(n).total).v})">${score(n).total}</span><div class="fillb"><i style="width:${f}%"></i></div></div>
  <div class="bd"><b>${esc(n.name)}</b><span class="why">${esc(why(n))}</span><div class="btns"><button class="btn pri" data-raise="${n.id}">Raise work order</button><button class="btn" data-inspect="${n.id}">Inspect</button>${bucket(n)==='report'?`<button class="btn q" data-noaction="${n.id}">No action</button>`:`<button class="btn q" data-defer="${n.id}">Defer</button>`}</div></div></div>`}
 function rainChart(){
  const W=360,H=150,pb=26,pt=16,max=Math.max(30,...RAIN.days.map(x=>x.mm)),bw=W/7;
@@ -359,9 +375,11 @@ function rainChart(){
  $('#rainchart').innerHTML=`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Rain forecast by day in millimetres">${bars}<line x1="0" x2="${W}" y1="${H-pb}" y2="${H-pb}" stroke="var(--line)"/></svg>`;
 }
 function projChart(){
- const L=S.nets.filter(n=>n.fill!=null&&!openWO(n)).map(n=>({n,p:project(n),h:hit80(n)})).sort((a,b)=>(a.h||'9')<(b.h||'9')?-1:(a.h||'9')>(b.h||'9')?1:b.n.fill-a.n.fill).slice(0,8);
- $('#proj').innerHTML=L.map(({n,p,h})=>{const b=bucket(n),c=`var(${colOf(b)})`,end=p[p.length-1];
-  return`<div class="row" data-open="${n.id}" style="--c:${c}"><span>${esc(n.name)}</span><div class="bar"><i style="width:${n.fill}%;background:${c}"></i><u style="left:${n.fill}%;width:${Math.max(0,end-n.fill)}%"></u><s></s></div><span class="when" style="color:${h?c:'var(--muted)'}">${n.fill>=80?'now':h?short(h):'> 7 days'}</span></div>`}).join('')+`<div style="font-size:.74rem;color:var(--muted);margin-top:6px">Solid: today · hatched: forecast rain · dashed line: 80%</div>`;
+ const L=S.nets.filter(n=>!openWO(n)).map(n=>({n,sc:score(n)})).sort((a,b)=>b.sc.total-a.sc.total).slice(0,9);
+ const seg=(v,w,c)=>`<i style="position:relative;display:inline-block;height:100%;width:${v*w}%;background:var(${c})"></i>`;
+ $('#proj').innerHTML=L.map(({n,sc})=>{const bd=band(sc.total);
+  return`<div class="row" data-open="${n.id}"><span>${esc(n.name)}</span><div class="bar" style="display:flex">${seg(sc.c,W8.c,'--now')}${seg(sc.w,W8.w,'--rain')}${seg(sc.k,W8.k,'--ink')}${seg(sc.a,W8.a,'--soon')}</div><span class="when" style="color:var(${bd.v});font-weight:700">${sc.total} · ${bd.l}</span></div>`}).join('')+
+ `<div class="legend" style="border:0;padding:8px 0 0"><span><i style="background:var(--now)"></i>Condition</span><span><i style="background:var(--rain)"></i>Rain forecast</span><span><i style="background:var(--ink)"></i>Criticality</span><span><i style="background:var(--soon)"></i>Build-up</span></div>`;
 }
 function wos(){
  const L=S.wos.filter(w=>w.status!=='Closed').sort((a,b)=>a.status==='Done'?-1:b.status==='Done'?1:0);
@@ -400,11 +418,19 @@ function drawer(id){
   <div class="gauge">${gauge(n.fill,c)}<div><div style="font-size:1.2rem;font-weight:700">${esc(n.name)}</div><div style="color:var(--muted);font-size:.86rem">${esc(n.sub)}</div><div style="color:${c};font-weight:600;margin-top:4px">${esc(why(n))}</div></div></div>
   ${act&&!(EMAIL&&EMAIL.net===n.id&&!EMAIL.done)?`<div class="btns"><button class="btn pri" data-raise="${n.id}">Raise work order</button><button class="btn" data-inspect="${n.id}">Inspect</button><button class="btn q" data-defer="${n.id}">Defer 7 days</button></div>`:''}
   <div id="wo-out"></div>
+  ${scoreBlock(n)}
   ${pc?`<div><div class="date" style="margin-bottom:4px">FILL FORECAST · 80% LINE</div>${pc}</div>`:''}
   <dl class="kv"><dt>Holds</dt><dd>${n.fill==null?'—':'~'+Math.round((100-n.fill)/100*n.mm)+' mm more rain'}</dd><dt>Fills in</dt><dd>~${n.mm} mm of rain from empty</dd><dt>Last cleaned</dt><dd>${nice(n.last)}</dd></dl>
   <div><div class="date" style="margin-bottom:4px">HISTORY</div><div class="tl" style="padding:0">${n.hist.map(e=>`<div class="ev" style="--c:var(${e.task.startsWith('Repair')?'--repair':'--accent'})"><span class="d">${dmy(e.date)}</span><span class="k"></span><span>${esc(e.task)}</span><span class="kg">${e.kg?e.kg+' kg':''}</span></div>`).join('')}</div></div>
  </div></div>`;
 }
+function scoreBlock(n){const sc=score(n),bd=band(sc.total);
+ const row=(l,v,w,c,d)=>`<div style="display:grid;grid-template-columns:150px 1fr 44px;gap:8px;align-items:center;font-size:.84rem"><span>${l} <span style="color:var(--muted)">${w*100}%</span></span><div style="height:10px;background:var(--chip)"><div style="height:100%;width:${v}%;background:var(${c})"></div></div><span style="font-family:var(--mono);text-align:right">${v}</span><span style="grid-column:1/-1;color:var(--muted);font-size:.78rem;margin-top:-4px">${d}</span></div>`;
+ return`<div style="display:grid;gap:8px;border:1px solid var(--line);padding:10px 12px"><div style="display:flex;justify-content:space-between;align-items:baseline"><span class="date">PRIORITY SCORE</span><b style="font-size:1.4rem;color:var(${bd.v})">${sc.total} <span style="font-size:.85rem">${bd.l}</span></b></div>
+ ${row('Current condition',sc.c,W8.c,'--now',n.damaged?'Net torn or off the pipe':n.blind>=2?'No clear image: unknown state is a risk':`${n.fill}% full`)}
+ ${row('Forecast rain',sc.w,W8.w,'--rain',`${rain3()} mm in 3 days vs ~${sc.cap} mm it can still hold`)}
+ ${row('Asset criticality',sc.k,W8.k,'--ink',`Tier ${n.crit}: ${esc(n.critWhy)}`)}
+ ${row('Build-up context',sc.a,W8.a,'--soon',openReport(n)?'Resident report open':`${sc.days} days since clean · ${n.load==='med'?'medium':n.load} litter catchment`)}</div>`}
 function closeDrawer(){drawerId=null;const el=$('.drawer');if(el)el.remove()}
 
 /* ---------- arriving from an email ---------- */
@@ -504,9 +530,9 @@ function vManager(){
  const avoided=S.nets.filter(n=>bucket(n)==='ok'&&n.fill!=null&&n.fill<40).length;
  const repOpen=S.reports.filter(r=>r.status==='New'||r.status==='With contractor').length;
  const yr=iso(D(-365));
- const rows=S.nets.map(n=>{const b=bucket(n),h=n.hist.filter(e=>e.date>=yr),kg=h.reduce((a,e)=>a+e.kg,0);
+ const rows=S.nets.slice().sort((x,y)=>score(y).total-score(x).total).map(n=>{const b=bucket(n),h=n.hist.filter(e=>e.date>=yr),kg=h.reduce((a,e)=>a+e.kg,0),sc=score(n).total;
   const lbl={repair:'Repair',now:'Empty now',soon:'Before rain',view:"Can't see",report:'Resident report',wo:'Work order',defer:'Deferred',ok:'OK'}[b];
-  return`<tr data-open="${n.id}" style="cursor:pointer"><td>${esc(n.name)}</td><td><span class="chipc" style="--c:var(${colOf(b)})">${lbl}</span></td><td class="n">${n.fill==null?'?':n.fill+'%'}</td><td>${dmy(n.last)}</td><td class="n">${h.length}</td><td class="n">${kg}</td></tr>`}).join('');
+  return`<tr data-open="${n.id}" style="cursor:pointer"><td>${esc(n.name)}</td><td class="n" style="color:var(${band(sc).v});font-weight:700">${sc}</td><td><span class="chipc" style="--c:var(${colOf(b)})">${lbl}</span></td><td class="n">${n.fill==null?'?':n.fill+'%'}</td><td>${dmy(n.last)}</td><td class="n">${h.length}</td><td class="n">${kg}</td></tr>`}).join('');
  return`<div class="rolehd"><h2>Network overview</h2><span>${nice(iso(TODAY))}</span></div>
  <div class="kpis">
   <div class="kpi"><b>${live}/${S.nets.length}</b><span>Nets with a clear camera view</span></div>
@@ -518,7 +544,7 @@ function vManager(){
   <div class="kpi"><b>${repOpen}</b><span>Resident reports open</span></div>
  </div>
  <div class="grid">
-  <div class="card tblwrap"><div class="hd"><h2>Every net</h2></div><table class="t"><tr><th>Net</th><th>Status</th><th style="text-align:right">Fill</th><th>Last cleaned</th><th style="text-align:right">Cleans 12m</th><th style="text-align:right">kg 12m</th></tr>${rows}</table></div>
+  <div class="card tblwrap"><div class="hd"><h2>Every net</h2></div><table class="t"><tr><th>Net</th><th style="text-align:right">Priority</th><th>Status</th><th style="text-align:right">Fill</th><th>Last cleaned</th><th style="text-align:right">Cleans 12m</th><th style="text-align:right">kg 12m</th></tr>${rows}</table></div>
   <div class="card"><div class="hd"><h2>Litter removed per month</h2></div><div class="pad">${kgSvg(m)}</div></div>
  </div>`;
 }
