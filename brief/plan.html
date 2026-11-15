@@ -77,10 +77,12 @@ th{font:700 10.5px var(--display);letter-spacing:.2em;color:var(--muted);backgro
 .rule{background:var(--alt);border-left-color:var(--orange)}
 .quote{border-left-color:var(--teal-b)}
 .tablewrap{overflow-x:auto;border:1px solid var(--line)}
-table.cat{width:100%;min-width:720px;border-collapse:collapse;font-size:15px;background:#fff}
+table.cat{width:100%;min-width:900px;border-collapse:collapse;font-size:15px;background:#fff}
 table.cat th,table.cat td{text-align:left;padding:12px 14px;border-bottom:1px solid var(--line);vertical-align:top}
 table.cat tr:last-child td{border-bottom:0}
 table.cat td:first-child{white-space:nowrap;font-weight:700}
+table.cat tr.focus td{background:#F4F6F8}.mvp{display:inline-block;margin-top:4px;font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#fff;background:#7b4fc9;padding:2px 6px}
+table.cat td:last-child{min-width:170px}
 .mk{display:inline-block;width:12px;height:12px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:var(--c);margin-right:10px;vertical-align:-1px}
 .credit{font-size:12px;color:var(--muted);line-height:1.6;max-width:110ch;margin:24px auto 0;padding-bottom:24px}
 footer.band{margin:0;background:var(--teal-b);color:#fff;font:700 10px var(--display);letter-spacing:.25em;text-transform:uppercase;max-width:none}
@@ -160,16 +162,13 @@ footer a{color:inherit}
 @media (max-width:520px){h1{font-size:1.5rem}.slice{grid-template-columns:2.2rem 1fr}}
 .wrap .wrap{padding:0;max-width:none}</style><style>:root{--bg:#fff;--paper:#fff;--fg:#1F3A5F;--muted:#5A6B7D;--line:#DDE3EA;--navy:#1F3A5F;--teal:#1D6E6E;--gold:#A8580A;--gold-soft:#FDEBD6;--green:#2E7D50;--green-soft:#E3F1E8;--chip:#F4F6F8;--display:Arial,Helvetica,"Liberation Sans",sans-serif;--mono:Arial,Helvetica,"Liberation Sans",sans-serif}body{background:#fff;padding:0}section.hero{display:block}footer.band{max-width:none;font:700 10px Arial,Helvetica,sans-serif;color:#fff}</style></head><body>
 <header class="site"><div class="in"><a class="brandl" href="../"><img src="https://careers.business-analyst.services/logo.png" alt="BAS"><span><b>Net Watch</b><small>Business Analyst Services · Team 101</small></span></a>
-<nav class="sitenav" aria-label="Brief"><a href="index.html">Brief</a><a href="mvp.html">MVP</a><a href="alert.html">Sample alert</a><a href="sensors.html">Sensor matrix</a><a href="plan.html" class=cur>Build plan</a><a href="evidence.html">Evidence</a><a href="../app.html">Open the app</a></nav></div></header>
-<section class="hero"><div class="bars" aria-hidden="true"><i style="height:50px"></i><i style="height:110px"></i><i style="height:80px"></i><i style="height:190px"></i><i style="height:260px"></i><i style="height:140px"></i></div><div class="in"><div class="eyebrow" style="margin-top:24px">Build plan</div><h1>How this <b>gets built</b></h1><p class="lede">Planned with the <a href="https://www.aihero.dev/skills-wayfinder">Wayfinder</a> method: the destination is fixed, the route is a map of decisions, each a ticket phrased as a question. The frontier is what can be worked on now. <a href="assets/GPT-which-GPT-wayfinder-map.pdf">One-page PDF</a>.</p></div></section>
+<nav class="sitenav" aria-label="Brief"><a href="index.html">Brief</a><a href="mvp.html">MVP</a><a href="sensors.html">Sensor matrix</a><a href="plan.html" class=cur>Build plan</a><a href="evidence.html">Evidence</a><a href="../app.html">Open the app</a></nav></div></header>
+<section class="hero"><div class="bars" aria-hidden="true"><i style="height:50px"></i><i style="height:110px"></i><i style="height:80px"></i><i style="height:190px"></i><i style="height:260px"></i><i style="height:140px"></i></div><div class="in"><div class="eyebrow" style="margin-top:24px">Build plan</div><h1>How this <b>gets built</b></h1><p class="lede">The build as a map of decisions: what is settled, what is still open, and what can start now. <a href="assets/GPT-which-GPT-wayfinder-map.pdf">One-page PDF</a>.</p></div></section>
 <main class="in">
 
 
 <div class="wrap">
 <header>
-  <div class="eyebrow">Wayfinder map · wayfinder:map · WSTI Festi 2026, Challenge 5</div>
-  <h1>GPT which GPT? — the route from camera wall to approved work order</h1>
-  <p>The destination is agreed. The route isn't. This map charts the build as decisions, each one a ticket with a question for a title, and shows the frontier: the tickets with nothing blocking them that a session can claim today. The map plans; it does not build. When "Not yet specified" is empty and every ticket is closed, the next command is <span style="font-family:var(--mono)">/to-spec</span>.</p>
   <div class="stats">
     <div class="stat"><b>14</b><span>decisions so far</span></div>
     <div class="stat"><b>17</b><span>open tickets</span></div>
@@ -182,7 +181,7 @@ footer a{color:inherit}
 <section class="dest">
   <h2>Destination</h2>
   <p>A decision assistant for Council's end-of-pipe litter nets. It reads each day's camera image from SCADA (about 10 working cameras today), scores fill, damage, detachment and can't-see with a confidence, checks the BoM forecast, and emails the duty officer a marked-up photo when a net must be cleaned or repaired before the next storm. The officer approves; a work order follows; the outcome is recorded so each net's fill rate is learned. Other GPT types are shown as a solution map with their own sensors. Nothing is replaced.</p>
-  <small>Measure of done: the Lackey St West torn net would have produced an email on 13 Nov with an arrow on the tear, on a Saturday, with the officer on leave. No net detaches unseen; about one email a week.</small>
+  <small>Measure of done: the Lackey St West torn net would have produced an email on 13 Nov with an arrow on the tear, on a Saturday. No net detaches unseen; about one email a week.</small>
 </section>
 
 <div class="two">
@@ -274,8 +273,8 @@ footer a{color:inherit}
 
 <div class="two">
 <section class="panel">
-  <h2>After the map clears: spec, then tracer bullets</h2>
-  <p style="margin:0;font-size:.9rem;color:var(--muted)"><code>/to-spec</code> collapses the closed tickets into one spec; <code>to-tickets</code> slices it into thin end-to-end cuts. Each slice is demoable on its own, and the first four are the Festi build.</p>
+  <h2>Build order once the questions close</h2>
+  <p style="margin:0;font-size:.9rem;color:var(--muted)">Once the open questions are settled, the build runs in six thin slices. Each one works end to end on its own; the first four are the Festi build.</p>
   <div class="rail">
     <div class="slice"><div class="n">01</div><div><b>One frame in, one score out</b><p>Ingest a frame from the export, run the chosen model, show state + confidence + the frame. <code>frame → score</code></p></div></div>
     <div class="slice"><div class="n">02</div><div><b>Add rain, get a recommendation</b><p>Rainfall feed joined; rule turns score into "urgent / this week / next round / no action". <code>score × rain → action</code></p></div></div>
@@ -286,18 +285,7 @@ footer a{color:inherit}
   </div>
 </section>
 
-<section class="panel">
-  <h2>How to run this map</h2>
-  <div class="rules">
-    <div class="rule"><b>Claim before you work</b><span>Assign the ticket to yourself; one ticket per session, then stop. Research tickets are the exception and run in parallel on <span style="font-family:var(--mono)">research/&lt;name&gt;</span> branches.</span></div>
-    <div class="rule"><b>Close with a resolution</b><span>Post the answer as a comment, close the ticket, add one line to "Decisions so far". The map is an index, not a store.</span></div>
-    <div class="rule"><b>Fog is not a ticket</b><span>A question becomes a ticket only when it can be stated precisely. "Multi-council" stays in the fog until a second council asks.</span></div>
-    <div class="rule"><b>Names, not numbers</b><span>Refer to tickets by their question. "What counts as full?" means something; #42 does not.</span></div>
-    <div class="rule"><b>Frontier is what the tracker says</b><span>Blocking edges live in the tracker (Jira, or markdown fallback); this page is the readable snapshot of them.</span></div>
-    <div class="rule"><b>Hand off, don't build</b><span>The session that empties the map points at a spec, never a pull request.</span></div>
-  </div>
-  <p style="margin:0;font-size:.86rem;color:var(--muted)">Tracker: set up with <span style="font-family:var(--mono)">setup-matt-pocock-skills</span> so CLAUDE.md points at the "Wayfinding operations" section; label the map issue <span style="font-family:var(--mono)">wayfinder:map</span> and each child <span style="font-family:var(--mono)">wayfinder:&lt;type&gt;</span>.</p>
-</section>
+
 </div>
 
 <footer>Map drafted 14 Nov 2026, updated after the SME session notes and the team alignment brief, from the GPT which GPT? research (Drive folder "GPT which GPT - Festi 2026"). Method: <a href="https://www.aihero.dev/skills-wayfinder">Wayfinder</a> by Matt Pocock (aihero.dev). Decisions cite: Council Annual Report 2024/25 App. 1; GIPA Contracts Register 30 Sep 2026; Asset Management Plan 2027–2036; Smart City &amp; Innovation Strategy 2024–2033; NOM26-2 City of Parramatta AI Plan; Smarter Cleaner Sydney Harbour final report; SCADA GPT Cameras page screenshots, 13 Nov 2026.</footer>
