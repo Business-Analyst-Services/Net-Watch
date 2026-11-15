@@ -172,10 +172,12 @@ th{font:700 10.5px var(--display);letter-spacing:.2em;color:var(--muted);backgro
 .rule{background:var(--alt);border-left-color:var(--orange)}
 .quote{border-left-color:var(--teal-b)}
 .tablewrap{overflow-x:auto;border:1px solid var(--line)}
-table.cat{width:100%;min-width:720px;border-collapse:collapse;font-size:15px;background:#fff}
+table.cat{width:100%;min-width:900px;border-collapse:collapse;font-size:15px;background:#fff}
 table.cat th,table.cat td{text-align:left;padding:12px 14px;border-bottom:1px solid var(--line);vertical-align:top}
 table.cat tr:last-child td{border-bottom:0}
 table.cat td:first-child{white-space:nowrap;font-weight:700}
+table.cat tr.focus td{background:#F4F6F8}.mvp{display:inline-block;margin-top:4px;font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#fff;background:#7b4fc9;padding:2px 6px}
+table.cat td:last-child{min-width:170px}
 .mk{display:inline-block;width:12px;height:12px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:var(--c);margin-right:10px;vertical-align:-1px}
 .credit{font-size:12px;color:var(--muted);line-height:1.6;max-width:110ch;margin:24px auto 0;padding-bottom:24px}
 footer.band{margin:0;background:var(--teal-b);color:#fff;font:700 10px var(--display);letter-spacing:.25em;text-transform:uppercase;max-width:none}
@@ -197,7 +199,7 @@ def split_h1(t):
 def page(title, body, cur, depth=0):
     root = '../' if depth else ''
     site = root + '../'
-    links = [('index.html','Brief'),('mvp.html','MVP'),('alert.html','Sample alert'),('sensors.html','Sensor matrix'),('plan.html','Build plan'),('evidence.html','Evidence')]
+    links = [('index.html','Brief'),('mvp.html','MVP'),('sensors.html','Sensor matrix'),('plan.html','Build plan'),('evidence.html','Evidence')]
     nav = ''.join(f'<a href="{root}{h}"{" class=cur" if cur==h else ""}>{t}</a>' for h,t in links)
     lead_style = ''
     m = re.match(r'\s*(<style>.*?</style>)', body, re.S)
@@ -232,41 +234,43 @@ gates = ''.join(
   f'{"<span class=flag>MVP focus · Council asked for nets first</span>" if t["focus"] else ""}'
   f'{code_chip(t)}<b>{t["name"]}</b><span>{t["short"]}</span><small>Primary signal: {t["sensors"][0][0]}</small></a>' for t in TYPES)
 states = ''.join(f'<div class="st {k}"><b>{n}</b><i>{r}</i><span>{a}</span></div>' for k,n,r,a in STATES)
+CAT = [  # official definitions: Dec 2022 GPT Audit, reproduced in Council minutes 25 Mar 2024
+  ('vault','Underground wet vault','Standing water; captured material may be submerged.','Not directly comparable with a dry container.'),
+  ('net','End-of-pipe net or basket','Outlet net or basket; exposure and geometry vary by site.','Not a label for every proprietary GPT.'),
+  ('pit','Trap in road-side pit','Pit insert or basket within a roadside drainage pit.','The code alone does not prove a dry sump.'),
+  ('boom','Floating boom across deep waterway','Floating barrier concentrating surface litter.','No simple container-style fullness percentage.'),
+  ('trash-rack','Steel rack across waterway','Fixed rack; debris may restrict upstream flow.','Blockage and hydraulic risk matter, not only volume.')]
+TB = {t['slug']: t for t in TYPES}
+cat_rows = ''.join(
+  f'<tr{" class=focus" if TB[sl]["focus"] else ""}><td><span class="mk" style="--c:{TB[sl]["colour"]}"></span>{TB[sl]["colname"]}</td>'
+  f'<td><b>{TB[sl]["code"]}</b>{"<br><span class=mvp>MVP focus</span>" if TB[sl]["focus"] else ""}</td><td>{d}</td><td>{m}</td><td>{lim}</td>'
+  f'<td>{TB[sl]["sensors"][0][0]}<br><a href="types/{sl}.html">Open {TB[sl]["code"]} →</a></td></tr>' for sl,d,m,lim in CAT)
 index = f"""
-<div class="eyebrow">City of Parramatta · about 35–40 GPTs · about 15 cameras, 10 working · one photo a day</div>
+<div class="eyebrow">City of Parramatta · 37 GPTs · about 15 cameras, 10 working · one photo a day</div>
 <h1>Clean the net before the storm, not after it lets go</h1>
-<p class="lede">Council's litter nets are built to break away from the pipe when they are full and the next surge hits. Today one officer looks at the camera images for about 15 minutes each weekday; nobody looks on weekends or over Christmas, and that officer is on leave until mid-January. GPT which GPT? reads every image, scores how full each net is, checks the rain forecast, and emails an officer with the marked-up photo when a net needs cleaning or repair. The officer approves; the work order follows.</p>
-<h2 id="types">Start with the trap type</h2>
-<p style="margin:-4px 0 12px;color:var(--muted);font-size:.92rem">Council's own asset codes and map colours from the 2022 GPT Audit. Each type fills differently and needs a different sensor; the decision and email layer is the same for all of them.</p>
-<div class="gate">{gates}</div>
-<h2 id="categories">Council's five asset categories</h2>
-<p style="margin:-4px 0 14px;color:var(--muted);font-size:.95rem;max-width:80ch">Official public definitions from the December 2022 GPT Audit, published in 2023 and reproduced in the March 2024 Council minutes. Verify against the current 2026 asset register.</p>
+<p class="lede">Council's end-of-pipe litter nets are built to break away from the pipe when they are full and the next surge hits. Today one officer checks the camera images for about 15 minutes each weekday, and no one checks at weekends or over holidays. Net Watch reads every image, scores each net, checks the rain forecast, and emails the officer the marked-up photo when a net needs emptying or repair. The officer approves; the work order follows.</p>
+<h2 id="types">Five trap types, one decision layer</h2>
+<p style="margin:-4px 0 14px;color:var(--muted);font-size:.95rem;max-width:84ch">Council's asset codes and map colours, with the official definitions from the December 2022 GPT Audit (published in 2023 and reproduced in the March 2024 Council minutes; to verify against the 2026 asset register). Each type fills differently and needs its own sensor. Scoring, the email and officer approval are the same for all five. Council asked us to start with the nets.</p>
 <figure class="panel" style="margin:0 0 16px"><img class="fig" src="assets/gpt-types-concept.jpg" alt="Illustrative concept of the five GPT types: yellow underground wet vault, purple end-of-pipe net, green road-side pit trap, black floating boom, blue trash rack"><figcaption class="cap">Illustrative concept, not actual Council assets.</figcaption></figure>
 <div class="tablewrap"><table class="cat">
-<thead><tr><th>Map marker</th><th>Council code</th><th>Official definition</th><th>What it physically means</th><th>Important limitation</th></tr></thead>
-<tbody>
-<tr><td><span class="mk" style="--c:#e0b020"></span>Yellow</td><td><b>uGPT</b></td><td>Underground wet vault</td><td>Standing water; captured material may be submerged.</td><td>Not directly comparable with a dry container.</td></tr>
-<tr><td><span class="mk" style="--c:#7b4fc9"></span>Purple</td><td><b>GPT</b></td><td>End-of-pipe net or basket</td><td>Outlet net or basket; exposure and geometry vary by site.</td><td>Not a label for every proprietary GPT.</td></tr>
-<tr><td><span class="mk" style="--c:#2f9a4a"></span>Green</td><td><b>pGPT</b></td><td>Trap in road-side pit</td><td>Pit insert or basket within a roadside drainage pit.</td><td>The code alone does not prove a dry sump.</td></tr>
-<tr><td><span class="mk" style="--c:#222222"></span>Black</td><td><b>Boom</b></td><td>Floating boom across deep waterway</td><td>Floating barrier concentrating surface litter.</td><td>No simple container-style fullness percentage.</td></tr>
-<tr><td><span class="mk" style="--c:#2f6fd6"></span>Blue</td><td><b>Trash Rack</b></td><td>Steel rack across waterway</td><td>Fixed rack; debris may restrict upstream flow.</td><td>Blockage and hydraulic risk matter, not only volume.</td></tr>
-</tbody></table></div>
-<p style="color:var(--muted);font-size:.9rem;margin-top:10px">Map colours encode <b>asset type</b>, not condition or replacement priority. The 2024 minutes say a rectification-category map had not been developed.</p>
+<thead><tr><th>Map marker</th><th>Council code</th><th>Official definition</th><th>What it physically means</th><th>Important limitation</th><th>First signal</th></tr></thead>
+<tbody>{cat_rows}</tbody></table></div>
+<p style="color:var(--muted);font-size:.9rem;margin-top:10px">Map colours show <b>asset type</b>, not condition or replacement priority. The 2024 minutes say a rectification-category map had not been developed.</p>
 <h2>The six states a net is scored into</h2>
 <div class="states">{states}</div>
-<p style="color:var(--muted);font-size:.9rem;margin-top:10px">Council's target is to intervene at 70–80% full. The thresholds are a starting point for the open question "What counts as full?". <a href="assets/gpt-fullness-states.png">Simulated examples</a> built from two Council frames.</p>
+<p style="color:var(--muted);font-size:.9rem;margin-top:10px">These states apply to nets, baskets and pits. Booms and trash racks are scored on blockage, not a fill percentage. Council's target is to intervene at 70–80% full; the thresholds are a starting point for the open question "What counts as full?". <a href="assets/gpt-fullness-states.png">Simulated examples</a> built from two Council frames.</p>
 <div class="two" style="margin-top:28px">
 <div class="panel"><h2 style="margin-top:0">Today</h2><ul>
 <li>Camera nets: one person reviews the day's photos, weekdays only. The judgement lives in that person's head.</li>
 <li>Everything else: cleaned about every three months, after a big storm, or from experience ("that one fills after 20 mm, that one after 90 mm").</li>
-<li>Some nets are cleaned half empty; some have already overflowed or detached.</li>
-</ul><p><a href="assets/gpt-clean-process.png">Process as reconstructed</a> · <a href="assets/gpt-cost-estimate.png">Cost estimate</a></p></div>
-<div class="panel"><h2 style="margin-top:0">With GPT which GPT?</h2><ul>
+<li>Some nets are emptied half full; some have already overflowed or detached.</li>
+</ul><p><a href="assets/gpt-clean-process.png">How a clean happens today</a> · <a href="assets/gpt-cost-estimate.png">Cost estimate</a></p></div>
+<div class="panel"><h2 style="margin-top:0">With Net Watch</h2><ul>
 <li>Every image scored the day it arrives, weekends and holidays included.</li>
-<li>Rain-aware trigger: clean when the net can't hold the next forecast storm.</li>
-<li>One email with the photo, an arrow on the problem, the reason and the confidence. About one a week across the network.</li>
-<li>Officer approves, defers or asks for an inspection. The outcome is recorded, so each net's fill behaviour is learned over time.</li>
-</ul><p><a href="alert.html">See a sample alert</a> · <a href="mvp.html">What we are demoing</a></p></div>
+<li>Rain-aware trigger: empty the net when it can't hold the next forecast storm.</li>
+<li>A morning email of the nets that need action, and an urgent email when a net tears, each with the photo, the reason and the confidence.</li>
+<li>The officer approves, defers or asks for an inspection. The outcome is recorded, so each net's fill rate is learned over time.</li>
+</ul><p><a href="../email.html">See the email alerts</a> · <a href="mvp.html">What we are demoing</a> · <a href="../app.html">Open the app</a></p></div>
 </div>
 """
 open(os.path.join(OUT,'index.html'),'w').write(page('Home', index, 'index.html'))
@@ -353,7 +357,7 @@ alert = """
 </div>
 <p class="cap" style="max-width:760px">Illustrative. The frame is real (Council SCADA, 13 Nov 2026); the confidence, forecast, dates of earlier frames and last-clean date are example values for the demo.</p>
 """
-open(os.path.join(OUT,'alert.html'),'w').write(page('Sample alert', alert, 'alert.html'))
+open(os.path.join(OUT,'alert.html'),'w').write('<!doctype html><meta charset="utf-8"><title>Email alerts | Net Watch</title><meta http-equiv="refresh" content="0; url=../email.html"><link rel="canonical" href="../email.html"><p>The sample alert now lives with the <a href="../email.html">email alerts</a>.</p>')
 
 # ---------- sensor matrix ----------
 SENS = ["Existing camera","Fullness sensor (ToF / ultrasonic / radar)","Water level (radar)","Up/down level pair","Tilt / strain","Rain forecast + gauges","Cleaning history model","Crew photo"]
@@ -373,7 +377,7 @@ matrix=f"""
 <h2>Principles</h2>
 <div class="two">
 <div class="panel"><ul>
-<li><b>Use what Council has first.</b> About 15 cameras and 25 FloodSmart rain and level gauges already feed SCADA.</li>
+<li><b>Use what Council has first.</b> About 15 cameras feed SCADA, and FloodSmart already reports about 20 water-level and 21 rain gauges.</li>
 <li><b>Bandwidth decides the sensor.</b> Paul's team flagged weak 4G at some nets. A fullness sensor sends a few bytes; an image sends hundreds of kilobytes.</li>
 <li><b>A detached net must never be missed.</b> Back the camera with a tilt switch where the view is unreliable.</li>
 </ul></div>
@@ -401,10 +405,14 @@ wf=open(os.path.join(HERE,'wayfinder.html')).read()
 style=re.search(r'<style>(.*?)</style>',wf,re.S).group(1)
 style=re.sub(r'body\{background:var\(--bg\);color:var\(--fg\);font-family:var\(--display\);line-height:1\.5;\s*padding-left[^}]*\}','',style)
 inner=wf.split('</style>',1)[1]
+inner=re.sub(r'\s*<div class="eyebrow">Wayfinder map.*?</div>\s*<h1>.*?</h1>\s*<p>.*?</p>','',inner,count=1,flags=re.S)
+inner=re.sub(r'<section class="panel">\s*<h2>How to run this map</h2>.*?</section>','',inner,count=1,flags=re.S)
+inner=re.sub(r'<p style="margin:0;font-size:.9rem;color:var\(--muted\)"><code>/to-spec</code>.*?</p>','<p style="margin:0;font-size:.9rem;color:var(--muted)">Once the open questions are settled, the build runs in six thin slices. Each one works end to end on its own; the first four are the Festi build.</p>',inner,count=1,flags=re.S)
+inner=inner.replace('After the map clears: spec, then tracer bullets','Build order once the questions close')
 plan=f"""<style>{style}.wrap .wrap{{padding:0;max-width:none}}</style>
 <div class="eyebrow" style="margin-top:24px">Build plan</div>
 <h1 style="margin-top:4px">How this gets built</h1>
-<p class="lede">Planned with the <a href="https://www.aihero.dev/skills-wayfinder">Wayfinder</a> method: the destination is fixed, the route is a map of decisions, each a ticket phrased as a question. The frontier is what can be worked on now. <a href="assets/GPT-which-GPT-wayfinder-map.pdf">One-page PDF</a>.</p>
+<p class="lede">The build as a map of decisions: what is settled, what is still open, and what can start now. <a href="assets/GPT-which-GPT-wayfinder-map.pdf">One-page PDF</a>.</p>
 {inner}
 """
 open(os.path.join(OUT,'plan.html'),'w').write(page('Build plan', plan, 'plan.html'))
@@ -418,7 +426,7 @@ ev="""
 <div class="panel"><ul>
 <li>About 35–40 GPTs. About 15 have cameras; about 10 work; a repair run is planned.</li>
 <li>One photo a day into SCADA, cameras in place 1–3 years. About 90% of days nothing changes.</li>
-<li>One officer reviews the photos for about 15 minutes a day. No weekend or holiday cover. That officer is on leave until mid-January.</li>
+<li>One officer reviews the photos for about 15 minutes a day. No weekend or holiday cover.</li>
 <li>GPTs without cameras: cleaned about every three months, after big storms, or from experience of each trap's rainfall threshold.</li>
 <li>Contractors clean and repair. Underground units need a truck per load; nets are small.</li>
 </ul></div>
@@ -439,10 +447,9 @@ ev="""
 </div>
 <h2>Council's GPT categories and the 2022 audit</h2>
 <div class="two">
-<div class="panel"><img class="fig" src="assets/council-gpt-categories.png" alt="Table of Council GPT asset codes: uGPT, GPT, pGPT, Boom, Trash Rack"><p class="cap">Asset codes and map colours from the December 2022 GPT Audit, reproduced in Council minutes of 25 March 2024. To check against the 2026 asset register.</p></div>
+<div class="panel"><img class="fig" src="assets/council-gpt-categories.png" alt="Table of Council GPT asset codes: uGPT, GPT, pGPT, Boom, Trash Rack"><p class="cap">Asset codes and map colours from the December 2022 GPT Audit, reproduced in Council minutes of 25 March 2024. Typed up with the concept image on the <a href="index.html#types">Brief</a>.</p></div>
 <div class="panel"><img class="fig" src="assets/gpt-audit-2024-locations.png" alt="Map of GPT audit locations with lists of GPTs recommended for replacement or major work"><p class="cap">Recommended for replacement: Anthony St Carlingford, Benaud Pl Telopea, Burrabogee Rd Toongabbie, Clyde St Rydalmere, Lackey St (Lake Parra) North Parramatta, Masons Rd Oatlands, Model Farms Rd Winston Hills. Major work: Blaxland Rd Epping, Cooyong Cres Toongabbie, Lackey St (via car park), Norwood Ave Beecroft. Three of these are camera sites.</p></div>
 </div>
-<div class="panel" style="margin-top:16px"><img class="fig" src="assets/gpt-types-concept.jpg" alt="Illustrative concept images of the five GPT types"><p class="cap">Illustrative concept of the five types, labelled as not actual Council assets.</p></div>
 <h2>Research visuals</h2>
 <div class="gate">
 <a href="assets/gpt-fullness-states.png"><b>Fullness states, simulated</b><span>Five states on two Council frames</span></a>
