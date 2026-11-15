@@ -171,6 +171,12 @@ h2::before{content:"";width:28px;height:3px;background:var(--teal-b);flex:none}
 th{font:700 10.5px var(--display);letter-spacing:.2em;color:var(--muted);background:var(--alt)}
 .rule{background:var(--alt);border-left-color:var(--orange)}
 .quote{border-left-color:var(--teal-b)}
+.tablewrap{overflow-x:auto;border:1px solid var(--line)}
+table.cat{width:100%;min-width:720px;border-collapse:collapse;font-size:15px;background:#fff}
+table.cat th,table.cat td{text-align:left;padding:12px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+table.cat tr:last-child td{border-bottom:0}
+table.cat td:first-child{white-space:nowrap;font-weight:700}
+.mk{display:inline-block;width:12px;height:12px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:var(--c);margin-right:10px;vertical-align:-1px}
 .credit{font-size:12px;color:var(--muted);line-height:1.6;max-width:110ch;margin:24px auto 0;padding-bottom:24px}
 footer.band{margin:0;background:var(--teal-b);color:#fff;font:700 10px var(--display);letter-spacing:.25em;text-transform:uppercase;max-width:none}
 footer.band .in{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;padding-block:16px}
@@ -233,6 +239,19 @@ index = f"""
 <h2 id="types">Start with the trap type</h2>
 <p style="margin:-4px 0 12px;color:var(--muted);font-size:.92rem">Council's own asset codes and map colours from the 2022 GPT Audit. Each type fills differently and needs a different sensor; the decision and email layer is the same for all of them.</p>
 <div class="gate">{gates}</div>
+<h2 id="categories">Council's five asset categories</h2>
+<p style="margin:-4px 0 14px;color:var(--muted);font-size:.95rem;max-width:80ch">Official public definitions from the December 2022 GPT Audit, published in 2023 and reproduced in the March 2024 Council minutes. Verify against the current 2026 asset register.</p>
+<figure class="panel" style="margin:0 0 16px"><img class="fig" src="assets/gpt-types-concept.jpg" alt="Illustrative concept of the five GPT types: yellow underground wet vault, purple end-of-pipe net, green road-side pit trap, black floating boom, blue trash rack"><figcaption class="cap">Illustrative concept, not actual Council assets.</figcaption></figure>
+<div class="tablewrap"><table class="cat">
+<thead><tr><th>Map marker</th><th>Council code</th><th>Official definition</th><th>What it physically means</th><th>Important limitation</th></tr></thead>
+<tbody>
+<tr><td><span class="mk" style="--c:#e0b020"></span>Yellow</td><td><b>uGPT</b></td><td>Underground wet vault</td><td>Standing water; captured material may be submerged.</td><td>Not directly comparable with a dry container.</td></tr>
+<tr><td><span class="mk" style="--c:#7b4fc9"></span>Purple</td><td><b>GPT</b></td><td>End-of-pipe net or basket</td><td>Outlet net or basket; exposure and geometry vary by site.</td><td>Not a label for every proprietary GPT.</td></tr>
+<tr><td><span class="mk" style="--c:#2f9a4a"></span>Green</td><td><b>pGPT</b></td><td>Trap in road-side pit</td><td>Pit insert or basket within a roadside drainage pit.</td><td>The code alone does not prove a dry sump.</td></tr>
+<tr><td><span class="mk" style="--c:#222222"></span>Black</td><td><b>Boom</b></td><td>Floating boom across deep waterway</td><td>Floating barrier concentrating surface litter.</td><td>No simple container-style fullness percentage.</td></tr>
+<tr><td><span class="mk" style="--c:#2f6fd6"></span>Blue</td><td><b>Trash Rack</b></td><td>Steel rack across waterway</td><td>Fixed rack; debris may restrict upstream flow.</td><td>Blockage and hydraulic risk matter, not only volume.</td></tr>
+</tbody></table></div>
+<p style="color:var(--muted);font-size:.9rem;margin-top:10px">Map colours encode <b>asset type</b>, not condition or replacement priority. The 2024 minutes say a rectification-category map had not been developed.</p>
 <h2>The six states a net is scored into</h2>
 <div class="states">{states}</div>
 <p style="color:var(--muted);font-size:.9rem;margin-top:10px">Council's target is to intervene at 70–80% full. The thresholds are a starting point for the open question "What counts as full?". <a href="assets/gpt-fullness-states.png">Simulated examples</a> built from two Council frames.</p>
@@ -423,7 +442,7 @@ ev="""
 <div class="panel"><img class="fig" src="assets/council-gpt-categories.png" alt="Table of Council GPT asset codes: uGPT, GPT, pGPT, Boom, Trash Rack"><p class="cap">Asset codes and map colours from the December 2022 GPT Audit, reproduced in Council minutes of 25 March 2024. To check against the 2026 asset register.</p></div>
 <div class="panel"><img class="fig" src="assets/gpt-audit-2024-locations.png" alt="Map of GPT audit locations with lists of GPTs recommended for replacement or major work"><p class="cap">Recommended for replacement: Anthony St Carlingford, Benaud Pl Telopea, Burrabogee Rd Toongabbie, Clyde St Rydalmere, Lackey St (Lake Parra) North Parramatta, Masons Rd Oatlands, Model Farms Rd Winston Hills. Major work: Blaxland Rd Epping, Cooyong Cres Toongabbie, Lackey St (via car park), Norwood Ave Beecroft. Three of these are camera sites.</p></div>
 </div>
-<div class="panel" style="margin-top:16px"><img class="fig" src="assets/gpt-types-illustrative.png" alt="Illustrative concept images of the five GPT types"><p class="cap">Illustrative concept of the five types, labelled as not actual Council assets.</p></div>
+<div class="panel" style="margin-top:16px"><img class="fig" src="assets/gpt-types-concept.jpg" alt="Illustrative concept images of the five GPT types"><p class="cap">Illustrative concept of the five types, labelled as not actual Council assets.</p></div>
 <h2>Research visuals</h2>
 <div class="gate">
 <a href="assets/gpt-fullness-states.png"><b>Fullness states, simulated</b><span>Five states on two Council frames</span></a>
@@ -444,7 +463,7 @@ ev="""
 open(os.path.join(OUT,'evidence.html'),'w').write(page('Evidence', ev, 'evidence.html'))
 
 # ---------- assets ----------
-for f in ['gpt-fullness-states.png','gpt-clean-process.png','gpt-cost-estimate.png','gpt-sources-visual.png','current_cameras_GPT.png','current_cameras_GPT_example_broken_net.png','GPT-which-GPT-wayfinder-map.pdf']:
+for f in ['gpt-fullness-states.png','gpt-clean-process.png','gpt-cost-estimate.png','gpt-sources-visual.png','current_cameras_GPT.png','current_cameras_GPT_example_broken_net.png','GPT-which-GPT-wayfinder-map.pdf','gpt-types-concept.jpg']:
     src=os.path.join('/home/claude',f)
     if os.path.exists(src): shutil.copy(src, os.path.join(OUT,'assets',f))
 for old in ['gpt-which-gpt-banner-festi.png']:

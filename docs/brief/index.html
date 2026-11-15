@@ -76,6 +76,12 @@ h2::before{content:"";width:28px;height:3px;background:var(--teal-b);flex:none}
 th{font:700 10.5px var(--display);letter-spacing:.2em;color:var(--muted);background:var(--alt)}
 .rule{background:var(--alt);border-left-color:var(--orange)}
 .quote{border-left-color:var(--teal-b)}
+.tablewrap{overflow-x:auto;border:1px solid var(--line)}
+table.cat{width:100%;min-width:720px;border-collapse:collapse;font-size:15px;background:#fff}
+table.cat th,table.cat td{text-align:left;padding:12px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+table.cat tr:last-child td{border-bottom:0}
+table.cat td:first-child{white-space:nowrap;font-weight:700}
+.mk{display:inline-block;width:12px;height:12px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:var(--c);margin-right:10px;vertical-align:-1px}
 .credit{font-size:12px;color:var(--muted);line-height:1.6;max-width:110ch;margin:24px auto 0;padding-bottom:24px}
 footer.band{margin:0;background:var(--teal-b);color:#fff;font:700 10px var(--display);letter-spacing:.25em;text-transform:uppercase;max-width:none}
 footer.band .in{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;padding-block:16px}
@@ -89,6 +95,19 @@ footer.band a{color:#fff;text-decoration:none;margin-left:16px}
 <h2 id="types">Start with the trap type</h2>
 <p style="margin:-4px 0 12px;color:var(--muted);font-size:.92rem">Council's own asset codes and map colours from the 2022 GPT Audit. Each type fills differently and needs a different sensor; the decision and email layer is the same for all of them.</p>
 <div class="gate"><a href="types/net.html" class="focus" style="--c:#7b4fc9"><span class=flag>MVP focus · Council asked for nets first</span><span class="code" style="--c:#7b4fc9"><i></i>Purple · GPT</span><b>End-of-pipe net or basket</b><span>A steel-cable net clamped to the end of a stormwater pipe, just before the creek</span><small>Primary signal: Existing trail camera</small></a><a href="types/trash-rack.html" class="" style="--c:#2f6fd6"><span class="code" style="--c:#2f6fd6"><i></i>Blue · Trash Rack</span><b>Trash rack across a waterway</b><span>A fixed steel rack across a channel; debris piles against it</span><small>Primary signal: Existing camera with AI debris coverage</small></a><a href="types/pit.html" class="" style="--c:#2f9a4a"><span class="code" style="--c:#2f9a4a"><i></i>Green · pGPT</span><b>Trap in a road-side pit</b><span>A basket or insert inside a kerbside drainage pit</span><small>Primary signal: Radar or ultrasonic pit level</small></a><a href="types/vault.html" class="" style="--c:#e0b020"><span class="code" style="--c:#e0b020"><i></i>Yellow · uGPT</span><b>Underground wet vault</b><span>A below-ground chamber with standing water; litter can be submerged</span><small>Primary signal: Rainfall + cleaning history model</small></a><a href="types/boom.html" class="" style="--c:#222222"><span class="code" style="--c:#222222"><i></i>Black · Boom</span><b>Floating boom across deep waterway</b><span>A floating barrier that corrals surface litter</span><small>Primary signal: Existing wide-angle camera</small></a></div>
+<h2 id="categories">Council's five asset categories</h2>
+<p style="margin:-4px 0 14px;color:var(--muted);font-size:.95rem;max-width:80ch">Official public definitions from the December 2022 GPT Audit, published in 2023 and reproduced in the March 2024 Council minutes. Verify against the current 2026 asset register.</p>
+<figure class="panel" style="margin:0 0 16px"><img class="fig" src="assets/gpt-types-concept.jpg" alt="Illustrative concept of the five GPT types: yellow underground wet vault, purple end-of-pipe net, green road-side pit trap, black floating boom, blue trash rack"><figcaption class="cap">Illustrative concept, not actual Council assets.</figcaption></figure>
+<div class="tablewrap"><table class="cat">
+<thead><tr><th>Map marker</th><th>Council code</th><th>Official definition</th><th>What it physically means</th><th>Important limitation</th></tr></thead>
+<tbody>
+<tr><td><span class="mk" style="--c:#e0b020"></span>Yellow</td><td><b>uGPT</b></td><td>Underground wet vault</td><td>Standing water; captured material may be submerged.</td><td>Not directly comparable with a dry container.</td></tr>
+<tr><td><span class="mk" style="--c:#7b4fc9"></span>Purple</td><td><b>GPT</b></td><td>End-of-pipe net or basket</td><td>Outlet net or basket; exposure and geometry vary by site.</td><td>Not a label for every proprietary GPT.</td></tr>
+<tr><td><span class="mk" style="--c:#2f9a4a"></span>Green</td><td><b>pGPT</b></td><td>Trap in road-side pit</td><td>Pit insert or basket within a roadside drainage pit.</td><td>The code alone does not prove a dry sump.</td></tr>
+<tr><td><span class="mk" style="--c:#222222"></span>Black</td><td><b>Boom</b></td><td>Floating boom across deep waterway</td><td>Floating barrier concentrating surface litter.</td><td>No simple container-style fullness percentage.</td></tr>
+<tr><td><span class="mk" style="--c:#2f6fd6"></span>Blue</td><td><b>Trash Rack</b></td><td>Steel rack across waterway</td><td>Fixed rack; debris may restrict upstream flow.</td><td>Blockage and hydraulic risk matter, not only volume.</td></tr>
+</tbody></table></div>
+<p style="color:var(--muted);font-size:.9rem;margin-top:10px">Map colours encode <b>asset type</b>, not condition or replacement priority. The 2024 minutes say a rectification-category map had not been developed.</p>
 <h2>The six states a net is scored into</h2>
 <div class="states"><div class="st empty"><b>Empty</b><i>0–40%</i><span>No action. Log the frame.</span></div><div class="st partial"><b>Filling</b><i>40–70%</i><span>Watch. Re-score after the next rain.</span></div><div class="st full"><b>Clean due</b><i>70–80%</i><span>Email: clean before the next storm.</span></div><div class="st blocked"><b>Overdue</b><i>&gt;80% or overtopping</i><span>Email: urgent. A full net detaches in the next surge.</span></div><div class="st unusable"><b>Can't see</b><i>leaves, fog, dark, offline</i><span>Email after 2 days: restore the view.</span></div><div class="st damaged"><b>Damaged / detached</b><i>torn mesh, off the pipe</i><span>Email: repair job, not a clean.</span></div></div>
 <p style="color:var(--muted);font-size:.9rem;margin-top:10px">Council's target is to intervene at 70–80% full. The thresholds are a starting point for the open question "What counts as full?". <a href="assets/gpt-fullness-states.png">Simulated examples</a> built from two Council frames.</p>
