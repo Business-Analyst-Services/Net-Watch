@@ -5,7 +5,7 @@ Content sources: Council SME breakout session (Dr Paul Hackney, 9 Nov 2026), the
 Proactive GPT Monitoring brief (Zoe), City of Parramatta public records, and the SCADA
 GPT Cameras page screenshots (13 Nov 2026).
 """
-import os, html, shutil, re
+import re, os, html, shutil
 HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(HERE, 'docs', 'brief')
 os.makedirs(os.path.join(OUT, 'types'), exist_ok=True)
@@ -96,8 +96,7 @@ TYPES = [
 ]
 
 CSS = """
-:root{--bg:#f5f3ee;--paper:#fff;--fg:#14232e;--muted:#5c6b74;--line:#d8d3c8;--navy:#0f2f52;--teal:#126a6a;--gold:#c98a1c;--gold-soft:#fff1d6;--green:#2f8a58;--red:#c43c3c;--chip:#ece8df;--display:"IBM Plex Sans",system-ui,sans-serif;--mono:"IBM Plex Mono",ui-monospace,monospace}
-@media (prefers-color-scheme:dark){:root{--bg:#0f2f52;--paper:#143a5f;--fg:#f3f1ea;--muted:#bfd6e2;--line:#2a4f73;--navy:#0b2440;--teal:#9fd8d0;--gold:#ffb547;--gold-soft:#3a3214;--green:#6fc48f;--red:#f07a7a;--chip:#1d4670;color-scheme:dark}}
+:root{--bg:#fff;--paper:#fff;--fg:#1F3A5F;--muted:#5A6B7D;--line:#DDE3EA;--navy:#1F3A5F;--deep:#14284A;--soft:#3E6189;--teal:#1D6E6E;--teal-b:#4DB8B8;--teal-tint:#CDEDED;--orange:#F5A04A;--alt:#F4F6F8;--gold:#A8580A;--gold-soft:#FDEBD6;--green:#2E7D50;--red:#C2352B;--chip:#F4F6F8;--display:Arial,Helvetica,"Liberation Sans",sans-serif;--mono:Arial,Helvetica,"Liberation Sans",sans-serif}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--display);line-height:1.5;padding:0 16px 40px}
 a{color:var(--teal)}.wrap{max-width:1120px;margin:0 auto}
 nav{display:flex;flex-wrap:wrap;gap:6px 18px;align-items:center;padding:14px 0;border-bottom:1px solid var(--line);font-family:var(--mono);font-size:.8rem}
@@ -141,20 +140,82 @@ footer{margin-top:40px;font-family:var(--mono);font-size:.74rem;color:var(--mute
 .mail .why{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;font-size:.88rem}.mail .why dt{color:var(--muted);font-family:var(--mono);font-size:.76rem;padding-top:2px}.mail .why dd{margin:0}
 .mail .acts{display:flex;flex-wrap:wrap;gap:8px}.mail .acts span{border:1px solid var(--teal);color:var(--teal);padding:7px 12px;font-weight:600;font-size:.86rem}.mail .acts span.pri{background:var(--teal);color:var(--paper)}
 .figwrap{position:relative;max-width:640px}.figwrap svg{position:absolute;inset:0;width:100%;height:100%}
+
+/* ---- BAS site frame ---- */
+body{padding:0;font-size:16px;line-height:1.6}
+a{color:var(--navy)}
+.in{max-width:1120px;margin:0 auto;padding-inline:max(20px,env(safe-area-inset-left))}
+header.site{padding-block:18px;border-bottom:1px solid var(--line)}
+header.site .in{display:flex;align-items:center;justify-content:space-between;gap:12px 20px;flex-wrap:wrap}
+.brandl{display:flex;align-items:center;gap:12px;text-decoration:none;color:var(--navy)}
+.brandl img{width:44px;height:44px}.brandl b{display:block;font-size:15px}.brandl small{display:block;font-size:9px;letter-spacing:.25em;color:var(--muted);text-transform:uppercase}
+nav.sitenav{display:flex;gap:6px 18px;flex-wrap:wrap;padding:0;border:0;font:700 13px var(--display)}
+nav.sitenav a{text-decoration:none;color:var(--navy);padding-bottom:3px}nav.sitenav a.cur{border-bottom:2px solid var(--teal-b)}
+.hero{background:var(--navy);color:#fff;position:relative;overflow:hidden}
+.hero .in{padding-block:52px}
+.hero .bars{position:absolute;right:0;bottom:0;display:flex;align-items:flex-end;gap:14px;opacity:.3;pointer-events:none}.hero .bars i{display:block;width:24px;background:var(--soft)}
+.hero .eyebrow{color:var(--teal-b)}
+.eyebrow{display:flex;align-items:center;gap:12px;font:700 11px var(--display);letter-spacing:.3em;text-transform:uppercase;color:var(--teal)}
+.eyebrow::before{content:"";width:28px;height:2px;background:var(--teal-b);flex:none}
+.hero h1{font-size:clamp(32px,4.6vw,48px);line-height:1.1;font-weight:400;margin:16px 0 14px;max-width:24ch;position:relative}
+.hero h1 b{font-weight:700}
+.hero .lede{color:#fff;opacity:.9;font-weight:400;font-size:17px;max-width:64ch;margin:0;position:relative}
+.hero .lede a{color:#fff}
+.hero .code{color:#fff}
+main.in{padding-block:40px 24px}
+h2{font:700 24px/1.2 var(--display);letter-spacing:0;text-transform:none;color:var(--navy);margin:44px 0 16px;display:flex;align-items:center;gap:12px}
+h2::before{content:"";width:28px;height:3px;background:var(--teal-b);flex:none}
+.panel h2{font-size:20px}
+.panel,.scn,.st,.gate a{border-color:var(--line)}
+.gate a{border-top-width:5px}.gate a.focus{background:var(--alt)}
+th{font:700 10.5px var(--display);letter-spacing:.2em;color:var(--muted);background:var(--alt)}
+.rule{background:var(--alt);border-left-color:var(--orange)}
+.quote{border-left-color:var(--teal-b)}
+.credit{font-size:12px;color:var(--muted);line-height:1.6;max-width:110ch;margin:24px auto 0;padding-bottom:24px}
+footer.band{margin:0;background:var(--teal-b);color:#fff;font:700 10px var(--display);letter-spacing:.25em;text-transform:uppercase;max-width:none}
+footer.band .in{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;padding-block:16px}
+footer.band a{color:#fff;text-decoration:none;margin-left:16px}
 """
+
+ROOTVARS = ':root{--bg:#fff;--paper:#fff;--fg:#1F3A5F;--muted:#5A6B7D;--line:#DDE3EA;--navy:#1F3A5F;--teal:#1D6E6E;--gold:#A8580A;--gold-soft:#FDEBD6;--green:#2E7D50;--green-soft:#E3F1E8;--chip:#F4F6F8;--display:Arial,Helvetica,"Liberation Sans",sans-serif;--mono:Arial,Helvetica,"Liberation Sans",sans-serif}body{background:#fff;padding:0}section.hero{display:block}footer.band{max-width:none;font:700 10px Arial,Helvetica,sans-serif;color:#fff}'
+
+def split_h1(t):
+    if '<' in t: return t
+    for sep in (', ', '; '):
+        if sep in t:
+            a,b=t.rsplit(sep,1); return f'{a}{sep.strip()} <b>{b}</b>'
+    w=t.split()
+    if len(w)<=3: return f'<b>{t}</b>'
+    k=max(2,len(w)//2); return ' '.join(w[:-k])+' <b>'+' '.join(w[-k:])+'</b>'
 
 def page(title, body, cur, depth=0):
     root = '../' if depth else ''
-    links = [('index.html','Home'),('mvp.html','MVP'),('alert.html','Sample alert'),('sensors.html','Sensor matrix'),('plan.html','Build plan'),('evidence.html','Evidence')]
+    site = root + '../'
+    links = [('index.html','Brief'),('mvp.html','MVP'),('alert.html','Sample alert'),('sensors.html','Sensor matrix'),('plan.html','Build plan'),('evidence.html','Evidence')]
     nav = ''.join(f'<a href="{root}{h}"{" class=cur" if cur==h else ""}>{t}</a>' for h,t in links)
-    return f"""<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>{html.escape(title)} · GPT which GPT?</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
-<style>{CSS}</style></head><body><div class="wrap">
-<nav><a class="brand" href="{root}index.html">GPT which GPT?</a>{nav}</nav>
+    lead_style = ''
+    m = re.match(r'\s*(<style>.*?</style>)', body, re.S)
+    if m: lead_style, body = m.group(1), body[m.end():]
+    m = re.match(r'\s*(<div[^>]*>.*?</div>)\s*<h1[^>]*>(.*?)</h1>\s*(<p class="lede">.*?</p>)?', body, re.S)
+    hero = ''
+    if m:
+        eb = m.group(1)
+        if 'class="eyebrow"' not in eb and 'class=eyebrow' not in eb: eb = eb.replace('<div', '<div class="eyebrow-chip"', 1)
+        hero = f'{eb}<h1>{split_h1(m.group(2))}</h1>{m.group(3) or ""}'
+        body = body[m.end():]
+    bars = '<div class="bars" aria-hidden="true"><i style="height:50px"></i><i style="height:110px"></i><i style="height:80px"></i><i style="height:190px"></i><i style="height:260px"></i><i style="height:140px"></i></div>'
+    return f"""<!doctype html><html lang="en-AU"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{html.escape(title)} | Net Watch brief</title>
+<style>{CSS}</style>{lead_style}{"<style>"+ROOTVARS+"</style>" if lead_style else ""}</head><body>
+<header class="site"><div class="in"><a class="brandl" href="{site}"><img src="https://careers.business-analyst.services/logo.png" alt="BAS"><span><b>Net Watch</b><small>Business Analyst Services · Team 101</small></span></a>
+<nav class="sitenav" aria-label="Brief">{nav}<a href="{site}app.html">Open the app</a></nav></div></header>
+<section class="hero">{bars}<div class="in">{hero}</div></section>
+<main class="in">
 {body}
-<footer>GPT which GPT? is a Team 101 entry for the WSTI Festi 2026 Build with AI challenge, City Challenge track, Parramatta Possibilities Challenge 5 (AI for Smarter Asset and Environmental Management). Operating facts come from the Council SME breakout session with Dr Paul Hackney (9 Nov 2026) and City of Parramatta public records: GPT Audit (Council minutes 25 Mar 2024), Asset Management Plan 2027–2036, Annual Report 2024/25. Sensor costs are indicative, not quotes. Vendor names are examples from public sources, not endorsements. Camera frames are Council SCADA images shared for the challenge.</footer>
-</div></body></html>"""
+</main>
+<div class="in"><p class="credit">GPT which GPT? (Net Watch) is a Team 101 entry for the WSTI Festi 2026 Build with AI challenge, City Challenge track, Parramatta Possibilities Challenge 5 (AI for Smarter Asset and Environmental Management). Operating facts come from the Council SME breakout session with Dr Paul Hackney (9 Nov 2026) and City of Parramatta public records: GPT Audit (Council minutes 25 Mar 2024), Asset Management Plan 2027–2036, Annual Report 2024/25. Sensor costs are indicative, not quotes. Vendor names are examples from public sources, not endorsements. Camera frames are Council SCADA images shared for the challenge.</p></div>
+<footer class="band"><div class="in"><span>Human at every gate</span><span><a href="{site}">About</a><a href="{site}app.html">App</a><a href="{site}email.html">Email alerts</a><a href="https://business-analyst.services/">BAS</a></span></div></footer>
+</body></html>"""
 
 def code_chip(t):
     return f'<span class="code" style="--c:{t["colour"]}"><i></i>{t["colname"]} · {t["code"]}</span>'

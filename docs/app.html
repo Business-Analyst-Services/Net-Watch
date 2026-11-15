@@ -10,15 +10,29 @@
 <style>
 :root{--bg:#F4F6F8;--card:#fff;--fg:#1F3A5F;--muted:#5A6B7D;--line:#DDE3EA;--accent:#1F3A5F;--accent-fg:#fff;--ink:#1F3A5F;--wo:#4DB8B8;--build:#F5A04A;
 --repair:#B3266B;--now:#C2352B;--soon:#A8580A;--view:#5A6B7D;--ok:#2E7D50;--rain:#2F7FD8;--chip:#E8EDF2;
---sans:Arial,"Helvetica Neue",Helvetica,sans-serif;--mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+--sans:Arial,Helvetica,"Liberation Sans",sans-serif;--mono:Arial,Helvetica,"Liberation Sans",sans-serif;--hd:#1F3A5F;--teal:#4DB8B8;--orange:#F5A04A;--deep:#14284A;--site:#fff}
 @media (prefers-color-scheme:dark){:root{--bg:#14284A;--card:#1A3358;--fg:#F4F6F8;--muted:#A9B6C4;--line:#2C4770;--accent:#4DB8B8;--accent-fg:#14284A;--ink:#A9C3E2;
---repair:#F07AAA;--now:#F2766C;--soon:#F5A04A;--view:#A9B6C4;--ok:#6CC492;--rain:#6FA8EC;--chip:#22406A;color-scheme:dark}}
+--repair:#F07AAA;--now:#F2766C;--soon:#F5A04A;--view:#A9B6C4;--ok:#6CC492;--rain:#6FA8EC;--chip:#22406A;--hd:#0F1F3A;--site:#14284A;color-scheme:dark}}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--fg);font:14.5px/1.45 var(--sans)}
 .app{max-width:1240px;margin:0 auto;padding:0 16px 40px}
-header{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 20px;padding:16px 0 12px}
-.brand{display:flex;align-items:baseline;gap:12px}
-h1{margin:0;font-size:1.4rem;letter-spacing:-.01em}
+.site{background:var(--site);border-bottom:1px solid var(--line);padding-block:14px}
+.site .in{max-width:1240px;margin:0 auto;padding-inline:max(16px,env(safe-area-inset-left));display:flex;align-items:center;justify-content:space-between;gap:12px 20px;flex-wrap:wrap}
+.brandl{display:flex;align-items:center;gap:12px;text-decoration:none;color:var(--fg)}
+.brandl img{width:40px;height:40px}.brandl b{display:block;font-size:15px}.brandl small{display:block;font-size:9px;letter-spacing:.25em;color:var(--muted);text-transform:uppercase}
+.sitenav{display:flex;gap:20px;flex-wrap:wrap}.sitenav a{font-size:14px;font-weight:700;text-decoration:none;color:var(--fg);padding-bottom:3px}.sitenav a[aria-current]{border-bottom:2px solid var(--teal)}
+header{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px 20px;padding:20px 0;margin-bottom:16px;background:var(--hd);color:#fff;box-shadow:0 0 0 100vmax var(--hd);clip-path:inset(0 -100vmax)}
+header .eyebrow{display:flex;align-items:center;gap:10px;font-size:10px;font-weight:700;letter-spacing:.3em;text-transform:uppercase;color:var(--teal);margin:0 0 4px}
+header .eyebrow::before{content:"";width:24px;height:2px;background:var(--teal)}
+header .roles button{background:transparent;border:1px solid rgba(255,255,255,.45);color:#fff}
+header .roles button.on{background:#fff;border-color:#fff;color:var(--deep)}
+header .roles span{background:rgba(255,255,255,.35)!important}
+header .wx span{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.3);color:#fff}
+header .date{color:rgba(255,255,255,.75)}
+.band{display:block;background:var(--teal);color:#fff;font-size:10px;font-weight:700;letter-spacing:.25em;text-transform:uppercase;padding-block:14px;margin-top:28px}
+.band .in{max-width:1240px;margin:0 auto;padding-inline:max(16px,env(safe-area-inset-left));display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.brand{display:grid;gap:0}
+h1{margin:0;font-size:1.7rem;font-weight:400;line-height:1.15}h1 b{font-weight:700}
 .date{font-family:var(--mono);font-size:.8rem;color:var(--muted)}
 .wx{display:flex;gap:8px;flex-wrap:wrap}
 .wx span{background:var(--card);border:1px solid var(--line);padding:5px 10px;font-size:.84rem}
@@ -36,7 +50,7 @@ h1{margin:0;font-size:1.4rem;letter-spacing:-.01em}
 .grid{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:12px}
 @media (max-width:900px){.grid{grid-template-columns:1fr}}
 .card{background:var(--card);border:1px solid var(--line);min-width:0}
-.card h2{margin:0;font-size:.74rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-family:var(--mono);font-weight:500}
+.card h2{margin:0;display:flex;align-items:center;gap:10px;font-size:11px;letter-spacing:.25em;text-transform:uppercase;color:var(--fg);font-family:var(--sans);font-weight:700}.card h2::before{content:"";width:18px;height:2px;background:var(--teal);flex:none}
 .hd{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--line);flex-wrap:wrap}
 .pad{padding:12px 14px}
 #map{height:430px;background:var(--chip)}
@@ -84,7 +98,7 @@ svg text{font-family:var(--mono);fill:var(--muted)}
 .nc .why{font-size:.84rem;color:var(--muted)}
 .btns{display:flex;flex-wrap:wrap;gap:6px}
 .btn{border:1px solid var(--accent);background:none;color:var(--accent);padding:7px 11px;font:600 .84rem var(--sans);cursor:pointer}
-.btn.pri{background:var(--accent);color:var(--accent-fg)}
+.btn.pri{background:var(--orange);border-color:var(--orange);color:var(--deep)}
 .btn.q{border-color:var(--line);color:var(--muted)}
 .btn:disabled{opacity:.45;cursor:default}
 .btn:focus-visible,.tile:focus-visible,.tog button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
@@ -161,9 +175,10 @@ table.t td.n{font-family:var(--mono);text-align:right;white-space:nowrap}
 </style>
 </head>
 <body>
+<div class="site"><div class="in"><a class="brandl" href="./"><img src="https://careers.business-analyst.services/logo.png" alt="BAS"><span><b>Net Watch</b><small>Business Analyst Services · Team 101</small></span></a><nav class="sitenav" aria-label="Main"><a href="./">About</a><a href="app.html" aria-current="page">App</a><a href="email.html">Email alerts</a><a href="brief/">Brief</a></nav></div></div>
 <div class="app">
 <header>
- <div class="brand"><h1>Net Watch</h1><span class="date" id="date"></span></div>
+ <div class="brand"><p class="eyebrow">City of Parramatta · Stormwater</p><h1>Net <b>Watch</b></h1><span class="date" id="date"></span></div>
  <nav class="roles" id="roles" aria-label="Switch user"></nav>
  <div class="wx" id="wx"></div>
 </header>
@@ -202,6 +217,7 @@ table.t td.n{font-family:var(--mono);text-align:right;white-space:nowrap}
 
 <footer><span>Demo data · approximate locations</span><span id="src2"></span><button id="reset">Reset demo</button><a href="email.html">Email alerts</a><a href="brief/">Brief</a><a href="./">About</a></footer>
 </div>
+<footer class="band"><div class="in"><span>Human at every gate</span><span>Team 101 · WSTI Festi 2026</span></div></footer>
 <div class="toast" id="toast" hidden></div>
 
 <script src="data/model-results.js"></script>
