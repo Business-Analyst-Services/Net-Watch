@@ -1,0 +1,842 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Net Watch</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.heat/0.2.0/leaflet-heat.js"></script>
+<style>
+:root{--bg:#F4F6F8;--card:#fff;--fg:#1F3A5F;--muted:#5A6B7D;--line:#DDE3EA;--accent:#1F3A5F;--accent-fg:#fff;--ink:#1F3A5F;--wo:#4DB8B8;--build:#F5A04A;
+--repair:#B3266B;--now:#C2352B;--soon:#A8580A;--view:#5A6B7D;--ok:#2E7D50;--rain:#2F7FD8;--chip:#E8EDF2;
+--sans:Arial,"Helvetica Neue",Helvetica,sans-serif;--mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+@media (prefers-color-scheme:dark){:root{--bg:#14284A;--card:#1A3358;--fg:#F4F6F8;--muted:#A9B6C4;--line:#2C4770;--accent:#4DB8B8;--accent-fg:#14284A;--ink:#A9C3E2;
+--repair:#F07AAA;--now:#F2766C;--soon:#F5A04A;--view:#A9B6C4;--ok:#6CC492;--rain:#6FA8EC;--chip:#22406A;color-scheme:dark}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:14.5px/1.45 var(--sans)}
+.app{max-width:1240px;margin:0 auto;padding:0 16px 40px}
+header{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 20px;padding:16px 0 12px}
+.brand{display:flex;align-items:baseline;gap:12px}
+h1{margin:0;font-size:1.4rem;letter-spacing:-.01em}
+.date{font-family:var(--mono);font-size:.8rem;color:var(--muted)}
+.wx{display:flex;gap:8px;flex-wrap:wrap}
+.wx span{background:var(--card);border:1px solid var(--line);padding:5px 10px;font-size:.84rem}
+.wx b{font-variant-numeric:tabular-nums}
+/* action tiles */
+.actions{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin-bottom:12px}
+.tile{position:relative;display:grid;gap:4px;align-content:start;text-align:left;background:var(--card);border:1px solid var(--line);border-top:6px solid var(--c);padding:12px 14px;cursor:pointer;font:inherit;color:inherit;min-height:116px}
+.tile:hover,.tile.on{box-shadow:0 0 0 2px var(--c) inset}
+.tile .num{font-size:2.2rem;font-weight:700;line-height:1;color:var(--c);font-variant-numeric:tabular-nums}
+.tile .lbl{font-weight:600}
+.tile .who{font-size:.82rem;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tile.zero{opacity:.55}
+.tile .go{position:absolute;right:12px;top:10px;font-family:var(--mono);font-size:.72rem;color:var(--c)}
+/* layout */
+.grid{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:12px}
+@media (max-width:900px){.grid{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);min-width:0}
+.card h2{margin:0;font-size:.74rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-family:var(--mono);font-weight:500}
+.hd{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.pad{padding:12px 14px}
+#map{height:430px;background:var(--chip)}
+.tog{display:flex;gap:6px}
+.tog button{background:var(--chip);border:1px solid var(--line);color:var(--fg);font:500 .78rem var(--sans);padding:4px 10px;cursor:pointer}
+.tog button.on{background:var(--accent);color:var(--accent-fg);border-color:var(--accent)}
+.legend{display:flex;flex-wrap:wrap;gap:4px 12px;padding:8px 14px;font-size:.78rem;color:var(--muted);border-top:1px solid var(--line)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px;vertical-align:-1px}
+.pin{width:18px;height:18px;border-radius:50%;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.4)}
+.pin.pulse{animation:pulse 1.6s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 var(--pc)}70%{box-shadow:0 0 0 12px transparent}100%{box-shadow:0 0 0 0 transparent}}
+@media (prefers-reduced-motion:reduce){.pin.pulse{animation:none}}
+.leaflet-popup-content{font:13px/1.4 var(--sans);margin:10px 12px}
+.leaflet-popup-content b{display:block;font-size:14px}
+.leaflet-popup-content button{margin-top:6px}
+/* charts */
+svg text{font-family:var(--mono);fill:var(--muted)}
+.chart{display:block;width:100%;height:auto}
+.proj .row{display:grid;grid-template-columns:118px 1fr 108px;gap:8px;align-items:center;font-size:.84rem;padding:3px 0;cursor:pointer}
+.proj .row:hover{background:var(--chip)}
+.proj .bar{position:relative;height:14px;background:var(--chip)}
+.proj .bar i{position:absolute;left:0;top:0;bottom:0}
+.proj .bar u{position:absolute;top:0;bottom:0;background:repeating-linear-gradient(45deg,var(--c) 0 3px,transparent 3px 6px);opacity:.6}
+.proj .bar s{position:absolute;left:80%;top:-3px;bottom:-3px;border-left:2px dashed var(--fg);opacity:.5}
+.proj .when{font-family:var(--mono);font-size:.76rem;text-align:right}
+/* lane */
+.lane{margin:12px 0}
+.lane .hd{background:var(--card);border:1px solid var(--line);border-left:6px solid var(--c)}
+.lane .hd b{font-size:1.05rem}
+.fromemail{display:grid;gap:8px;background:var(--chip);border-left:5px solid var(--accent);padding:10px 12px;font-size:.9rem}
+.fromemail .src{font-family:var(--mono);font-size:.72rem;color:var(--muted);letter-spacing:.04em}
+.fromemail b{font-size:1rem}
+.banner{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;justify-content:space-between;background:var(--accent);color:var(--accent-fg);padding:10px 14px;margin-bottom:12px;font-size:.92rem}
+.banner button{background:none;border:1px solid currentColor;color:inherit;font:600 .8rem var(--sans);padding:4px 10px;cursor:pointer}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:10px;margin-top:10px}
+.nc{background:var(--card);border:1px solid var(--line);display:grid;grid-template-rows:auto 1fr}
+.nc .ph{position:relative;aspect-ratio:4/3;background:#000;cursor:pointer;max-width:100%}
+.nc .ph img{width:100%;height:100%;object-fit:cover;display:block}
+.nc .ph .badge{position:absolute;left:8px;top:8px;background:var(--c);color:#fff;font:600 .72rem var(--mono);padding:2px 7px}
+.nc .ph .pscore{position:absolute;right:8px;top:8px;background:var(--b);color:#fff;font:700 .9rem var(--mono);padding:3px 8px}
+.nc .ph .fillb{position:absolute;left:0;right:0;bottom:0;height:6px;background:rgba(0,0,0,.4)}
+.nc .ph .fillb i{display:block;height:100%;background:var(--c)}
+.nc .bd{padding:10px 12px;display:grid;gap:6px;align-content:start}
+.nc b{font-size:1rem}
+.nc .why{font-size:.84rem;color:var(--muted)}
+.btns{display:flex;flex-wrap:wrap;gap:6px}
+.btn{border:1px solid var(--accent);background:none;color:var(--accent);padding:7px 11px;font:600 .84rem var(--sans);cursor:pointer}
+.btn.pri{background:var(--accent);color:var(--accent-fg)}
+.btn.q{border-color:var(--line);color:var(--muted)}
+.btn:disabled{opacity:.45;cursor:default}
+.btn:focus-visible,.tile:focus-visible,.tog button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+/* work orders */
+.wo{display:grid;grid-template-columns:auto 1fr auto;gap:4px 12px;align-items:center;padding:9px 14px;border-top:1px solid var(--line);font-size:.88rem}
+.wo:first-child{border-top:0}
+.wo .dot{width:10px;height:10px;border-radius:50%;background:var(--c)}
+.wo .no{font-family:var(--mono);font-size:.76rem;color:var(--muted)}
+.wo form{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:8px;align-items:end}
+.wo label{display:grid;gap:2px;font-size:.76rem;color:var(--muted)}
+input,select{font:inherit;color:var(--fg);background:var(--bg);border:1px solid var(--line);padding:6px 8px}
+.empty{color:var(--muted);padding:16px 14px;font-size:.9rem}
+.tl{display:grid;gap:0;padding:6px 14px 12px}
+.tl .ev{display:grid;grid-template-columns:86px 14px 1fr auto;gap:8px;align-items:center;font-size:.84rem;padding:4px 0}
+.tl .ev .d{font-family:var(--mono);font-size:.74rem;color:var(--muted)}
+.tl .ev .k{width:10px;height:10px;border-radius:50%;background:var(--c)}
+.tl .ev .kg{font-family:var(--mono);font-size:.76rem;color:var(--muted)}
+/* drawer */
+.drawer{position:fixed;inset:0;background:rgba(5,15,22,.55);display:flex;justify-content:flex-end;z-index:2000}
+.drawer .in{background:var(--card);width:min(560px,100%);height:100%;overflow:auto;display:grid;align-content:start}
+.drawer .fig{position:relative;background:#000;display:flex;justify-content:center}
+.drawer .fig .fw{position:relative;max-width:100%}
+.drawer .fig img{display:block;max-width:100%;max-height:360px}
+.drawer .fig svg{position:absolute;inset:0;width:100%;height:100%}
+.drawer .x{position:absolute;right:10px;top:10px;background:rgba(0,0,0,.6);color:#fff;border:0;width:34px;height:34px;font-size:18px;cursor:pointer;z-index:2}
+.gauge{display:flex;align-items:center;gap:14px}
+.gauge svg{width:92px;height:92px;flex:none}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:3px 14px;font-size:.88rem}
+.kv dt{color:var(--muted)}.kv dd{margin:0;font-variant-numeric:tabular-nums}
+pre{margin:0;background:var(--chip);padding:10px;font:.8rem/1.5 var(--mono);white-space:pre-wrap}
+.toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:9px 16px;font-size:.88rem;z-index:3000}
+footer{margin-top:20px;font-family:var(--mono);font-size:.72rem;color:var(--muted);display:flex;gap:14px;flex-wrap:wrap}
+footer button,footer a{background:none;border:0;padding:0;color:var(--muted);font:inherit;text-decoration:underline;cursor:pointer}
+/* roles */
+.roles{display:flex;gap:4px;flex-wrap:wrap}
+.roles button{background:var(--card);border:1px solid var(--line);color:var(--muted);font:600 .82rem var(--sans);padding:6px 12px;cursor:pointer}
+.roles button.on{background:var(--ink);border-color:var(--ink);color:var(--card)}
+.rolehd{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:8px;margin:4px 0 12px}
+.rolehd h2{margin:0;font-size:1.25rem;letter-spacing:0;text-transform:none;font-family:var(--sans);color:var(--fg)}
+.rolehd span{font-family:var(--mono);font-size:.8rem;color:var(--muted)}
+.jobs{display:grid;gap:10px}
+.job{display:grid;grid-template-columns:44px 120px 1fr;gap:12px;align-items:start;background:var(--card);border:1px solid var(--line);border-left:6px solid var(--c);padding:12px}
+.job .stop{width:36px;height:36px;border-radius:50%;background:var(--c);color:#fff;font:700 1rem var(--mono);display:flex;align-items:center;justify-content:center}
+.job img{width:120px;height:90px;object-fit:cover;display:block}
+.job b{font-size:1.05rem}.job .meta{font-size:.84rem;color:var(--muted)}
+.job form{grid-column:1/-1;display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;align-items:end;border-top:1px solid var(--line);padding-top:10px}
+@media (max-width:560px){.job{grid-template-columns:36px 1fr}.job img{grid-column:1/-1;width:100%;height:160px}}
+label.f{display:grid;gap:3px;font-size:.78rem;color:var(--muted)}
+.checks{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:.86rem;align-items:center}
+.checks label{display:flex;gap:5px;align-items:center;color:var(--fg)}
+.thumb{width:90px;height:68px;object-fit:cover;border:1px solid var(--line)}
+.panel2{background:var(--card);border:1px solid var(--line);padding:14px 16px;margin-bottom:12px}
+.panel2 form{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;align-items:end}
+textarea{font:inherit;color:var(--fg);background:var(--bg);border:1px solid var(--line);padding:6px 8px;min-height:64px;resize:vertical}
+table.t{border-collapse:collapse;width:100%;font-size:.86rem}
+table.t th{text-align:left;font:500 .72rem var(--mono);letter-spacing:.05em;text-transform:uppercase;color:var(--muted);padding:8px 10px;border-bottom:1px solid var(--line)}
+table.t td{padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+table.t td.n{font-family:var(--mono);text-align:right;white-space:nowrap}
+.chipc{display:inline-block;font:600 .72rem var(--mono);padding:2px 7px;color:#fff;background:var(--c)}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin-bottom:12px}
+.kpi{background:var(--card);border:1px solid var(--line);padding:12px 14px;display:grid;gap:2px}
+.kpi b{font-size:1.9rem;line-height:1.1;font-variant-numeric:tabular-nums;color:var(--ink)}
+.kpi span{font-size:.84rem;color:var(--muted)}
+.tblwrap{overflow-x:auto}
+.jobsheet{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;background:var(--chip);padding:8px 10px;font-size:.84rem}
+.wxp[hidden]{display:none}
+.wxp{display:grid;gap:8px;padding:10px 14px;border-top:1px solid var(--line)}
+.wxrow{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:end}
+.wxrow input[type=range]{width:100%;accent-color:var(--accent)}
+.wxsum{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:.86rem}
+.wxleg{display:flex;align-items:center;gap:8px;font-size:.76rem;color:var(--muted)}
+.wxleg .gk{display:inline-block;width:9px;height:9px;border:2px solid;border-radius:50%;margin-left:10px}
+.wxleg i{flex:1;max-width:260px;height:10px;background:linear-gradient(90deg,#CDEDED,#4DB8B8,#F5A04A,#C2352B,#8E1F56)}
+</style>
+</head>
+<body>
+<div class="app">
+<header>
+ <div class="brand"><h1>Net Watch</h1><span class="date" id="date"></span></div>
+ <nav class="roles" id="roles" aria-label="Switch user"></nav>
+ <div class="wx" id="wx"></div>
+</header>
+
+<div id="vOfficer">
+<div id="banner"></div>
+<section class="actions" id="actions"></section>
+<section class="lane" id="lane"></section>
+
+<section class="grid">
+ <div class="card">
+  <div class="hd"><h2>Map</h2><div class="tog"><button id="tWx">Weather impact</button><button id="tRadar">Rain radar</button><button id="tRun">Contractor run</button></div></div>
+  <div id="map"></div>
+  <div id="wxpanel" class="wxp" hidden>
+   <div class="wxrow"><label class="f">Weather<select id="wxScen"></select></label>
+   <label class="f" style="flex:1;min-width:200px">Time ahead · <b id="wxH" style="color:var(--fg)">+24 h</b><input type="range" id="wxRange" min="0" max="72" step="3" value="24" aria-label="Hours ahead"></label>
+   <button class="btn" id="wxPlay" type="button">Play</button></div>
+   <div class="wxsum" id="wxSum"></div>
+   <div class="wxleg"><span>Low</span><i></i><span>High impact</span><b class="gk" style="border-color:#14284A;background:#fff;width:12px;height:12px"></b><span>Water level gauge</span><b class="gk" style="border-color:#2567B5;background:#CFE0F5"></b><span>Rain gauge</span></div>
+   <div class="date" id="wxSrc" style="line-height:1.4"></div>
+  </div>
+  <div class="legend" id="legend"></div>
+ </div>
+ <div style="display:grid;gap:12px;align-content:start">
+  <div class="card"><div class="hd"><h2>Rain, next 7 days</h2><span class="date" id="wxsrc"></span></div><div class="pad" id="rainchart"></div></div>
+  <div class="card"><div class="hd"><h2>Priority ranking</h2><span class="date">50% condition · 25% rain · 15% criticality · 10% build-up</span></div><div class="pad proj" id="proj"></div></div>
+ </div>
+</section>
+
+<section class="grid" style="margin-top:12px">
+ <div class="card"><div class="hd"><h2>Open work orders</h2><div class="btns"><button class="btn q" id="copyRun">Copy run sheet</button></div></div><div id="wos"></div></div>
+ <div class="card"><div class="hd"><h2>Work order history</h2><span class="date" id="kgtot"></span></div><div class="pad" id="histchart"></div><div class="tl" id="hist"></div></div>
+</section>
+</div>
+<div id="vRole" hidden></div>
+
+<footer><span>Demo data · approximate locations</span><span id="src2"></span><button id="reset">Reset demo</button><a href="email.html">Email alerts</a><a href="brief/">Brief</a><a href="./">About</a></footer>
+</div>
+<div class="toast" id="toast" hidden></div>
+
+<script src="data/model-results.js"></script>
+<script src="data/weather.js"></script>
+<script>
+/* ---------- dates ---------- */
+const TODAY=new Date();TODAY.setHours(0,0,0,0);
+const D=n=>{const d=new Date(TODAY);d.setDate(d.getDate()+n);return d};
+const iso=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+const P=s=>new Date(s+'T00:00:00');
+const fmt=(s,o)=>P(s).toLocaleDateString('en-AU',o).replace(',','');
+const nice=s=>fmt(s,{weekday:'short',day:'numeric',month:'short'});
+const short=s=>fmt(s,{weekday:'short',day:'numeric'});
+const dmy=s=>fmt(s,{day:'numeric',month:'short',year:'2-digit'});
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const cssv=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+
+/* ---------- demo nets (real SCADA thumbnails; locations approximate until Council supplies lat/longs) ---------- */
+const SEED=[
+ {id:'lackey-st-west',crit:1,critWhy:'Lake Parramatta catchment; 2022 audit: replace',load:'med',name:'Lackey St West',sub:'North Parramatta',ll:[-33.7962,151.0068],fill:45,mm:70,damaged:true,big:'img/lackey-st-west-full.jpg',mark:[57,52],cap:'Council camera LACKEST 009 · 13 Nov 2026',prev:{img:'img/frames/lackey-st-west-2026-11-04.jpg',cap:'Same camera, 4 Nov 2026: net intact'}},
+ {id:'lackey-st-east',crit:1,critWhy:'Lake Parramatta catchment; 2022 audit: replace',load:'med',name:'Lackey St East',sub:'North Parramatta',ll:[-33.7953,151.0102],fill:null,blind:2,mm:60,big:'img/frames/lackey-st-east-2026-11-04.jpg',cap:'Council camera LACKEST 010 · 4 Nov 2026: leaves across the lens'},
+ {id:'lake-parra-res',crit:1,critWhy:'Swimming lake downstream',load:'low',name:'Lake Parra Res',sub:'North Parramatta',ll:[-33.7905,151.0040],fill:45,mm:120,big:'img/frames/lake-parra-res-2026-11-04.jpg',cap:'Council camera LAKEPAR 013 · 4 Nov 2026'},
+ {id:'bettington-rd',crit:2,critWhy:'Creek reserve with public access',load:'med',name:'Bettington Rd',sub:'Oatlands',ll:[-33.7906,151.0305],fill:86,mm:90,big:'img/sim-net-blocked.jpg'},
+ {id:'james-ruse-dr-1',crit:2,critWhy:'Arterial road catchment',load:'high',name:'James Ruse Dr 1',sub:'Northmead',ll:[-33.7985,151.0005],fill:76,mm:80,big:'img/sim-net-full.jpg'},
+ {id:'james-ruse-dr-2',crit:2,critWhy:'Arterial road catchment',load:'high',name:'James Ruse Dr 2',sub:'Rosehill',ll:[-33.8205,151.0200],fill:30,mm:80},
+ {id:'norwood-ave',crit:2,critWhy:'2022 audit: major work',load:'low',name:'Norwood Ave',sub:'Beecroft',ll:[-33.7530,151.0690],fill:62,mm:55,big:'img/sim-net-partial.jpg'},
+ {id:'ridge-st',crit:3,critWhy:'Local street catchment',load:'low',name:'Ridge St',sub:'North Parramatta',ll:[-33.8010,151.0125],fill:null,mm:80,blind:3,big:'img/sim-net-unusable.jpg'},
+ {id:'shirley-st',crit:3,critWhy:'Local street catchment',load:'med',name:'Shirley St',sub:'Carlingford',ll:[-33.7810,151.0480],fill:40,mm:110},
+ {id:'anthony-st',crit:2,critWhy:'2022 audit: replace',load:'med',name:'Anthony St',sub:'Carlingford',ll:[-33.7840,151.0420],fill:25,mm:90},
+ {id:'forest-cl',crit:3,critWhy:'Bushland creek',load:'low',name:'Forest Cl',sub:'Toongabbie Creek',ll:[-33.7870,150.9830],fill:15,mm:100},
+ {id:'sturt-st',crit:3,critWhy:'Local street catchment',load:'low',name:'Sturt St',sub:'Telopea',ll:[-33.7935,151.0430],fill:10,mm:100,big:'img/frames/sturt-st-2026-11-04.jpg',cap:'Council camera STURST 022 · 4 Nov 2026 · road blurred'},
+ {id:'willmott-ave',crit:3,critWhy:'Bushland creek',load:'low',name:'Willmott Ave',sub:'Winston Hills',ll:[-33.7790,150.9880],fill:45,mm:120,big:'img/frames/willmott-ave-2026-11-04.jpg',cap:'Council camera WILLAV 050 · 4 Nov 2026 · trash rack'},
+ {id:'charles-st',crit:1,critWhy:'Parramatta River at the CBD',load:'high',name:'Charles St',sub:'Parramatta River',ll:[-33.8150,151.0080],fill:15,mm:150}
+];
+const DEPOT={name:'Rydalmere Operations Centre',ll:[-33.8110,151.0330]};
+function rnd(seed){let h=0;for(const c of seed)h=(h*31+c.charCodeAt(0))>>>0;return()=>((h=(h*1103515245+12345)>>>0)%1000)/1000}
+function seedHistory(n){const r=rnd(n.id),h=[];let day=-Math.round(20+r()*70);for(let i=0;i<5;i++){const repair=r()<.15;h.push({date:iso(D(day)),task:repair?'Repair net':'Empty net',kg:repair?0:Math.round(25+r()*n.mm*0.9),by:'Contractor'});day-=Math.round(70+r()*40)}return h}
+
+/* ---------- state ---------- */
+const KEY='netwatch-v5';let S;
+function fresh(){const nets=SEED.map(n=>{const h=seedHistory(n);return{...n,hist:h,last:h[0].date}});
+ const wos=[
+  {no:'WO-26-0901',net:'sturt-st',site:'Sturt St',task:'Empty net',pri:'High',due:iso(D(0)),created:iso(D(-3)),reason:'72% full before rain',status:'Done',c:'--soon',job:{kg:48,result:'Emptied, net intact',defects:[],note:'Mostly leaves.',photo:'img/sim-net-empty.jpg',at:iso(D(-1))}},
+  {no:'WO-26-0902',net:'willmott-ave',site:'Willmott Ave',task:'Inspect net and camera',pri:'Normal',due:iso(D(2)),created:iso(D(-1)),reason:'Camera angle moved',status:'Open',c:'--muted'}];
+ const reports=[{no:'CRM-26-0412',net:'lake-parra-res',type:'Litter in the creek below the net',via:'Phone',details:'Plastic bottles caught on rocks downstream of the outlet.',date:iso(D(-1)),status:'New'}];
+ return{nets,wos,reports,seq:1,crm:413,audit:[],labels:{},tests:[]}}
+function load(){try{const s=JSON.parse(localStorage.getItem(KEY));if(s&&s.nets&&s.reports&&s.audit)return s}catch(e){}return fresh()}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+S=load();
+
+/* ---------- weather ---------- */
+let RAIN={days:[0,1,2,3,4,5,6].map(i=>({d:iso(D(i)),mm:[0,2,5,26,9,1,0][i],p:[10,30,55,90,70,20,10][i]})),live:false};
+async function getRain(){
+ try{const ac=new AbortController();setTimeout(()=>ac.abort(),6000);
+  const r=await fetch('https://api.open-meteo.com/v1/forecast?latitude=-33.80&longitude=151.02&daily=precipitation_sum,precipitation_probability_max&timezone=Australia%2FSydney&forecast_days=7',{signal:ac.signal});
+  const j=await r.json();RAIN={days:j.daily.time.map((d,i)=>({d,mm:Math.round(j.daily.precipitation_sum[i]||0),p:j.daily.precipitation_probability_max[i]||0})),live:true};show();
+ }catch(e){}
+}
+const storm=()=>RAIN.days.slice(1).reduce((a,b)=>b.mm>a.mm?b:a);
+const rain7=()=>RAIN.days.reduce((a,x)=>a+x.mm,0);
+
+/* ---------- decision rules ---------- */
+function project(n){ // fill per day over the forecast
+ if(n.fill==null)return null;let f=n.fill;return RAIN.days.map(x=>(f=Math.min(100,f+x.mm/n.mm*100)))}
+function hit80(n){const p=project(n);if(!p)return null;const i=p.findIndex(v=>v>=80);return i<0?null:RAIN.days[i].d}
+function openWO(n){return S.wos.find(w=>w.net===n.id&&w.status!=='Closed')}
+function openReport(n){return S.reports.find(r=>r.net===n.id&&r.status==='New')}
+const B={
+ repair:{lbl:'Repair torn nets',c:'--repair',task:'Repair or refit net',pri:'Urgent'},
+ now:{lbl:'Empty full nets now',c:'--now',task:'Empty net',pri:'Urgent'},
+ soon:{lbl:'Empty before the rain',c:'--soon',task:'Empty net',pri:'High'},
+ report:{lbl:'Check resident reports',c:'--rain',task:'Inspect and clear litter',pri:'High'},
+ view:{lbl:'Fix blocked cameras',c:'--view',task:'Clear camera view',pri:'Normal'},
+};
+function bucket(n){
+ if(openWO(n))return'wo';
+ if(n.suspended)return'suspended';
+ if(n.defer&&n.defer>iso(TODAY))return'defer';
+ if(n.damaged)return'repair';
+ if(n.fill>=80)return'now';
+ if(openReport(n))return'report';
+ if(n.blind>=2)return'view';
+ const h=hit80(n);if(h&&h<=iso(D(7)))return'soon';
+ return'ok';
+}
+/* Priority score, 0-100: 50% current condition, 25% forecast weather, 15% asset criticality, 10% accumulation context */
+const W8={c:.5,w:.25,k:.15,a:.1};
+const rain3=()=>RAIN.days.slice(1,4).reduce((a,x)=>a+x.mm,0);
+function score(n){
+ const fill=n.fill==null?50:n.fill;
+ const c=n.damaged?100:n.blind>=2?70:fill;                                  // condition: damaged 100, can't see 70, else fill %
+ const cap=Math.max(1,(100-fill)/100*n.mm);                                 // mm of rain the net can still take
+ const w=Math.min(100,Math.round(rain3()/cap*100));                          // forecast: 3-day rain against remaining capacity
+ const k={1:100,2:60,3:30}[n.crit||3];                                      // criticality tier
+ const days=Math.max(0,(TODAY-P(n.last))/864e5),ld={high:100,med:60,low:30}[n.load||'low'];
+ const a=openReport(n)?100:Math.round(Math.min(100,days/90*100)*.6+ld*.4);  // accumulation: time since clean + catchment load; resident report = 100
+ const total=Math.round(c*W8.c+w*W8.w+k*W8.k+a*W8.a);
+ return{total,c:Math.round(c),w,k,a,cap:Math.round(cap),days:Math.round(days)};
+}
+const band=t=>t>=70?{l:'Act now',v:'--now'}:t>=50?{l:'This week',v:'--soon'}:t>=30?{l:'Watch',v:'--rain'}:{l:'Low',v:'--ok'};
+function why(n){
+ const b=bucket(n),h=hit80(n);
+ if(b==='repair')return'Net torn or pulled off the pipe';
+ if(b==='view')return n.removed?'Frame removed by officer; waiting for a new image':`No clear image for ${n.blind} days`;
+ if(b==='suspended')return'Auto-flagging suspended; checked by hand';
+ if(b==='report'){const r=openReport(n);return`${r.no}: ${r.type}`}
+ if(b==='now')return`${n.fill}% full · overflows in the next storm`;
+ if(b==='soon')return`${n.fill}% now · hits 80% ${short(h)}`;
+ if(b==='wo'){const w=openWO(n);return`${w.no} · ${w.status==='Done'?'awaiting sign-off':w.task}`}
+ if(b==='defer')return`Deferred to ${nice(n.defer)}`;
+ return n.fill==null?'No reading':`${n.fill}% full`;
+}
+const colOf=b=>({suspended:'--muted',report:'--rain',repair:'--repair',now:'--now',soon:'--soon',view:'--view',wo:'--wo',defer:'--muted',ok:'--ok'}[b]);
+
+/* ---------- map ---------- */
+let map,markers={},radar=null,runLine=null;
+function initMap(){
+ if(!window.L){$('#map').innerHTML='<div class="empty">Map unavailable offline.</div>';return}
+ map=L.map('map',{scrollWheelZoom:false}).setView([-33.795,151.02],12);
+ L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap contributors',maxZoom:18}).addTo(map);
+ L.marker(DEPOT.ll,{icon:L.divIcon({className:'',html:'<div style="width:14px;height:14px;background:#0f2f52;border:2px solid #fff;transform:rotate(45deg)"></div>',iconSize:[14,14]})}).addTo(map).bindTooltip('Depot · '+DEPOT.name);
+}
+function drawPins(){
+ if(WX&&WX.on)setTimeout(drawWeather,0);
+ if(!map)return;
+ Object.values(markers).forEach(m=>m.remove());markers={};
+ S.nets.forEach(n=>{const b=bucket(n),c=cssv(colOf(b));
+  const pulse=['repair','now'].includes(b)?' pulse':'';
+  const m=L.marker(n.ll,{icon:L.divIcon({className:'',html:`<div class="pin${pulse}" style="background:${c};--pc:${c}"></div>`,iconSize:[18,18],iconAnchor:[9,9]})}).addTo(map);
+  m.bindPopup(`<b>${esc(n.name)}</b>Priority ${score(n).total} · ${esc(why(n))}<br><button class="btn pri" data-open="${n.id}">Open</button>`);
+  markers[n.id]=m;});
+ $('#legend').innerHTML=[['repair','Repair'],['now','Empty now'],['soon','Before rain'],['report','Resident report'],['view',"Can't see"],['wo','Work order'],['ok','OK']].map(([b,l])=>`<span><i style="background:var(${colOf(b)})"></i>${l}</span>`).join('');
+}
+async function toggleRadar(){
+ if(!map)return;
+ if(radar){map.removeLayer(radar);radar=null;$('#tRadar').classList.remove('on');return}
+ try{const ac=new AbortController();setTimeout(()=>ac.abort(),6000);
+  const j=await (await fetch('https://api.rainviewer.com/public/weather-maps.json',{signal:ac.signal})).json();
+  const f=j.radar.past[j.radar.past.length-1];
+  radar=L.tileLayer(`${j.host}${f.path}/256/{z}/{x}/{y}/2/1_1.png`,{opacity:.65,maxNativeZoom:7,maxZoom:18,attribution:'Radar © RainViewer'}).addTo(map);
+  $('#tRadar').classList.add('on');toast('Radar '+new Date(f.time*1000).toLocaleTimeString('en-AU',{hour:'numeric',minute:'2-digit'}));
+ }catch(e){toast('Radar unavailable right now')}
+}
+function route(){ // nearest-neighbour run from the depot through open work orders
+ const stops=S.wos.filter(w=>w.status==='Open').map(w=>S.nets.find(n=>n.id===w.net));
+ const out=[];let cur=DEPOT.ll,left=[...stops];
+ const dist=(a,b)=>Math.hypot(a[0]-b[0],(a[1]-b[1])*Math.cos(a[0]*Math.PI/180));
+ while(left.length){left.sort((a,b)=>dist(cur,a.ll)-dist(cur,b.ll));const nx=left.shift();out.push(nx);cur=nx.ll}
+ const km=out.reduce((a,n,i)=>a+dist(i?out[i-1].ll:DEPOT.ll,n.ll)*111,0)+(out.length?dist(out[out.length-1].ll,DEPOT.ll)*111:0);
+ return{out,km:Math.round(km*1.4)};
+}
+function toggleRun(force){
+ if(!map)return;
+ if(runLine&&!force){runLine.remove();runLine=null;$('#tRun').classList.remove('on');return}
+ if(runLine){runLine.remove();runLine=null}
+ const {out}=route();if(!out.length){toast('No open work orders');$('#tRun').classList.remove('on');return}
+ runLine=L.polyline([DEPOT.ll,...out.map(n=>n.ll),DEPOT.ll],{color:cssv('--accent'),weight:4,dashArray:'8 6'}).addTo(map);
+ map.fitBounds(runLine.getBounds(),{padding:[30,30]});$('#tRun').classList.add('on');
+}
+
+/* ---------- weather impact heatmap ---------- */
+let heat=null,gaugeLayer=null,WX={on:false,scen:'forecast',h:24,timer:null};
+const SCEN={forecast:{l:'Forecast'},s25:{l:'Typical storm · 25 mm in 6 h',mm:25},s60:{l:'Heavy storm · 60 mm in 6 h',mm:60},s120:{l:'Severe storm · 120 mm in 6 h',mm:120}};
+function hourly(lat,lon){
+ if(WX.scen==='forecast'){
+  const F=window.WEATHER&&WEATHER.forecast;
+  if(F&&F.points&&F.points.length){let best=F.points[0],bd=1e9;F.points.forEach(p=>{const d=(p.lat-lat)**2+(p.lon-lon)**2;if(d<bd){bd=d;best=p}});return best.mm.slice(0,72)}
+  const out=[];for(let d=0;d<3;d++){const mm=(RAIN.days[d+1]||{mm:0}).mm;for(let h=0;h<24;h++)out.push(mm/24)}return out;
+ }
+ const tot=SCEN[WX.scen].mm,out=Array(72).fill(0),prof=[.08,.17,.3,.22,.15,.08];
+ const f=1+Math.max(-.15,Math.min(.15,(-33.80-lat)*6+(151.0-lon)*1.5)); // hills to the north and west catch a little more
+ prof.forEach((p,i)=>out[12+i]=tot*p*f);return out;
+}
+const cum=(arr,h)=>arr.slice(0,h).reduce((a,b)=>a+b,0);
+function netImpact(n,h){const r=cum(hourly(n.ll[0],n.ll[1]),h);if(n.damaged)return{v:1,r};if(n.fill==null)return{v:.6,r};const f=Math.min(100,n.fill+r/n.mm*100);return{v:Math.min(1,f/100),f:Math.round(f),r}}
+function gaugeImpact(g,h){const r=cum(hourly(g.lat,g.lon),h);
+ if(g.kind==='rain')return{v:Math.min(1,((g.rain_24h||0)+r)/80),r};
+ if(g.above_zero==null)return{v:Math.min(.6,r/120),r};
+ const k=/CBD|Riverside|Marsden/.test(g.name)?0.012:0.02,d=g.above_zero+r*k;return{v:Math.min(1,d/2.5),d:+d.toFixed(2),r}}
+const whenAt=h=>{const t=new Date();t.setMinutes(0,0,0);t.setHours(t.getHours()+h);return t.toLocaleString('en-AU',{weekday:'short',hour:'numeric'})};
+function drawWeather(){
+ if(!map||!window.L||!L.heatLayer)return;
+ if(heat){heat.remove();heat=null}if(gaugeLayer){gaugeLayer.remove();gaugeLayer=null}
+ if(!WX.on){$('#wxpanel').hidden=true;$('#tWx').classList.remove('on');return}
+ $('#wxpanel').hidden=false;$('#tWx').classList.add('on');
+ const G=(window.WEATHER&&WEATHER.gauges)||[],h=WX.h,pts=[];
+ S.nets.forEach(n=>{const x=netImpact(n,h);pts.push([n.ll[0],n.ll[1],x.v])});
+ G.forEach(g=>{const x=gaugeImpact(g,h);pts.push([g.lat,g.lon,g.kind==='rain'?x.v*.7:x.v])});
+ heat=L.heatLayer(pts,{radius:42,blur:32,maxZoom:14,max:1,minOpacity:.25,gradient:{.15:'#CDEDED',.4:'#4DB8B8',.6:'#F5A04A',.8:'#C2352B',1:'#8E1F56'}}).addTo(map);
+ gaugeLayer=L.layerGroup(G.map(g=>{const x=gaugeImpact(g,h),lv=g.kind==='level';
+  const m=L.circleMarker([g.lat,g.lon],{radius:lv?6:4,color:lv?'#14284A':'#2567B5',weight:2,fillColor:lv?'#FFFFFF':'#CFE0F5',fillOpacity:1});
+  m.bindPopup(`<b>${esc(g.name)}</b>${lv?`Water level ${g.level} m AHD${g.above_zero!=null?` · ${g.above_zero} m above gauge zero`:''}${g.change_24h!=null?` · ${g.change_24h>=0?'+':''}${g.change_24h} m in 24 h`:''}`:`Rain last 24 h: ${g.rain_24h} mm`}<br><span style="color:#5A6B7D">FloodSmart gauge, ${WEATHER.mode==='live'?'live':'snapshot'} ${tstamp(WEATHER.retrieved)}</span>${g.flag?`<br><span style="color:#C2352B">${esc(g.flag)}</span>`:''}${h?`<br><b>+${h} h:</b> ${Math.round(x.r)} mm more rain${x.d!=null?` · about ${x.d} m above zero (estimate)`:''}`:''}`);return m}));
+ gaugeLayer.addTo(map);
+ const hot=S.nets.map(n=>({n,x:netImpact(n,h)})).filter(o=>o.n.damaged||(o.x.f!=null&&o.x.f>=80));
+ const high=G.filter(g=>g.kind==='level').map(g=>({g,x:gaugeImpact(g,h)})).filter(o=>o.x.d!=null&&o.x.d>=1.5);
+ const avg=Math.round(S.nets.reduce((a,n)=>a+netImpact(n,h).r,0)/S.nets.length);
+ $('#wxH').textContent=h?`+${h} h · ${whenAt(h)}`:'Now';
+ $('#wxSum').innerHTML=`<span><b>${avg} mm</b> more rain by then</span><span><b>${hot.length}</b> nets full or damaged${hot.length?`: ${esc(hot.slice(0,5).map(o=>o.n.name).join(', '))}${hot.length>5?'…':''}`:''}</span><span><b>${high.length}</b> creek gauges 1.5 m+ above zero${high.length?`: ${esc(high.map(o=>o.g.name.split(' (')[0]).join(', '))}`:''}</span>`;
+ $('#wxSrc').textContent=`Gauges: City of Parramatta FloodSmart (${G.filter(g=>g.kind==='level').length} water level, ${G.filter(g=>g.kind==='rain').length} rain), ${WEATHER.mode} ${tstamp(WEATHER.retrieved)}. Rain: ${WX.scen==='forecast'?(WEATHER.forecast?'Open-Meteo hourly forecast':'demo forecast'):'scenario'}. Future impact is an illustrative estimate, not Council’s FLASH flood forecast.`;
+}
+function wxPlay(){if(WX.timer){clearInterval(WX.timer);WX.timer=null;$('#wxPlay').textContent='Play';return}
+ $('#wxPlay').textContent='Pause';WX.h=0;WX.timer=setInterval(()=>{WX.h+=3;if(WX.h>72){WX.h=72;wxPlay();}$('#wxRange').value=WX.h;drawWeather()},500)}
+
+/* ---------- render ---------- */
+let lane=null,drawerId=null;
+function render(){
+ $('#date').textContent=nice(iso(TODAY));
+ const st=storm();
+ $('#wx').innerHTML=`<span>Today <b>${RAIN.days[0].mm} mm</b></span><span>Next 7 days <b>${rain7()} mm</b></span><span>Heaviest <b>${short(st.d)} · ${st.mm} mm</b></span>`;
+ $('#wxsrc').textContent=RAIN.live?'Open-Meteo, live':'demo forecast';
+ $('#src2').textContent=RAIN.live?'Rain: Open-Meteo':'Rain: demo values';
+ // tiles
+ const groups={};S.nets.slice().sort((x,y)=>score(y).total-score(x).total).forEach(n=>{const b=bucket(n);(groups[b]=groups[b]||[]).push(n)});
+ const open=S.wos.filter(w=>w.status==='Open'),done=S.wos.filter(w=>w.status==='Done');
+ $('#actions').innerHTML=Object.entries(B).map(([k,v])=>{const g=groups[k]||[];
+  return`<button class="tile ${g.length?'':'zero'} ${lane===k?'on':''}" style="--c:var(${v.c})" data-lane="${k}"><span class="num">${g.length}</span><span class="lbl">${v.lbl}</span><span class="who">${g.length?esc(g.map(n=>n.name).join(', ')):'Nothing to do'}</span>${g.length?'<span class="go">Act →</span>':''}</button>`}).join('')+
+  `<button class="tile ${open.length?'':'zero'}" style="--c:var(--accent)" data-scroll="wos"><span class="num">${open.length}</span><span class="lbl">With contractor</span><span class="who">${open.length?esc(open.map(w=>w.site).join(', ')):'No open work orders'}</span></button>`+
+  `<button class="tile ${done.length?'':'zero'}" style="--c:var(--ok)" data-scroll="wos"><span class="num">${done.length}</span><span class="lbl">Sign off completed jobs</span><span class="who">${done.length?esc(done.map(w=>w.site).join(', ')):'Nothing to sign off'}</span>${done.length?'<span class="go">Act →</span>':''}</button>`;
+ // lane
+ if(lane&&(groups[lane]||[]).length){const v=B[lane],g=groups[lane];
+  $('#lane').innerHTML=`<div class="hd" style="--c:var(${v.c})"><b>${v.lbl}</b><div class="btns"><button class="btn pri" data-raiseall="${lane}">Raise ${g.length} work order${g.length>1?'s':''}</button><button class="btn q" data-lane="${lane}">Close</button></div></div><div class="cards">${g.map(n=>ncard(n,v)).join('')}</div>`;
+ }else{lane=null;$('#lane').innerHTML=''}
+ drawPins();rainChart();projChart();wos();woHistory();
+ if(drawerId)drawer(drawerId);
+}
+function img(n){return n.big||`img/${n.id}.jpg`}
+function ncard(n,v){const f=n.fill??0;
+ return`<div class="nc" style="--c:var(${v.c})"><div class="ph" data-open="${n.id}"><img src="${img(n)}" alt="${esc(n.name)} camera"><span class="badge">${n.fill==null?'NO VIEW':n.fill+'%'+(n.corrected?' · checked':' · demo')}</span><span class="pscore" style="--b:var(${band(score(n).total).v})">${score(n).total}</span><div class="fillb"><i style="width:${f}%"></i></div></div>
+ <div class="bd"><b>${esc(n.name)}</b><span class="why">${esc(why(n))}</span><div class="btns"><button class="btn pri" data-raise="${n.id}">Raise work order</button><button class="btn" data-inspect="${n.id}">Inspect</button>${bucket(n)==='report'?`<button class="btn q" data-noaction="${n.id}">No action</button>`:`<button class="btn q" data-defer="${n.id}">Defer</button>`}</div></div></div>`}
+function rainChart(){
+ const W=360,H=150,pb=26,pt=16,max=Math.max(30,...RAIN.days.map(x=>x.mm)),bw=W/7;
+ const bars=RAIN.days.map((x,i)=>{const h=(H-pb-pt)*x.mm/max,y=H-pb-h;
+  return`<rect x="${i*bw+8}" y="${y}" width="${bw-16}" height="${Math.max(h,1)}" fill="var(--rain)" opacity="${.35+.65*x.p/100}"/><text x="${i*bw+bw/2}" y="${y-4}" text-anchor="middle" font-size="11" style="fill:var(--fg)">${x.mm}</text><text x="${i*bw+bw/2}" y="${H-8}" text-anchor="middle" font-size="10">${i?short(x.d).split(' ')[0]:'Today'}</text>`}).join('');
+ $('#rainchart').innerHTML=`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Rain forecast by day in millimetres">${bars}<line x1="0" x2="${W}" y1="${H-pb}" y2="${H-pb}" stroke="var(--line)"/></svg>`;
+}
+function projChart(){
+ const L=S.nets.filter(n=>!openWO(n)&&!n.suspended).map(n=>({n,sc:score(n)})).sort((a,b)=>b.sc.total-a.sc.total).slice(0,9);
+ const seg=(v,w,c)=>`<i style="position:relative;display:inline-block;height:100%;width:${v*w}%;background:var(${c})"></i>`;
+ $('#proj').innerHTML=L.map(({n,sc})=>{const bd=band(sc.total);
+  return`<div class="row" data-open="${n.id}"><span>${esc(n.name)}</span><div class="bar" style="display:flex">${seg(sc.c,W8.c,'--now')}${seg(sc.w,W8.w,'--rain')}${seg(sc.k,W8.k,'--ink')}${seg(sc.a,W8.a,'--build')}</div><span class="when" style="color:var(${bd.v});font-weight:700">${sc.total} · ${bd.l}</span></div>`}).join('')+
+ `<div class="legend" style="border:0;padding:8px 0 0"><span><i style="background:var(--now)"></i>Condition</span><span><i style="background:var(--rain)"></i>Rain forecast</span><span><i style="background:var(--ink)"></i>Criticality</span><span><i style="background:var(--build)"></i>Build-up</span></div>`;
+}
+function wos(){
+ const L=S.wos.filter(w=>w.status!=='Closed').sort((a,b)=>a.status==='Done'?-1:b.status==='Done'?1:0);
+ $('#wos').innerHTML=L.length?L.map(w=>{
+  if(w.status==='Done'){const j=w.job;
+   return`<div class="wo" style="--c:var(--ok)"><span class="dot"></span><div><b>${esc(w.site)}</b> · ${esc(w.task)}<div class="no">${w.no} · done ${short(j.at)} · awaiting your sign-off</div></div><div class="btns"><button class="btn pri" data-signoff="${w.no}">Sign off</button><button class="btn q" data-sendback="${w.no}">Send back</button></div>
+   <div class="jobsheet">${j.photo?`<img class="thumb" src="${j.photo}" alt="Contractor photo">`:''}<span><b>${esc(j.result)}</b>${j.kg?` · ${j.kg} kg`:''}${j.defects.length?` · Issues: ${esc(j.defects.join(', '))}`:''}${j.note?`<br>${esc(j.note)}`:''}</span></div></div>`}
+  return`<div class="wo" style="--c:var(${w.c})"><span class="dot"></span><div><b>${esc(w.site)}</b> · ${esc(w.task)}<div class="no">${w.no} · ${w.pri} · due ${short(w.due)} · with contractor</div></div><span></span></div>`}).join(''):'<div class="empty">No open work orders. Raise one from an action above.</div>';
+ $('#copyRun').disabled=!L.some(w=>w.status==='Open');
+}
+function months12(){const ev=[];S.nets.forEach(n=>n.hist.forEach(h=>ev.push(h)));
+ const months=[...Array(12)].map((_,i)=>{const d=new Date(TODAY.getFullYear(),TODAY.getMonth()-11+i,1);return{k:iso(d).slice(0,7),l:d.toLocaleDateString('en-AU',{month:'short'}).slice(0,1),kg:0,n:0}});
+ ev.forEach(e=>{const m=months.find(m=>m.k===e.date.slice(0,7));if(m){m.kg+=e.kg;m.n++}});return months}
+function kgSvg(months){const W=360,H=110,pb=20,max=Math.max(100,...months.map(m=>m.kg)),bw=W/12;
+ return`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Kilograms of litter removed per month">${months.map((m,i)=>{const h=(H-pb-10)*m.kg/max;return`<rect x="${i*bw+4}" y="${H-pb-h}" width="${bw-8}" height="${Math.max(h,1)}" fill="var(--accent)" opacity="${i===11?1:.7}"><title>${m.k}: ${m.kg} kg, ${m.n} jobs</title></rect><text x="${i*bw+bw/2}" y="${H-6}" text-anchor="middle" font-size="10">${m.l}</text>`}).join('')}</svg>`}
+function woHistory(){
+ const ev=[];S.nets.forEach(n=>n.hist.forEach(h=>ev.push({...h,site:n.name,id:n.id})));ev.sort((a,b)=>a.date<b.date?1:-1);
+ // kg per month, last 12 months
+ const months=[...Array(12)].map((_,i)=>{const d=new Date(TODAY.getFullYear(),TODAY.getMonth()-11+i,1);return{k:iso(d).slice(0,7),l:d.toLocaleDateString('en-AU',{month:'short'}).slice(0,1),kg:0,n:0}});
+ ev.forEach(e=>{const m=months.find(m=>m.k===e.date.slice(0,7));if(m){m.kg+=e.kg;m.n++}});
+ $('#histchart').innerHTML=kgSvg(months);
+
+ const yr=months.reduce((a,m)=>a+m.kg,0);$('#kgtot').textContent=`${(yr/1000).toFixed(1)} t removed · 12 months`;
+ $('#hist').innerHTML=ev.slice(0,8).map(e=>`<div class="ev" style="--c:var(${e.task.startsWith('Repair')?'--repair':e.task.startsWith('Clear')?'--view':e.task.startsWith('Inspect')?'--muted':'--accent'})" data-open="${e.id}"><span class="d">${dmy(e.date)}</span><span class="k"></span><span>${esc(e.site)} · ${esc(e.task)}</span><span class="kg">${e.kg?e.kg+' kg':''}</span></div>`).join('');
+}
+function gauge(f,c){const r=38,C=2*Math.PI*r,v=f==null?0:f;
+ return`<svg viewBox="0 0 92 92"><circle cx="46" cy="46" r="${r}" fill="none" stroke="var(--chip)" stroke-width="9"/><circle cx="46" cy="46" r="${r}" fill="none" stroke="${c}" stroke-width="9" stroke-dasharray="${C*v/100} ${C}" transform="rotate(-90 46 46)"/><text x="46" y="52" text-anchor="middle" font-size="19" style="fill:var(--fg);font-weight:600">${f==null?'?':f+'%'}</text></svg>`}
+function drawer(id){
+ drawerId=id;const n=S.nets.find(x=>x.id===id),b=bucket(n),c=`var(${colOf(b)})`,p=project(n);
+ const mark=n.mark&&n.damaged?`<svg viewBox="0 0 100 75" preserveAspectRatio="none"><ellipse cx="${n.mark[0]}" cy="${n.mark[1]}" rx="10" ry="13" fill="none" stroke="#ff3b3b" stroke-width=".9"/></svg>`:'';
+ const act=['repair','now','soon','view','report'].includes(b);
+ const pc=p?`<svg class="chart" viewBox="0 0 360 90" role="img" aria-label="Projected fill"><line x1="0" x2="360" y1="${80-80*.7}" y2="${80-80*.7}" stroke="var(--fg)" stroke-dasharray="4 4" opacity=".4"/><polyline fill="none" stroke="${c}" stroke-width="3" points="${[n.fill,...p].map((v,i)=>`${i*360/7},${80-v*.7}`).join(' ')}"/>${RAIN.days.map((x,i)=>`<text x="${(i+1)*360/7}" y="88" text-anchor="end" font-size="9">${short(x.d).split(' ')[0]}</text>`).join('')}</svg>`:'';
+ let el=$('.drawer');if(!el){el=document.createElement('div');el.className='drawer';document.body.appendChild(el)}
+ el.innerHTML=`<div class="in" role="dialog" aria-label="${esc(n.name)}"><div class="fig"><button class="x" data-close aria-label="Close">×</button><div class="fw"><img src="${img(n)}" alt="Latest camera image, ${esc(n.name)}">${mark}</div><span style="position:absolute;left:0;right:0;bottom:0;background:rgba(0,0,0,.6);color:#fff;font:.74rem var(--mono);padding:4px 8px">${esc(caption(n))}</span></div>
+ <div class="pad" style="display:grid;gap:12px">${EMAIL&&EMAIL.net===n.id&&!EMAIL.done?emailBlock(n):""}
+  <div class="gauge">${gauge(n.fill,c)}<div><div style="font-size:1.2rem;font-weight:700">${esc(n.name)}</div><div style="color:var(--muted);font-size:.86rem">${esc(n.sub)} · reading: ${esc(readingSrc(n))}</div><div style="color:${c};font-weight:600;margin-top:4px">${esc(why(n))}</div></div></div>
+  ${act&&!(EMAIL&&EMAIL.net===n.id&&!EMAIL.done)?`<div class="btns"><button class="btn pri" data-raise="${n.id}">Raise work order</button><button class="btn" data-inspect="${n.id}">Inspect</button><button class="btn q" data-defer="${n.id}">Defer 7 days</button></div>`:''}
+  <div id="wo-out"></div>
+  ${scoreBlock(n)}
+  ${n.prev?`<div><div class="date" style="margin-bottom:4px">COMPARE · ${esc(n.prev.cap)}</div><img src="${n.prev.img}" alt="${esc(n.prev.cap)}" style="width:100%;display:block"></div>`:''}
+  ${correctBlock(n)}
+  ${pc?`<div><div class="date" style="margin-bottom:4px">FILL FORECAST · 80% LINE</div>${pc}</div>`:''}
+  <dl class="kv"><dt>Holds</dt><dd>${n.fill==null?'—':'~'+Math.round((100-n.fill)/100*n.mm)+' mm more rain'}</dd><dt>Fills in</dt><dd>~${n.mm} mm of rain from empty</dd><dt>Last cleaned</dt><dd>${nice(n.last)}</dd></dl>
+  <div><div class="date" style="margin-bottom:4px">HISTORY</div><div class="tl" style="padding:0">${n.hist.map(e=>`<div class="ev" style="--c:var(${e.task.startsWith('Repair')?'--repair':'--accent'})"><span class="d">${dmy(e.date)}</span><span class="k"></span><span>${esc(e.task)}</span><span class="kg">${e.kg?e.kg+' kg':''}</span></div>`).join('')}</div></div>
+  ${(S.audit||[]).some(a=>a.net===n.id)?`<div><div class="date" style="margin-bottom:4px">AUDIT</div><table class="t">${auditRows(S.audit.filter(a=>a.net===n.id))}</table></div>`:''}
+ </div></div>`;
+}
+function scoreBlock(n){const sc=score(n),bd=band(sc.total);
+ const row=(l,v,w,c,d)=>`<div style="display:grid;grid-template-columns:150px 1fr 44px;gap:8px;align-items:center;font-size:.84rem"><span>${l} <span style="color:var(--muted)">${w*100}%</span></span><div style="height:10px;background:var(--chip)"><div style="height:100%;width:${v}%;background:var(${c})"></div></div><span style="font-family:var(--mono);text-align:right">${v}</span><span style="grid-column:1/-1;color:var(--muted);font-size:.78rem;margin-top:-4px">${d}</span></div>`;
+ return`<div style="display:grid;gap:8px;border:1px solid var(--line);padding:10px 12px"><div style="display:flex;justify-content:space-between;align-items:baseline"><span class="date">PRIORITY SCORE</span><b style="font-size:1.4rem;color:var(${bd.v})">${sc.total} <span style="font-size:.85rem">${bd.l}</span></b></div>
+ ${row('Current condition',sc.c,W8.c,'--now',n.damaged?'Net torn or off the pipe':n.blind>=2?'No clear image: unknown state is a risk':`${n.fill}% full`)}
+ ${row('Forecast rain',sc.w,W8.w,'--rain',`${rain3()} mm in 3 days vs ~${sc.cap} mm it can still hold`)}
+ ${row('Asset criticality',sc.k,W8.k,'--ink',`Tier ${n.crit}: ${esc(n.critWhy)}`)}
+ ${row('Build-up context',sc.a,W8.a,'--build',openReport(n)?'Resident report open':`${sc.days} days since clean · ${n.load==='med'?'medium':n.load} litter catchment`)}</div>`}
+function closeDrawer(){drawerId=null;const el=$('.drawer');if(el)el.remove()}
+
+/* ---------- arriving from an email ---------- */
+let EMAIL=null;
+const ACTLBL={raise:'Raise work order',inspect:'Send inspector',defer:'Defer 7 days'};
+function emailBlock(n){const a=EMAIL.do||'raise',b=bucket(n),task=a==='inspect'?'Inspect net and camera':(B[b]||B.soon).task;
+ if(!['repair','now','soon','view','report'].includes(b)&&a!=='inspect')return`<div class="fromemail"><span class="src">OPENED FROM EMAIL ALERT</span><b>Already actioned</b><span>${esc(why(n))}</span></div>`;
+ return`<div class="fromemail"><span class="src">OPENED FROM EMAIL ALERT</span><b>${a==='defer'?'Defer this net for 7 days?':`Confirm: ${esc(task)}`}</b><span>${esc(why(n))}</span><div class="btns"><button class="btn pri" data-confirm="${a}">${a==='defer'?'Confirm defer':'Confirm and raise'}</button><button class="btn q" data-close>Not now</button></div></div>`}
+function fromEmail(){
+ const q=new URLSearchParams(location.search),net=q.get('net'),act=q.get('do'),ln=q.get('lane');
+ if(ln&&B[ln]){lane=ln;$('#banner').innerHTML=`<div class="banner"><span>Opened from email: ${esc(B[ln].lbl.toLowerCase())}. Review the nets below, then raise the work orders.</span><button data-dismiss>Dismiss</button></div>`;render();$('#lane').scrollIntoView({block:'start'})}
+ if(net&&S.nets.find(n=>n.id===net)){EMAIL={net,do:act&&ACTLBL[act]?act:'raise'};drawer(net)}
+ if(net||ln)history.replaceState(null,'',location.pathname);
+}
+
+/* ---------- actions ---------- */
+function raise(id,kind){
+ const n=S.nets.find(x=>x.id===id),b=bucket(n);if(openWO(n))return null;
+ const linked=S.reports.filter(r=>r.net===id&&r.status==='New');
+ const v=B[b]||B.soon,no='WO-'+String(TODAY.getFullYear()).slice(2)+'-'+String(S.seq++).padStart(4,'0');
+ const task=kind==='inspect'?'Inspect net and camera':v.task;
+ let due=iso(D(2));if(b==='soon'){const h=P(hit80(n));h.setDate(h.getDate()-1);due=iso(h<D(1)?D(1):h)}
+ const w={no,net:id,site:n.name,task,pri:kind==='inspect'?'Normal':v.pri,due,created:iso(TODAY),reason:why(n),status:'Open',c:kind==='inspect'?'--muted':v.c};
+ S.wos.push(w);linked.forEach(r=>{r.status='With contractor';r.wo=no});log(`Raised work order: ${task}`,id,no);save();return w;
+}
+function woText(w){return`${w.no} · ${w.site} · ${w.task} · ${w.pri} · by ${nice(w.due)} · ${w.reason}`}
+function runSheet(){const {out,km}=route();return`CONTRACTOR RUN · ${nice(iso(TODAY))} · ~${km} km\nStart: ${DEPOT.name}\n`+out.map((n,i)=>{const w=openWO(n);return`${i+1}. ${n.name} (${n.sub}) · ${w.task} · ${w.pri} · ${w.no}`}).join('\n')+`\nReturn: ${DEPOT.name}`}
+/* ---------- sign-off (officer) ---------- */
+function signoff(no){
+ const w=S.wos.find(x=>x.no===no),n=S.nets.find(x=>x.id===w.net),j=w.job,st=j.result;
+ if(st==='Emptied, net intact'||st==='Repaired or replaced'){n.fill=5;n.damaged=false;n.last=j.at;if(n.big&&n.big.includes('sim-net'))n.big='img/sim-net-empty.jpg'}
+ if(st==='Repaired or replaced'&&n.big&&n.big.includes('lackey'))n.big=null;
+ if(st==='Camera view cleared'){n.blind=0;if(n.fill==null)n.fill=35;n.big=null}
+ if(j.defects.includes('Net damaged'))n.damaged=true;
+ if(j.defects.includes('Camera blocked'))n.blind=Math.max(n.blind||0,2);
+ n.hist.unshift({date:j.at,task:st,kg:j.kg,by:'Contractor'});
+ w.status='Closed';w.closed=iso(TODAY);log(`Signed off: ${st}${j.kg?`, ${j.kg} kg`:''}`,w.net,no);
+ S.reports.filter(r=>r.wo===no).forEach(r=>r.status='Resolved');
+ save();render();if(runLine)toggleRun(true);toast(no+' signed off and closed');
+}
+
+
+/* ---------- audit trail ---------- */
+const WHO={officer:'Stormwater officer',contractor:'Contractor',cs:'Customer service',manager:'Manager',model:'Stormwater officer',data:'Manager',test:'Tester'};
+function log(what,net,ref){S.audit=S.audit||[];S.audit.push({at:new Date().toISOString(),who:WHO[ROLE]||'Stormwater officer',what,net:net||null,ref:ref||''});}
+const tstamp=a=>new Date(a).toLocaleString('en-AU',{day:'numeric',month:'short',hour:'numeric',minute:'2-digit'});
+function auditRows(L){return L.slice().reverse().map(a=>{const n=a.net&&S.nets.find(x=>x.id===a.net);return`<tr><td style="white-space:nowrap">${tstamp(a.at)}</td><td>${esc(a.who)}</td><td>${esc(a.what)}</td><td>${n?esc(n.name):''}</td><td class="n">${esc(a.ref)}</td></tr>`}).join('')}
+
+/* ---------- correct, remove, suspend ---------- */
+const STATES=[['empty','Empty',10],['filling','Filling',55],['due','Clean due',75],['over','Overdue',90],['cant','Can’t see',null],['dmg','Damaged',null]];
+function correctBlock(n){
+ return`<div style="display:grid;gap:8px;border:1px solid var(--line);padding:10px 12px">
+ <span class="date">CHECK THE READING · ${esc(readingSrc(n))}</span>
+ <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:end"><label class="f">Correct the state to<select id="fixsel">${STATES.map(([k,l])=>`<option value="${k}">${l}</option>`).join('')}</select></label><button class="btn" data-fix="${n.id}">Apply correction</button>
+ <button class="btn q" data-remove="${n.id}">${n.removed?'Frame removed':'Remove this frame'}</button>
+ <button class="btn q" data-suspend="${n.id}">${n.suspended?'Resume auto-flagging':'Suspend auto-flagging'}</button></div>
+ <span style="font-size:.78rem;color:var(--muted)">Corrections are logged and become training labels. Removing a frame drops it from scoring until a new image arrives. Suspending stops alerts for this net; it is checked by hand.</span></div>`}
+function readingSrc(n){return n.corrected?`corrected by officer ${tstamp(n.corrected)}`:n.removed?'frame removed':'demo value'}
+function applyFix(id,k){const n=S.nets.find(x=>x.id===id),st=STATES.find(s=>s[0]===k);const was=why(n);
+ n.damaged=k==='dmg';n.blind=k==='cant'?2:0;n.removed=false;if(st[2]!=null)n.fill=st[2];if(k==='cant')n.fill=null;n.corrected=new Date().toISOString();
+ log(`Corrected reading to ${st[1]} (was: ${was})`,id);save();render();drawer(id);toast('Correction saved and logged')}
+
+/* ---------- camera source captions ---------- */
+function caption(n){return n.cap||(n.big&&n.big.includes('sim-')?'Simulated image, not a Council frame':'Council SCADA thumbnail · 13 Nov 2026')}
+
+/* ---------- Model check ---------- */
+const CL={empty:'Empty',part_full:'Part full',full:'Full',damaged:'Damaged',cant_see:'Can’t see'};
+function vModel(){
+ const M=window.MODEL;if(!M)return'<div class="empty">Model results did not load.</div>';
+ const rv=S.labels||{},wrongSure=M.results.filter(r=>r.pred!==(rv[r.id]||r.truth)&&r.routed!=='review').length,rev=M.results.filter(r=>r.routed==='review').length;
+ const cards=M.results.map(r=>{const lab=rv[r.id]||r.truth,ok=r.pred===lab;
+  const outcome=ok?'Correct':`Missed ${CL[lab]} · false ${CL[r.pred]}`;
+  return`<div class="nc" style="--c:var(${ok?'--ok':'--now'})"><div class="ph"><img src="img/frames/${r.id}.jpg" alt="${esc(r.site)} camera frame"><span class="badge">${ok?'CORRECT':'WRONG'}</span><span class="pscore" style="--b:var(${r.routed==='review'?'--soon':'--ink'})">${r.routed==='review'?'Review':'Flag'}</span></div>
+  <div class="bd"><b>${esc(r.site)}</b><span class="why">${esc(r.camera)} · ${dmy(r.date)} · ${esc(r.note)}</span>
+  <div style="display:grid;grid-template-columns:auto 1fr;gap:2px 10px;font-size:.86rem"><span style="color:var(--muted)">Label</span><span><b>${CL[lab]}</b>${rv[r.id]?' (corrected)':' (Team 101 draft)'}</span><span style="color:var(--muted)">Model</span><span><b>${CL[r.pred]}</b> · ${Math.round(r.conf*100)}% sure</span></div>
+  <div style="height:8px;background:var(--chip)"><div style="height:100%;width:${r.conf*100}%;background:var(${r.conf<M.abstain?'--soon':'--ink'})"></div></div>
+  <span class="why" style="color:var(${ok?'--ok':'--now'});font-weight:600">${outcome}</span>
+  <div style="display:flex;gap:6px;align-items:end;flex-wrap:wrap"><select data-labsel="${r.id}" aria-label="Correct label">${Object.entries(CL).map(([k,l])=>`<option value="${k}"${k===lab?' selected':''}>${l}</option>`).join('')}</select><button class="btn q" data-label="${r.id}">Confirm label</button></div></div></div>`}).join('');
+ const cls=M.classes,cm={};cls.forEach(x=>{cm[x]={};cls.forEach(y=>cm[x][y]=0)});M.results.forEach(r=>cm[rv[r.id]||r.truth][r.pred]++);
+ const PER={};cls.forEach(c=>{const tp=cm[c][c];PER[c]={support:cls.reduce((a,y)=>a+cm[c][y],0),tp,fp:cls.reduce((a,x)=>a+cm[x][c],0)-tp};PER[c].fn=PER[c].support-tp});
+ const cmt=`<table class="t"><tr><th>Label ↓ · Model →</th>${cls.map(c=>`<th style="text-align:right">${CL[c]}</th>`).join('')}</tr>${cls.map(a=>`<tr><td><b>${CL[a]}</b></td>${cls.map(b=>`<td class="n" style="${cm[a][b]?`background:var(${a===b?'--ok':'--now'});color:#fff;font-weight:700`:''}">${cm[a][b]}</td>`).join('')}</tr>`).join('')}</table>`;
+ const pc=`<table class="t"><tr><th>State</th><th style="text-align:right">In test set</th><th style="text-align:right">Caught</th><th style="text-align:right">False positives</th><th style="text-align:right">Missed (false negatives)</th></tr>${cls.map(c=>{const x=PER[c];return`<tr><td>${CL[c]}</td><td class="n">${x.support}</td><td class="n">${x.tp}</td><td class="n">${x.fp}</td><td class="n">${x.fn}</td></tr>`}).join('')}</table>`;
+ const sims=M.frames.filter(f=>f.kind==='simulated');
+ return`<div class="banner" style="background:var(--soon);color:#13222c"><span><b>Small demonstration, not production accuracy.</b> 8 Council frames, labels drafted by Team 101 for Council to confirm.</span></div>
+ <div class="rolehd"><h2>Model check</h2><span>Task: classify each net frame as empty, part full, full, damaged or can’t see</span></div>
+ <div class="kpis">
+  <div class="kpi"><b>${M.results.filter(r=>r.pred===(rv[r.id]||r.truth)).length}/${M.n_test}</b><span>Council test frames classified correctly</span></div>
+  <div class="kpi"><b>${wrongSure}</b><span>Wrong but confident (the risky kind)</span></div>
+  <div class="kpi"><b>${rev}</b><span>Below ${Math.round(M.abstain*100)}% confidence, sent to a person</span></div>
+  <div class="kpi"><b>${sims.length} + ${M.n_test-1}</b><span>Training sources per run: simulated frames + other Council frames (augmented)</span></div>
+ </div>
+ <div class="two" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:12px;margin-bottom:12px">
+  <div class="card"><div class="hd"><h2>How it was tested</h2></div><div class="pad" style="font-size:.9rem;display:grid;gap:6px">
+   <span><b>Model:</b> ${esc(M.model)}.</span>
+   <span><b>Training and test kept apart:</b> each Council frame is tested by a model that never saw that camera. Frames from the same camera, including simulated ones built from it, are held out. Training images are augmented; test images are not.</span>
+   <span><b>Uncertainty:</b> below ${Math.round(M.abstain*100)}% confidence the frame goes to a person instead of raising a flag.</span>
+   <span><b>Reproduce:</b> <code>python3 model/baseline.py</code> in the repository.</span></div></div>
+  <div class="card"><div class="hd"><h2>What this tells us</h2></div><div class="pad" style="font-size:.9rem;display:grid;gap:6px">
+   <span>Whole-frame colour and texture features learn the scenery, not the net. Both damaged nets were missed with high confidence.</span>
+   <span>Leaves across the lens look sharp, so a sharpness check does not catch “can’t see”.</span>
+   <span>Not promising enough to automate. Promising enough to pilot a better method: crop to each camera’s net, compare with that camera’s last clean frame, and train on about 300 Council-labelled frames.</span>
+   <span>Until then every flag goes to an officer, and confident-but-wrong results are why the score never raises a job by itself.</span></div></div>
+ </div>
+ <div class="rolehd"><h2>Test frames</h2><span>Officer can confirm or correct each label; corrections are logged</span></div>
+ <div class="cards" style="margin-bottom:12px">${cards}</div>
+ <div class="two" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:12px">
+  <div class="card tblwrap"><div class="hd"><h2>Confusion matrix</h2></div>${cmt}</div>
+  <div class="card tblwrap"><div class="hd"><h2>False positives and false negatives</h2></div>${pc}</div>
+ </div>
+ <div class="rolehd" style="margin-top:16px"><h2>Training examples (simulated)</h2><span>Built from two Council frames; labelled as simulated everywhere</span></div>
+ <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px">${sims.map(f=>`<figure style="margin:0"><img src="img/frames/${f.id}.jpg" alt="${esc(f.note)}" style="width:100%;aspect-ratio:4/3;object-fit:cover;display:block"><figcaption style="font-size:.76rem;color:var(--muted)">${CL[f.label]} · ${f.camera==='WILLAV 050'?'rack':'net'}</figcaption></figure>`).join('')}</div>`;
+}
+
+/* ---------- Data and governance ---------- */
+function vData(){
+ const tbl=(h,rows)=>`<div class="card tblwrap" style="margin-bottom:12px"><table class="t"><tr>${h.map(x=>`<th>${x}</th>`).join('')}</tr>${rows.map(r=>`<tr>${r.map(c=>`<td>${c}</td>`).join('')}</tr>`).join('')}</table></div>`;
+ const pill=(t,c)=>`<span class="chipc" style="--c:var(${c})">${t}</span>`;
+ const P=pill('Public','--ok'),L=pill('Licensed','--rain'),C=pill('Council-provided','--ink'),PC=pill('Participant-created','--soon'),DM=pill('Dummy','--now');
+ return`<div class="rolehd"><h2>Data model</h2><span>Built on data Council already holds; no new sensor network assumed</span></div>
+ ${tbl(['Entity','Key fields','Existing source','In this demo'],[
+  ['GPT asset','asset ID, type (GPT, uGPT, pGPT, Boom, Trash Rack), location, criticality tier','OneCouncil asset register; ESRI GIS; 2022 GPT Audit','14 camera sites, approximate locations, tiers assumed'],
+  ['Camera frame','camera ID, asset ID, time, image, quality','SCADA (about 15 cameras, 1 photo a day)','8 Council frames, 14 thumbnails, 10 simulated'],
+  ['Net reading','state, fill %, confidence, model version, corrected by','New: model output plus officer correction','Demo values; corrections logged'],
+  ['Rain and water level','gauge, time, rain mm, level m AHD, gauge zero','FloodSmart: about 20 water level and 21 rain gauges on the Lizard platform; BoM forecasts feed Council’s FLASH flood model','Real gauge readings (public Lizard API) refreshed every 30 minutes; Open-Meteo hourly forecast'],
+  ['Priority score','asset, score, four part scores, time','New: calculated, not stored long term','Calculated in the browser'],
+  ['Work order','number, asset, task, priority, due, status, job sheet','OneCouncil Works and Assets','Raised and closed in the demo'],
+  ['Resident report','CRM number, asset, type, channel, status','Infor CRM','Logged by customer service, no names'],
+  ['Audit event','time, role, action, asset, reference','New','Every action logged']])}
+ <div class="rolehd"><h2>Data register</h2><span>Source, licence, date, assumptions and limits</span></div>
+ ${tbl(['Dataset','Type','Source and licence','Date','Assumptions','Limitations'],[
+  ['Council camera frames (8)',C,'Challenge briefing pack and SCADA screenshot; for this challenge only','4 Nov 2026, 13 Nov 2026, older frames 2024–25','Site IDs read from the camera strip','Few frames; no full or overdue examples; plates blurred on Sturt St'],
+  ['SCADA thumbnails (14)',C,'SCADA GPT Cameras page screenshot','13 Nov 2026','One per camera site','Low resolution'],
+  ['Simulated frames (10)',PC,'Built by Team 101 from two Council frames','9 Nov 2026','Overlays approximate litter, water and fog','Synthetic; never shown as Council data'],
+  ['Net locations',PC,'SCADA site names geocoded by hand','14 Nov 2026','Street-level placement','Approximate'],
+  ['Fill levels, history, kg',DM,'Seeded in the app','14 Nov 2026','Plausible ranges from the SME session','Not observed'],
+  ['Criticality tiers, litter load',PC,'Team 101 from the 2022 audit and land use','14 Nov 2026','Downstream sensitivity and audit status','To be set with Council'],
+  ['FloodSmart gauges',C,'City of Parramatta via the public Lizard API (parramatta.lizard.net)','Every 30 min; snapshot 14 Nov 2026','Gauge zero taken from the gauge name','Some gauges not Council-owned; Briens Road zero looks wrong'],
+  ['Rain forecast',L,'Open-Meteo API, CC BY 4.0','Hourly, 72 h','Nearest of 8 points across the LGA','Demo values if unavailable'],
+  ['Rain radar',P,'RainViewer, free tier with attribution','Live','Latest frame only','Zoom 7 and below'],
+  ['Base map',L,'OpenStreetMap, ODbL','Live','—','—'],
+  ['Council records',P,'Asset Management Plan 2027–36; Annual Report 2024/25; GIPA register; GPT Audit minutes','2024–26','Context only','Not operational data'],
+  ['SME session notes',C,'Council SME breakout, 9 Nov 2026','9 Nov 2026','Facts as stated by the SME','Paraphrased']])}
+ <div class="rolehd"><h2>From dummy data to real data</h2><span>How a pilot would get each one lawfully</span></div>
+ ${tbl(['Dummy or assumed data','How we made it','Real source','How to get it','Indicative effort'],[
+  ['Fill levels','Plausible values per site','Model reading of each SCADA frame, confirmed by the officer','SCADA export via Council’s telemetry contact; read-only','1–2 days of telemetry staff time'],
+  ['Labelled frames','8 labelled by Team 101','About 300 historic frames labelled by stormwater staff','Labelling session in the app; corrections saved','2 staff × half a day'],
+  ['Net locations','Hand-placed from street names','Asset register lat/longs','Request through the project team (Paul has agreed in principle)','Under 1 hour'],
+  ['Cleaning history and kg','Seeded per site','Contractor job sheets and weighbridge tickets','Existing Part A reporting under the stormwater panel','Already collected; export only'],
+  ['Criticality tiers','Our reading of the audit','Stormwater team ranking','30-minute workshop','Under 1 hour'],
+  ['Rain','Open-Meteo or demo values','BoM forecasts and FloodSmart gauges already in SCADA','Existing internal feed','No new cost']])}
+ <div class="rolehd"><h2>Cleaning and quality log</h2><span>Every transformation, so others can check it</span></div>
+ ${tbl(['Date','Issue','Action'],[
+  ['9 Nov','Camera origin unclear','Confirmed with SME: Council installs, not the CSIRO trial'],
+  ['12 Nov','GPT count differs across sources (37, 40, 35–40, “more than 58”)','Use the SME figure of 35–40 nets and the AMP register of 40 GPTs'],
+  ['13 Nov','Viewer window around the Lackey St frame','Cropped to the camera image'],
+  ['13 Nov','Thumbnails in one screenshot','Cropped per site; site names read from tiles'],
+  ['14 Nov','Number plates visible on Sturt St frame','Road area blurred before use'],
+  ['14 Nov','Dates shifted by time zone','Fixed to local dates'],
+  ['14 Nov','Briens Road gauge reads 19.3 m AHD but its name gives a zero of 9.345 m','Excluded from depth estimates; flagged on the map for Council to confirm'],
+  ['14 Nov','Browser cannot call the gauge or forecast services directly','A scheduled job fetches both every 30 minutes and publishes a file the app reads'],
+  ['14 Nov','Forecast service unreachable on some networks','Times out after 6 s; demo values shown and labelled']])}
+ <div class="rolehd"><h2>Bias and coverage check</h2><span>Who or what the data could miss</span></div>
+ ${tbl(['Risk','What we found','What we do about it'],[
+  ['Suburbs without cameras','Cameras cover about 10 of 35–40 nets, mostly in North Parramatta and Carlingford','Nets without cameras are scored on rain, history and criticality and say “no camera”, so they are not treated as empty'],
+  ['Image conditions','Leaves, fog and old frames break the baseline model','“Can’t see” is its own state with its own alert'],
+  ['Simulated data','Synthetic frames may not look like real litter','Kept out of test sets; always labelled'],
+  ['Residents','Reports by phone, counter, email or online','No digital-only channel; no names stored'],
+  ['Officers','Email first, works on a phone, keyboard and screen reader labels','Accessibility to be checked in the user test']])}
+ <div class="rolehd"><h2>Minimum viable data: before adding a sensor</h2><span>Each one needs a decision, an owner, upkeep and a retention rule</span></div>
+ ${tbl(['Sensor','Decision it improves','Owner','Upkeep','Keep data for','Needed now?'],[
+  ['Existing cameras','Clean, repair or restore view','Stormwater team','Existing repair runs','Frames 2 years; flagged frames with the work order','Yes, already in place'],
+  ['Fullness sensor on a net','Clean before rain where there is no camera','Stormwater team','Battery yearly','Readings 2 years','Only after the camera pilot'],
+  ['Tilt sensor on a net frame','Repair a detached net','Stormwater team','Battery yearly','Events 2 years','Only where detachment repeats'],
+  ['Pit level sensor','Inspect a blocked pit','Stormwater team','Clean yearly','Readings 2 years','Not in this pilot']])}
+ <div class="two" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px">
+  <div class="card"><div class="hd"><h2>Responsible AI</h2></div><div class="pad" style="font-size:.9rem;display:grid;gap:6px">
+   <span><b>Tools:</b> Claude for research, drafting and code; a baseline image model (see Model check).</span>
+   <span><b>AI does:</b> scores frames and ranks nets. <b>AI does not:</b> raise work orders, contact contractors or close jobs.</span>
+   <span><b>Accountable:</b> the stormwater officer confirms every work order and signs off every job.</span>
+   <span><b>Known risks:</b> confident wrong readings, leafy or fogged frames, simulated-data bias, over-trust in scores.</span></div></div>
+  <div class="card"><div class="hd"><h2>Correction and containment</h2></div><div class="pad" style="font-size:.9rem;display:grid;gap:6px">
+   <span><b>Correct:</b> an officer changes any reading; it is logged and becomes a training label.</span>
+   <span><b>Remove:</b> a bad frame is dropped from scoring until a new one arrives.</span>
+   <span><b>Suspend:</b> auto-flagging stops for a net, which is then checked by hand.</span>
+   <span><b>Review:</b> the audit log shows who did what and when. No personal data is stored; data stays in the browser in this demo.</span></div></div>
+ </div>`;
+}
+
+/* ---------- User test kit ---------- */
+const TASKS=['From the email alert, raise the repair work order for Lackey St West.','Find the net with the highest priority score and say why it is first.','Correct a reading you disagree with, or remove a bad frame.','As the contractor, complete a job and report an issue.','As the officer, sign off that job and find it in the audit log.'];
+function vTest(){
+ const T=S.tests||[];
+ const res=T.length?T.slice().reverse().map(t=>`<tr><td>${tstamp(t.at)}</td><td>${esc(t.role)}</td><td class="n">${t.done}/5</td><td class="n">${t.ease}/5</td><td>${esc(t.replace)}</td><td>${esc(t.comment)}</td></tr>`).join(''):'<tr><td colspan="6">No tests recorded yet.</td></tr>';
+ return`<div class="rolehd"><h2>User test</h2><span>About 15 minutes · one tester · no names recorded</span></div>
+ <div class="panel2"><form data-test>
+  <label class="f">Tester role<select name="role"><option>Stormwater officer</option><option>Council officer, other team</option><option>Contractor</option><option>Customer service</option><option>Team member</option></select></label>
+  <div style="grid-column:1/-1;display:grid;gap:8px">${TASKS.map((t,i)=>`<label style="display:flex;gap:10px;align-items:flex-start;font-size:.92rem;color:var(--fg)"><input type="checkbox" name="t${i}"><span><b>${i+1}.</b> ${t}</span></label>`).join('')}</div>
+  <label class="f">How easy was it overall? (1 hard, 5 easy)<select name="ease"><option>1</option><option>2</option><option selected>3</option><option>4</option><option>5</option></select></label>
+  <label class="f">Would this replace the daily image check?<select name="replace"><option>Yes</option><option>Partly</option><option>No</option></select></label>
+  <label class="f" style="grid-column:1/-1">What confused you, or what would you change?<textarea name="comment" placeholder="No names or contact details"></textarea></label>
+  <div class="btns"><button class="btn pri">Save test result</button><button class="btn q" type="button" data-copytests>Copy all results</button></div></form></div>
+ <div class="card tblwrap"><table class="t"><tr><th>When</th><th>Role</th><th style="text-align:right">Tasks done</th><th style="text-align:right">Ease</th><th>Replace daily check?</th><th>Comment</th></tr>${res}</table></div>`;
+}
+
+/* ---------- roles ---------- */
+const ROLES=[['officer','Stormwater officer'],['contractor','Contractor'],['cs','Customer service'],['manager','Manager']];
+const VIEWS=[['model','Model check'],['data','Data'],['test','User test']];
+let ROLE=(()=>{const q=new URLSearchParams(location.search).get('role');if(q&&ROLES.concat(VIEWS).some(r=>r[0]===q))return q;try{return localStorage.getItem('netwatch-role')||'officer'}catch(e){return'officer'}})();
+let PHOTO={};
+function setRole(r){ROLE=r;try{localStorage.setItem('netwatch-role',r)}catch(e){}closeDrawer();show()}
+function show(){
+ $('#roles').innerHTML=ROLES.map(([k,l])=>`<button class="${ROLE===k?'on':''}" data-role="${k}">${l}</button>`).join('')+'<span style="width:1px;background:var(--line);margin:0 4px"></span>'+VIEWS.map(([k,l])=>`<button class="${ROLE===k?'on':''}" data-role="${k}">${l}</button>`).join('');
+ const off=ROLE==='officer';$('#vOfficer').hidden=!off;$('#vRole').hidden=off;
+ if(off){render();if(map)setTimeout(()=>map.invalidateSize(),50)}
+ else $('#vRole').innerHTML={contractor:vContractor,cs:vCS,manager:vManager,model:vModel,data:vData,test:vTest}[ROLE]();
+}
+const RESULTS=['Emptied, net intact','Repaired or replaced','Camera view cleared','Inspected, no action'];
+function vContractor(){
+ const {out,km}=route(),done=S.wos.filter(w=>w.status==='Done');
+ const jobs=out.map((n,i)=>{const w=openWO(n),b=w.c||'--accent';
+  return`<div class="job" style="--c:var(${b})"><span class="stop">${i+1}</span><img src="${img(n)}" alt="${esc(n.name)} camera">
+  <div style="display:grid;gap:4px"><b>${esc(n.name)}</b><span class="meta">${esc(n.sub)} · ${w.no}</span><span>${esc(w.task)} · <b>${w.pri}</b> · by ${short(w.due)}</span><span class="meta">${esc(w.reason)}</span>
+  <div class="btns"><a class="btn" href="https://www.google.com/maps/dir/?api=1&destination=${n.ll[0]},${n.ll[1]}" target="_blank" rel="noopener">Directions</a><button class="btn pri" data-jobform="${w.no}">Complete job</button></div></div>
+  <div id="jf-${w.no}" style="display:contents"></div></div>`}).join('');
+ return`<div class="rolehd"><h2>Today's run</h2><span>Urban Asset Solutions · ${out.length} job${out.length===1?'':'s'} · ~${km} km from ${esc(DEPOT.name)}</span></div>
+ <div class="jobs">${jobs||'<div class="empty">No jobs. Council has not raised any work orders.</div>'}</div>
+ <div class="rolehd" style="margin-top:20px"><h2>Waiting for Council sign-off</h2><span>${done.length}</span></div>
+ <div class="card">${done.length?done.map(w=>`<div class="wo" style="--c:var(--ok)"><span class="dot"></span><div><b>${esc(w.site)}</b> · ${esc(w.job.result)}${w.job.kg?` · ${w.job.kg} kg`:''}<div class="no">${w.no} · sent ${short(w.job.at)}</div></div><span></span></div>`).join(''):'<div class="empty">Nothing waiting.</div>'}</div>`;
+}
+function jobForm(no){
+ const w=S.wos.find(x=>x.no===no);
+ $('#jf-'+no).innerHTML=`<form data-job="${no}">
+  <label class="f">Result<select name="result">${RESULTS.map(r=>`<option${w.task.startsWith('Repair')&&r.startsWith('Repaired')||w.task.startsWith('Clear')&&r.startsWith('Camera')||w.task.startsWith('Inspect')&&r.startsWith('Inspected')?' selected':''}>${r}</option>`).join('')}</select></label>
+  <label class="f">Removed (kg)<input name="kg" type="number" min="0" step="1" value="${w.task.startsWith('Empty')?60:0}"></label>
+  <label class="f">Photo after<input name="photo" type="file" accept="image/*" capture="environment" data-photo="${no}"></label>
+  <div class="checks"><span style="color:var(--muted);font-size:.78rem">Issues found</span>${['Net damaged','Camera blocked','Access problem'].map(x=>`<label><input type="checkbox" name="def" value="${x}">${x}</label>`).join('')}</div>
+  <label class="f" style="grid-column:1/-1">Note<input name="note" placeholder="Optional"></label>
+  <div class="btns"><button class="btn pri">Send to Council</button></div></form>`;
+}
+function vCS(){
+ const opts=S.nets.map(n=>`<option value="${n.id}">${esc(n.name)} (${esc(n.sub)})</option>`).join('');
+ const rows=S.reports.slice().reverse().map(r=>{const n=S.nets.find(x=>x.id===r.net),c={New:'--soon','With contractor':'--accent',Resolved:'--ok','Closed, no action':'--muted'}[r.status]||'--muted';
+  return`<tr><td class="n">${r.no}</td><td>${short(r.date)}</td><td>${esc(n.name)}</td><td>${esc(r.type)}<div style="color:var(--muted);font-size:.8rem">${esc(r.details||'')}</div></td><td><span class="chipc" style="--c:var(${c})">${r.status}</span>${r.wo?`<div class="no" style="font-family:var(--mono);font-size:.74rem;color:var(--muted)">${r.wo}</div>`:''}</td></tr>`}).join('');
+ return`<div class="rolehd"><h2>Log a resident report</h2><span>Goes straight to the stormwater officer</span></div>
+ <div class="panel2"><form data-report>
+  <label class="f">Where<select name="net">${opts}</select></label>
+  <label class="f">What<select name="type"><option>Litter in the creek below the net</option><option>Net looks torn or loose</option><option>Flooding or ponding near the pipe</option><option>Bad smell</option><option>Other</option></select></label>
+  <label class="f">How reported<select name="via"><option>Phone</option><option>Online form</option><option>Email</option><option>Front counter</option></select></label>
+  <label class="f" style="grid-column:1/-1">Details<textarea name="details" placeholder="What the resident saw. Do not record names or contact details."></textarea></label>
+  <div class="btns"><button class="btn pri">Log report</button></div></form></div>
+ <div class="rolehd"><h2>Reports</h2><span>${S.reports.filter(r=>r.status!=='Resolved'&&r.status!=='Closed, no action').length} open</span></div>
+ <div class="card tblwrap"><table class="t"><tr><th>Ref</th><th>Logged</th><th>Where</th><th>What</th><th>Status</th></tr>${rows||'<tr><td colspan="5">No reports yet.</td></tr>'}</table></div>`;
+}
+function vManager(){
+ const act=S.nets.filter(n=>['repair','now','soon','view','report'].includes(bucket(n))).length;
+ const live=S.nets.filter(n=>!(n.blind>=2)).length;
+ const openW=S.wos.filter(w=>w.status!=='Closed').length,overdue=S.wos.filter(w=>w.status==='Open'&&w.due<iso(TODAY)).length;
+ const timed=S.wos.filter(w=>w.job&&w.created).map(w=>(P(w.job.at)-P(w.created))/864e5);
+ const avg=timed.length?(timed.reduce((a,b)=>a+b,0)/timed.length).toFixed(1):'—';
+ const m=months12(),t=(m.reduce((a,x)=>a+x.kg,0)/1000).toFixed(1);
+ const avoided=S.nets.filter(n=>bucket(n)==='ok'&&n.fill!=null&&n.fill<40).length;
+ const repOpen=S.reports.filter(r=>r.status==='New'||r.status==='With contractor').length;
+ const yr=iso(D(-365));
+ const rows=S.nets.slice().sort((x,y)=>score(y).total-score(x).total).map(n=>{const b=bucket(n),h=n.hist.filter(e=>e.date>=yr),kg=h.reduce((a,e)=>a+e.kg,0),sc=score(n).total;
+  const lbl={repair:'Repair',now:'Empty now',soon:'Before rain',view:"Can't see",report:'Resident report',wo:'Work order',defer:'Deferred',ok:'OK'}[b];
+  return`<tr data-open="${n.id}" style="cursor:pointer"><td>${esc(n.name)}</td><td class="n" style="color:var(${band(sc).v});font-weight:700">${sc}</td><td><span class="chipc" style="--c:var(${colOf(b)})">${lbl}</span></td><td class="n">${n.fill==null?'?':n.fill+'%'}</td><td>${dmy(n.last)}</td><td class="n">${h.length}</td><td class="n">${kg}</td></tr>`}).join('');
+ return`<div class="rolehd"><h2>Network overview</h2><span>${nice(iso(TODAY))}</span></div>
+ <div class="kpis">
+  <div class="kpi"><b>${live}/${S.nets.length}</b><span>Nets with a clear camera view</span></div>
+  <div class="kpi"><b>${act}</b><span>Nets needing action now</span></div>
+  <div class="kpi"><b>${openW}</b><span>Open work orders${overdue?` · ${overdue} overdue`:''}</span></div>
+  <div class="kpi"><b>${avg}</b><span>Days from raise to done (avg)</span></div>
+  <div class="kpi"><b>${t} t</b><span>Litter removed, 12 months</span></div>
+  <div class="kpi"><b>${avoided}</b><span>Quarterly visits not needed (under 40% full) · ~$${(avoided*1390).toLocaleString('en-AU')} est.</span></div>
+  <div class="kpi"><b>${repOpen}</b><span>Resident reports open</span></div>
+ </div>
+ <div class="grid">
+  <div class="card tblwrap"><div class="hd"><h2>Every net</h2></div><table class="t"><tr><th>Net</th><th style="text-align:right">Priority</th><th>Status</th><th style="text-align:right">Fill (demo)</th><th>Last cleaned</th><th style="text-align:right">Cleans 12m</th><th style="text-align:right">kg 12m</th></tr>${rows}</table></div>
+  <div class="card"><div class="hd"><h2>Litter removed per month</h2></div><div class="pad">${kgSvg(m)}</div></div>
+ </div>
+ <div class="card tblwrap" style="margin-top:12px"><div class="hd"><h2>Audit log</h2><span class="date">${(S.audit||[]).length} actions</span></div><table class="t"><tr><th>When</th><th>Who</th><th>What</th><th>Net</th><th style="text-align:right">Ref</th></tr>${auditRows((S.audit||[]).slice(-40))||'<tr><td colspan="5">No actions yet.</td></tr>'}</table></div>`;
+}
+function photoIn(input){
+ const f=input.files&&input.files[0];if(!f)return;const no=input.dataset.photo,r=new FileReader();
+ r.onload=()=>{const im=new Image();im.onload=()=>{const sc=Math.min(1,480/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=im.width*sc;c.height=im.height*sc;c.getContext('2d').drawImage(im,0,0,c.width,c.height);PHOTO[no]=c.toDataURL('image/jpeg',.7);toast('Photo added')};im.src=r.result};r.readAsDataURL(f);
+}
+
+function copy(t,msg){(navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>toast(msg)).catch(()=>toast('Copy blocked: select the text instead'))}
+function toast(t){const e=$('#toast');e.textContent=t;e.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>e.hidden=true,2400)}
+
+document.addEventListener('click',e=>{
+ const t=e.target.closest('[data-lane],[data-open],[data-raise],[data-raiseall],[data-inspect],[data-defer],[data-close],[data-scroll],[data-confirm],[data-dismiss],[data-role],[data-signoff],[data-sendback],[data-noaction],[data-jobform],[data-fix],[data-remove],[data-suspend],[data-label],[data-copytests]');
+ if(!t){if(e.target.classList.contains('drawer'))closeDrawer();return}
+ const d=t.dataset;
+ if(d.role){setRole(d.role)}
+ else if(d.lane){lane=lane===d.lane?null:d.lane;render();if(lane)$('#lane').scrollIntoView({behavior:'smooth',block:'start'})}
+ else if(d.scroll){$('#'+d.scroll).scrollIntoView({behavior:'smooth',block:'center'})}
+ else if(d.open){map&&map.closePopup();drawer(d.open)}
+ else if('close' in d)closeDrawer();
+ else if(d.raise||d.inspect){const w=raise(d.raise||d.inspect,d.inspect?'inspect':'');if(w){render();toast(`${w.no} raised · ${w.site}`);if(drawerId)$('#wo-out').innerHTML=`<pre>${esc(woText(w))}</pre>`;if(runLine)toggleRun(true)}}
+ else if(d.raiseall){const g=S.nets.filter(n=>bucket(n)===d.raiseall);g.forEach(n=>raise(n.id));lane=null;render();toast(`${g.length} work orders raised`);if(runLine)toggleRun(true)}
+ else if(d.defer){S.nets.find(x=>x.id===d.defer).defer=iso(D(7));log('Deferred 7 days',d.defer);save();closeDrawer();render();toast('Deferred 7 days')}
+ else if(d.noaction){S.reports.filter(r=>r.net===d.noaction&&r.status==='New').forEach(r=>{r.status='Closed, no action';log('Closed resident report, no action',d.noaction,r.no)});save();closeDrawer();render();toast('Report closed, no action')}
+ else if(d.signoff)signoff(d.signoff);
+ else if(d.sendback){const w=S.wos.find(x=>x.no===d.sendback);log('Sent job back to contractor',w.net,w.no);w.status='Open';w.reason='Sent back: '+(w.job.note||'see Council');w.job=null;save();render();toast(w.no+' sent back to contractor')}
+ else if(d.jobform)jobForm(d.jobform);
+ else if(d.fix)applyFix(d.fix,$('#fixsel').value);
+ else if(d.remove){const n=S.nets.find(x=>x.id===d.remove);if(!n.removed){n.removed=true;n.fillWas=n.fill;n.fill=null;n.blind=Math.max(n.blind||0,2);log('Removed frame from scoring',n.id);save();render();drawer(n.id);toast('Frame removed from scoring')}}
+ else if(d.suspend){const n=S.nets.find(x=>x.id===d.suspend);n.suspended=!n.suspended;log(n.suspended?'Suspended auto-flagging':'Resumed auto-flagging',n.id);save();render();drawer(n.id);toast(n.suspended?'Auto-flagging suspended':'Auto-flagging resumed')}
+ else if(d.label){const r=window.MODEL.results.find(x=>x.id===d.label),v=document.querySelector(`[data-labsel="${d.label}"]`).value;S.labels=S.labels||{};
+  if(v!==r.truth)S.labels[d.label]=v;else delete S.labels[d.label];log(v===r.truth?`Confirmed label ${CL[v]}`:`Corrected label from ${CL[r.truth]} to ${CL[v]}`,null,r.id);save();show();toast('Label saved and logged')}
+ else if('copytests' in d){const T=S.tests||[];copy(T.map(t=>`${tstamp(t.at)} | ${t.role} | tasks ${t.done}/5 [${t.tasks.map(x=>x?'Y':'N').join('')}] | ease ${t.ease}/5 | replace: ${t.replace} | ${t.comment}`).join('\n')||'No tests yet','Test results copied')}
+ else if(d.confirm){const id=EMAIL.net;EMAIL.done=true;
+  if(d.confirm==='defer'){S.nets.find(x=>x.id===id).defer=iso(D(7));save();closeDrawer();render();toast('Deferred 7 days')}
+  else{const w=raise(id,d.confirm==='inspect'?'inspect':'');render();if(w){toast(`${w.no} raised · ${w.site}`);$('#wo-out').innerHTML=`<pre>${esc(woText(w))}</pre>`}}}
+ else if('dismiss' in d){$('#banner').innerHTML=''}
+});
+document.addEventListener('change',e=>{if(e.target.dataset&&e.target.dataset.photo)photoIn(e.target)});
+document.addEventListener('submit',e=>{
+ const f=e.target;
+ if(f.dataset.job!==undefined){e.preventDefault();const no=f.dataset.job,w=S.wos.find(x=>x.no===no),fd=new FormData(f);
+  w.job={result:fd.get('result'),kg:+fd.get('kg')||0,defects:fd.getAll('def'),note:fd.get('note')||'',photo:PHOTO[no]||null,at:iso(TODAY)};w.status='Done';delete PHOTO[no];log(`Completed job: ${w.job.result}${w.job.defects.length?`; issues: ${w.job.defects.join(', ')}`:''}`,w.net,no);
+  save();show();toast(`${no} sent to Council for sign-off`)}
+ else if(f.dataset.test!==undefined){e.preventDefault();const fd=new FormData(f),tasks=TASKS.map((_,i)=>!!fd.get('t'+i));
+  S.tests=S.tests||[];S.tests.push({at:new Date().toISOString(),role:fd.get('role'),tasks,done:tasks.filter(Boolean).length,ease:+fd.get('ease'),replace:fd.get('replace'),comment:(fd.get('comment')||'').slice(0,600)});log('Saved user test result',null,`${tasks.filter(Boolean).length}/5`);save();show();toast('Test result saved')}
+ else if(f.dataset.report!==undefined){e.preventDefault();const fd=new FormData(f),no='CRM-'+String(TODAY.getFullYear()).slice(2)+'-'+String(S.crm++).padStart(4,'0');
+  S.reports.push({no,net:fd.get('net'),type:fd.get('type'),via:fd.get('via'),details:(fd.get('details')||'').slice(0,400),date:iso(TODAY),status:'New'});log(`Logged resident report: ${fd.get('type')}`,fd.get('net'),no);
+  save();show();toast(`${no} logged and sent to the stormwater officer`)}
+});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeDrawer()});
+$('#wxScen').innerHTML=Object.entries(SCEN).map(([k,v])=>`<option value="${k}">${v.l}</option>`).join('');
+$('#tWx').onclick=()=>{WX.on=!WX.on;drawWeather()};
+$('#wxScen').onchange=e=>{WX.scen=e.target.value;drawWeather()};
+$('#wxRange').oninput=e=>{WX.h=+e.target.value;drawWeather()};
+$('#wxPlay').onclick=wxPlay;
+$('#tRadar').onclick=toggleRadar;$('#tRun').onclick=()=>toggleRun();
+$('#copyRun').onclick=()=>copy(runSheet(),'Run sheet copied');
+$('#reset').onclick=()=>{S=fresh();log('Demo reset');save();lane=null;closeDrawer();if(runLine){runLine.remove();runLine=null;$('#tRun').classList.remove('on')}show();toast('Demo reset')};
+initMap();if(new URLSearchParams(location.search).has('net')||new URLSearchParams(location.search).has('lane'))ROLE='officer';show();fromEmail();getRain();
+</script>
+</body>
+</html>
