@@ -32,14 +32,18 @@ def gauges():
         if not (ot.startswith('Waterlevel') or ot == 'PRCP'): continue
         if 'Prediction' in (t.get('name') or ''): continue
         lu = t['location']['url']
-        if lu not in loc_cache: loc_cache[lu] = get(lu)
+        try:  # one missing location or series must not sink the whole refresh
+            if lu not in loc_cache: loc_cache[lu] = get(lu)
+        except Exception:
+            loc_cache[lu] = {}
         geom = (loc_cache[lu].get('geometry') or {}).get('coordinates')
         if not geom: continue
         raw = t['location']['name']
         name = re.sub(r'\s*\[.*?\]\s*', '', raw).replace(' Warning Area', '').strip()
         m = re.search(r'\[([\d.]+) mAHD\]', raw)
         start = (NOW - dt.timedelta(hours=24)).strftime('%Y-%m-%dT%H:%M:%SZ')
-        ev = get(t['url'] + f'events/?start={start}&page_size=2000')['results']
+        try: ev = get(t['url'] + f'events/?start={start}&page_size=2000')['results']
+        except Exception: ev = []
         vals = [e['value'] for e in ev if e.get('value') is not None]
         kind = 'rain' if ot == 'PRCP' else 'level'
         g = out.setdefault((kind, name), dict(name=name, kind=kind, lat=round(geom[1], 4), lon=round(geom[0], 4)))
