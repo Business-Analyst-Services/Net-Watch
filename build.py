@@ -172,12 +172,40 @@ th{font:700 10.5px var(--display);letter-spacing:.2em;color:var(--muted);backgro
 .rule{background:var(--alt);border-left-color:var(--orange)}
 .quote{border-left-color:var(--teal-b)}
 .tablewrap{overflow-x:auto;border:1px solid var(--line)}
-table.cat{width:100%;min-width:900px;border-collapse:collapse;font-size:15px;background:#fff}
+table.cat{width:100%;min-width:760px;border-collapse:collapse;font-size:15px;background:#fff}
 table.cat th,table.cat td{text-align:left;padding:12px 14px;border-bottom:1px solid var(--line);vertical-align:top}
 table.cat tr:last-child td{border-bottom:0}
 table.cat td:first-child{white-space:nowrap;font-weight:700}
 table.cat tr.focus td{background:#F4F6F8}.mvp{display:inline-block;margin-top:4px;font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#fff;background:#7b4fc9;padding:2px 6px}
-table.cat td:last-child{min-width:170px}
+.tagline{font-size:17px;font-weight:700;margin:0 0 14px}
+.atypes{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px}
+.atype{background:#fff;border:1px solid var(--line);border-top:5px solid var(--c);display:flex;flex-direction:column;min-width:0}
+.atype.focus{box-shadow:0 0 0 2px var(--c)}
+.atype img{width:100%;aspect-ratio:1/1.1;object-fit:cover;display:block}
+.atype .ab{padding:12px 12px 14px;display:flex;flex-direction:column;gap:8px;flex:1}
+.atype .ac{margin:0;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.atype .ac b{color:var(--navy)}
+.atype h3{margin:0;font-size:16px;line-height:1.25}
+.atype dl{margin:0;display:grid;grid-template-columns:auto 1fr;gap:6px 10px;font-size:13px;border-top:1px solid var(--line);padding-top:8px}
+.atype dt{font-size:10px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);padding-top:2px}
+.atype dd{margin:0}
+.atype dd.wx{font-weight:700;color:#1F3A5F}
+.fit{margin:2px 0 0;display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--line);padding:6px 8px}
+.fit i{width:10px;height:10px;border-radius:50%;flex:none}
+.fit.gap i{background:#C2352B}.fit.cond i{background:#F5A04A}.fit.match i{background:#2E7D50}
+.fn{margin:0;font-size:12.5px;color:var(--muted);font-style:italic;flex:1}
+.atype a{font-size:13px;font-weight:700}
+h3.sub{font-size:15px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin:30px 0 10px}
+.stack{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;counter-reset:s}
+.stack li{background:var(--navy);color:#fff;padding:14px 14px 16px;display:grid;gap:4px;align-content:start;position:relative}
+.stack li span{font-size:11px;font-weight:700;letter-spacing:.2em;color:#4DB8B8}
+.stack li b{font-size:15px}
+.stack li em{font-style:normal;font-size:13px;opacity:.85}
+.stack li.last{background:#F5A04A;color:#14284A}.stack li.last span{color:#14284A}
+.multiplier{margin:14px 0 0;font-size:20px;font-weight:700;color:var(--navy);border-left:4px solid #4DB8B8;padding-left:12px}
+@media (max-width:1000px){.atypes{grid-template-columns:repeat(3,minmax(0,1fr))}.stack{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media (max-width:620px){.atypes,.stack{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:420px){.atypes,.stack{grid-template-columns:1fr}}
 .mk{display:inline-block;width:12px;height:12px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:var(--c);margin-right:10px;vertical-align:-1px}
 .credit{font-size:12px;color:var(--muted);line-height:1.6;max-width:110ch;margin:24px auto 0;padding-bottom:24px}
 footer.band{margin:0;background:var(--teal-b);color:#fff;font:700 10px var(--display);letter-spacing:.25em;text-transform:uppercase;max-width:none}
@@ -241,21 +269,44 @@ CAT = [  # official definitions: Dec 2022 GPT Audit, reproduced in Council minut
   ('boom','Floating boom across deep waterway','Floating barrier concentrating surface litter.','No simple container-style fullness percentage.'),
   ('trash-rack','Steel rack across waterway','Fixed rack; debris may restrict upstream flow.','Blockage and hydraulic risk matter, not only volume.')]
 TB = {t['slug']: t for t in TYPES}
+MON = {  # Proactive GPT Monitoring (Zoe): signal, weather sensitivity, output and CSIRO-trial fit per type
+  'vault': ('Water-level radar or ultrasonic, 4G','Very high','Hydraulic-risk or inspection alert','gap','CSIRO gap','Litter fullness is unknown'),
+  'net': ('Fixed camera, edge vision','High','State and confidence','cond','Conditional','Empty · partial · full · blocked · detached'),
+  'pit': ('4G infrared, time-of-flight or ultrasonic','High','Fullness %, trend, time to clean','match','Closest CSIRO match','Optional exception image'),
+  'boom': ('Camera plus position or tension','Very high','Accumulation, displacement, damage','gap','Outside trial','No container-style fullness %'),
+  'trash-rack': ('Camera plus upstream and downstream level','Very high','Coverage and hydraulic risk','cond','Site-dependent','Clean-before-storm recommendation')}
+ORDER = ['vault','net','pit','boom','trash-rack']
+type_cards = ''.join(
+  f'<article class="atype{" focus" if TB[sl]["focus"] else ""}" style="--c:{TB[sl]["colour"]}">'
+  f'<img src="assets/concept-{sl}.jpg" alt="Illustrative {TB[sl]["name"].lower()}" loading="lazy">'
+  f'<div class="ab"><p class="ac"><span class="mk" style="--c:{TB[sl]["colour"]}"></span>{TB[sl]["colname"]} · <b>{TB[sl]["code"]}</b>{" <span class=mvp>MVP focus</span>" if TB[sl]["focus"] else ""}</p>'
+  f'<h3>{TB[sl]["name"]}</h3>'
+  f'<dl><dt>Monitor</dt><dd>{MON[sl][0]}</dd><dt>Weather</dt><dd class="wx">{MON[sl][1]}</dd><dt>Output</dt><dd>{MON[sl][2]}</dd></dl>'
+  f'<p class="fit {MON[sl][3]}"><i></i>{MON[sl][4]}</p><p class="fn">{MON[sl][5]}</p>'
+  f'<a href="types/{sl}.html">Open {TB[sl]["code"]} page →</a></div></article>' for sl in ORDER)
+STACK = [('Direct signal','Image, litter height, water level'),('Asset context','Type, geometry, capacity, wet or dry'),('Weather','BoM forecast, intensity, season'),('Device health','Heartbeat, battery, image or signal quality'),('Outcome feedback','Verified state, clean date, quantity removed'),('Officer action','Email, officer approves, then the work order')]
+stack = ''.join(f'<li{" class=last" if i==len(STACK)-1 else ""}><span>{i+1}</span><b>{t}</b><em>{d}</em></li>' for i,(t,d) in enumerate(STACK))
 cat_rows = ''.join(
   f'<tr{" class=focus" if TB[sl]["focus"] else ""}><td><span class="mk" style="--c:{TB[sl]["colour"]}"></span>{TB[sl]["colname"]}</td>'
   f'<td><b>{TB[sl]["code"]}</b>{"<br><span class=mvp>MVP focus</span>" if TB[sl]["focus"] else ""}</td><td>{d}</td><td>{m}</td><td>{lim}</td>'
-  f'<td>{TB[sl]["sensors"][0][0]}<br><a href="types/{sl}.html">Open {TB[sl]["code"]} →</a></td></tr>' for sl,d,m,lim in CAT)
+  f'</tr>' for sl,d,m,lim in CAT)
 index = f"""
 <div class="eyebrow">City of Parramatta · 37 GPTs · about 15 cameras, 10 working · one photo a day</div>
 <h1>Clean the net before the storm, not after it lets go</h1>
 <p class="lede">Council's end-of-pipe litter nets are built to break away from the pipe when they are full and the next surge hits. Today one officer checks the camera images for about 15 minutes each weekday, and no one checks at weekends or over holidays. Net Watch reads every image, scores each net, checks the rain forecast, and emails the officer the marked-up photo when a net needs emptying or repair. The officer approves; the work order follows.</p>
 <h2 id="types">Five trap types, one decision layer</h2>
-<p style="margin:-4px 0 14px;color:var(--muted);font-size:.95rem;max-width:84ch">Council's asset codes and map colours, with the official definitions from the December 2022 GPT Audit (published in 2023 and reproduced in the March 2024 Council minutes; to verify against the 2026 asset register). Each type fills differently and needs its own sensor. Scoring, the email and officer approval are the same for all five. Council asked us to start with the nets.</p>
-<figure class="panel" style="margin:0 0 16px"><img class="fig" src="assets/gpt-types-concept.jpg" alt="Illustrative concept of the five GPT types: yellow underground wet vault, purple end-of-pipe net, green road-side pit trap, black floating boom, blue trash rack"><figcaption class="cap">Illustrative concept, not actual Council assets.</figcaption></figure>
+<p style="margin:-4px 0 14px;color:var(--muted);font-size:.95rem;max-width:84ch">Council's asset codes and map colours, with the official definitions from the December 2022 GPT Audit (published in 2023 and reproduced in the March 2024 Council minutes; to verify against the 2026 asset register). Each type fills differently and needs its own signal. Scoring, the email and officer approval are the same for all five. Council asked us to start with the nets.</p>
+<p class="tagline">Match the signal to the asset. Add weather, device health and verified outcomes.</p>
+<div class="atypes">{type_cards}</div>
+<p class="cap" style="margin-top:10px">Concept images are illustrative, not actual Council assets. The coloured status compares each type with the CSIRO dry-sump fullness sensor trial. <a href="assets/monitoring-by-asset-type.jpg">One-page visual</a></p>
+<h3 class="sub">Official definitions</h3>
 <div class="tablewrap"><table class="cat">
-<thead><tr><th>Map marker</th><th>Council code</th><th>Official definition</th><th>What it physically means</th><th>Important limitation</th><th>First signal</th></tr></thead>
+<thead><tr><th>Map marker</th><th>Council code</th><th>Official definition</th><th>What it physically means</th><th>Important limitation</th></tr></thead>
 <tbody>{cat_rows}</tbody></table></div>
 <p style="color:var(--muted);font-size:.9rem;margin-top:10px">Map colours show <b>asset type</b>, not condition or replacement priority. The 2024 minutes say a rectification-category map had not been developed.</p>
+<h2 id="stack">From signal to decision</h2>
+<ol class="stack">{stack}</ol>
+<p class="multiplier">Rainfall is a risk multiplier, not a GPT class.</p>
 <h2>The six states a net is scored into</h2>
 <div class="states">{states}</div>
 <p style="color:var(--muted);font-size:.9rem;margin-top:10px">These states apply to nets, baskets and pits. Booms and trash racks are scored on blockage, not a fill percentage. Council's target is to intervene at 70–80% full; the thresholds are a starting point for the open question "What counts as full?". <a href="assets/gpt-fullness-states.png">Simulated examples</a> built from two Council frames.</p>
@@ -470,7 +521,7 @@ ev="""
 open(os.path.join(OUT,'evidence.html'),'w').write(page('Evidence', ev, 'evidence.html'))
 
 # ---------- assets ----------
-for f in ['gpt-fullness-states.png','gpt-clean-process.png','gpt-cost-estimate.png','gpt-sources-visual.png','current_cameras_GPT.png','current_cameras_GPT_example_broken_net.png','GPT-which-GPT-wayfinder-map.pdf','gpt-types-concept.jpg']:
+for f in ['gpt-fullness-states.png','gpt-clean-process.png','gpt-cost-estimate.png','gpt-sources-visual.png','current_cameras_GPT.png','current_cameras_GPT_example_broken_net.png','GPT-which-GPT-wayfinder-map.pdf']:
     src=os.path.join('/home/claude',f)
     if os.path.exists(src): shutil.copy(src, os.path.join(OUT,'assets',f))
 for old in ['gpt-which-gpt-banner-festi.png']:
