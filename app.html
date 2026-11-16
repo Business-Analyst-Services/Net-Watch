@@ -172,6 +172,7 @@ table.t td.n{font-family:var(--mono);text-align:right;white-space:nowrap}
 .wxleg{display:flex;align-items:center;gap:8px;font-size:.76rem;color:var(--muted)}
 .wxleg .gk{display:inline-block;width:9px;height:9px;border:2px solid;border-radius:50%;margin-left:10px}
 .wxleg i{flex:1;max-width:260px;height:10px;background:linear-gradient(90deg,#CDEDED,#4DB8B8,#F5A04A,#C2352B,#8E1F56)}
+.lnk{background:none;border:0;padding:0;font:inherit;color:var(--fg);text-decoration:underline;cursor:pointer}
 </style>
 </head>
 <body>
@@ -203,7 +204,7 @@ table.t td.n{font-family:var(--mono);text-align:right;white-space:nowrap}
   <div class="legend" id="legend"></div>
  </div>
  <div style="display:grid;gap:12px;align-content:start">
-  <div class="card"><div class="hd"><h2>Rain, next 7 days</h2><span class="date" id="wxsrc"></span></div><div class="pad" id="rainchart"></div></div>
+  <div class="card"><div class="hd"><h2>Rain, next 7 days</h2><span class="date"><span id="wxsrc"></span> · <button class="lnk" id="rainMode" type="button"></button></span></div><div class="pad" id="rainchart"></div></div>
   <div class="card"><div class="hd"><h2>Priority ranking</h2><span class="date">50% condition · 25% rain · 15% criticality · 10% build-up</span></div><div class="pad proj" id="proj"></div></div>
  </div>
 </section>
@@ -428,7 +429,7 @@ function render(){
  $('#date').textContent=nice(iso(TODAY));
  const st=storm();
  $('#wx').innerHTML=`<span>Today <b>${RAIN.days[0].mm} mm</b></span><span>Next 7 days <b>${rain7()} mm</b></span><span>Heaviest <b>${short(st.d)} · ${st.mm} mm</b></span>`;
- $('#wxsrc').textContent=RAIN.live?'Open-Meteo, live':'demo forecast';
+ $('#wxsrc').textContent=RAIN.live?'Open-Meteo, live':'demo forecast';$('#rainMode').textContent=RAIN.live?'Use demo forecast':'Use live forecast';
  $('#src2').textContent=RAIN.live?'Rain: Open-Meteo':'Rain: demo values';
  // tiles
  const groups={};S.nets.slice().sort((x,y)=>score(y).total-score(x).total).forEach(n=>{const b=bucket(n);(groups[b]=groups[b]||[]).push(n)});
@@ -852,7 +853,8 @@ $('#wxPlay').onclick=wxPlay;
 $('#tRadar').onclick=toggleRadar;$('#tRun').onclick=()=>toggleRun();
 $('#copyRun').onclick=()=>copy(runSheet(),'Run sheet copied');
 $('#reset').onclick=()=>{S=fresh();log('Demo reset');save();lane=null;closeDrawer();if(runLine){runLine.remove();runLine=null;$('#tRun').classList.remove('on')}show();toast('Demo reset')};
-initMap();if(new URLSearchParams(location.search).has('net')||new URLSearchParams(location.search).has('lane'))ROLE='officer';show();fromEmail();getRain();
+$('#rainMode').onclick=()=>{const live=!RAIN.live;try{localStorage.setItem('netwatch-rain',live?'live':'demo')}catch(e){}location.reload()};
+initMap();if(new URLSearchParams(location.search).has('net')||new URLSearchParams(location.search).has('lane'))ROLE='officer';show();fromEmail();{let m='demo';try{m=new URLSearchParams(location.search).get('rain')||localStorage.getItem('netwatch-rain')||'demo'}catch(e){}if(m==='live')getRain();}
 </script>
 </body>
 </html>

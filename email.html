@@ -46,8 +46,8 @@ iframe{border:0;width:100%;height:100%;background:#F4F6F8}
 <div class="mail">
  <div class="list">
   <h2>Inbox</h2>
-  <button class="msg on" data-m="urgent"><span class="from">Net Watch<small>07:30</small></span><span class="sub">Repair: Lackey St West net is torn</span><span class="pre">Repair before Tuesday's 26 mm of rain.</span><span class="tag" style="background:#c03a6b">Urgent</span></button>
-  <button class="msg" data-m="digest"><span class="from">Net Watch<small>Mon 07:00</small></span><span class="sub">5 nets need action before Tuesday's rain</span><span class="pre">Bettington Rd, James Ruse Dr 1, Norwood Ave, Lackey St East, Ridge St</span><span class="tag" style="background:#e58a10">Weekly</span></button>
+  <button class="msg on" data-m="urgent"><span class="from">Net Watch<small>07:30</small></span><span class="sub">Repair: Lackey St West net is torn</span><span class="pre">Repair before the next storm: 26 mm forecast.</span><span class="tag" style="background:#B3266B">Urgent</span></button>
+  <button class="msg" data-m="digest"><span class="from">Net Watch<small>Sat 07:00</small></span><span class="sub">5 nets need action before the next storm</span><span class="pre">Bettington Rd, James Ruse Dr 1, Norwood Ave, Lackey St East, Ridge St</span><span class="tag" style="background:#A8580A">Morning</span></button>
  </div>
  <div class="read">
   <div class="head"><b id="hsub">Repair: Lackey St West net is torn</b><span>From Net Watch &lt;alerts@netwatch&gt; · To Stormwater officer on duty</span></div>
@@ -55,7 +55,7 @@ iframe{border:0;width:100%;height:100%;background:#F4F6F8}
  </div>
 </div>
 <script>
-const SUB={urgent:'Repair: Lackey St West net is torn',digest:"5 nets need action before Tuesday's rain"};
+const SUB={urgent:'Repair: Lackey St West net is torn',digest:"5 nets need action before the next storm"};
 document.querySelectorAll('.msg').forEach(b=>b.onclick=()=>{
  document.querySelectorAll('.msg').forEach(x=>x.classList.toggle('on',x===b));
  document.getElementById('frame').src='email/'+b.dataset.m+'.html';
