@@ -172,6 +172,7 @@ table.t td.n{font-family:var(--mono);text-align:right;white-space:nowrap}
 .wxleg{display:flex;align-items:center;gap:8px;font-size:.76rem;color:var(--muted)}
 .wxleg .gk{display:inline-block;width:9px;height:9px;border:2px solid;border-radius:50%;margin-left:10px}
 .wxleg i{flex:1;max-width:260px;height:10px;background:linear-gradient(90deg,#CDEDED,#4DB8B8,#F5A04A,#C2352B,#8E1F56)}
+.ai{border:1px solid var(--line);padding:10px 12px;display:grid;gap:8px;font-size:.86rem}.ai .air{display:grid;gap:2px}.ai .ok{color:var(--ok);font-weight:600}.ai .no{color:var(--now);font-weight:600}.ai .note{color:var(--muted);font-size:.8rem}
 .lnk{background:none;border:0;padding:0;font:inherit;color:var(--fg);text-decoration:underline;cursor:pointer}
 </style>
 </head>
@@ -500,6 +501,7 @@ function drawer(id){
   ${act&&!(EMAIL&&EMAIL.net===n.id&&!EMAIL.done)?`<div class="btns"><button class="btn pri" data-raise="${n.id}">Raise work order</button><button class="btn" data-inspect="${n.id}">Inspect</button><button class="btn q" data-defer="${n.id}">Defer 7 days</button></div>`:''}
   <div id="wo-out"></div>
   ${scoreBlock(n)}
+  ${aiBlock(n)}
   ${n.prev?`<div><div class="date" style="margin-bottom:4px">COMPARE · ${esc(n.prev.cap)}</div><img src="${n.prev.img}" alt="${esc(n.prev.cap)}" style="width:100%;display:block"></div>`:''}
   ${correctBlock(n)}
   ${pc?`<div><div class="date" style="margin-bottom:4px">FILL FORECAST · 80% LINE</div>${pc}</div>`:''}
@@ -508,6 +510,11 @@ function drawer(id){
   ${(S.audit||[]).some(a=>a.net===n.id)?`<div><div class="date" style="margin-bottom:4px">AUDIT</div><table class="t">${auditRows(S.audit.filter(a=>a.net===n.id))}</table></div>`:''}
  </div></div>`;
 }
+function aiBlock(n){const R=(window.MODEL&&MODEL.results)||[];
+ const L={empty:'Empty',part_full:'Part full',full:'Full',damaged:'Damaged',cant_see:'Can’t see'};
+ const rs=R.filter(r=>r.site===n.name).sort((x,y)=>y.date.localeCompare(x.date));
+ if(!rs.length)return`<div class="ai"><span class="date">AI READING</span><div>No model reading for this net yet. The fill shown is demo data.</div></div>`;
+ return`<div class="ai"><span class="date">AI READING · BASELINE MODEL ON COUNCIL FRAMES</span>${rs.map(r=>`<div class="air"><div><b>${dmy(r.date)}</b>: read as <b>${L[r.pred]}</b>, ${Math.round(r.conf*100)}% confident · ${r.routed==='review'?'under 50%, sent to a person to check':'confident enough to skip a person'}</div><div class="${r.correct?'ok':'no'}">${r.correct?'Right':'Wrong'}: a person labelled it <b>${L[r.truth]}</b></div></div>`).join('')}<div class="note">The model never saw this camera in training. Readings like these are why it only ranks nets and an officer confirms every job. <a href="?role=model">Model check →</a></div></div>`}
 function scoreBlock(n){const sc=score(n),bd=band(sc.total);
  const row=(l,v,w,c,d)=>`<div style="display:grid;grid-template-columns:150px 1fr 44px;gap:8px;align-items:center;font-size:.84rem"><span>${l} <span style="color:var(--muted)">${w*100}%</span></span><div style="height:10px;background:var(--chip)"><div style="height:100%;width:${v}%;background:var(${c})"></div></div><span style="font-family:var(--mono);text-align:right">${v}</span><span style="grid-column:1/-1;color:var(--muted);font-size:.78rem;margin-top:-4px">${d}</span></div>`;
  return`<div style="display:grid;gap:8px;border:1px solid var(--line);padding:10px 12px"><div style="display:flex;justify-content:space-between;align-items:baseline"><span class="date">PRIORITY SCORE</span><b style="font-size:1.4rem;color:var(${bd.v})">${sc.total} <span style="font-size:.85rem">${bd.l}</span></b></div>

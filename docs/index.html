@@ -89,6 +89,12 @@ h2 b{font-weight:700}
 .role span{font-size:14px;color:var(--slate);flex:1}
 .role em{font-style:normal;font-size:13px;font-weight:700;color:var(--navy)}
 .role:hover em{text-decoration:underline}
+.targets{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+@media (max-width:900px){.targets{grid-template-columns:repeat(2,minmax(0,1fr))}}@media (max-width:480px){.targets{grid-template-columns:1fr}}
+.targets li{align-content:start;background:var(--white);border:1px solid var(--line);border-left:4px solid var(--teal);padding:14px 16px;display:grid;gap:2px}
+.targets .tv{font-size:26px;font-weight:700;line-height:1.15}
+.targets b{font-size:15px}
+.targets li>span:last-child{font-size:13.5px;color:var(--slate)}
 .team{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
 .person{background:var(--white);border:1px solid var(--line);padding:22px}
 .person>b{font-size:20px;display:block}
@@ -191,15 +197,16 @@ footer a{text-decoration:none;font-size:10px}
    <p class="eyebrow">What Council gets</p>
    <h2>Planned trips, <b>not wasted ones.</b></h2>
    <div class="stats">
+    <div><b>104 t</b><span>Litter caught a year</span></div>
     <div><b>$66–119k</b><span>A year freed*</span></div>
     <div><b>7 days</b><span>A week covered</span></div>
     <div><b>1</b><span>Officer decides</span></div>
    </div>
-   <p class="cap">*Team estimate from public records: about 305 cleans a year at about $1,390 each, skipping the 25–45% that would find a net under 40% full. Not a Council figure.</p>
+   <p class="cap">104 t is Council's figure for litter its 37 traps catch each year, about 0.7 t per trap each quarter. Every tonne that stays in a net stays out of the Parramatta River. *Team estimate from public records: about 305 cleans a year at about $1,390 each, skipping the 25–45% that would find a net under 40% full. Not a Council figure.</p>
   </div>
   <ul class="ticks">
    <li><b>Planned trips, not wasted ones</b><span>The truck goes only to nets that need emptying, ranked ahead of the rain.</span></li>
-   <li><b>Cleaner streets and creeks</b><span>A full net before a storm backs water up the pipe or tears off and sends about half a tonne of litter downstream. Net Watch flags it first, weekends included.</span></li>
+   <li><b>Cleaner streets and creeks</b><span>A full net before a storm backs water up the pipe or tears off and sends about three-quarters of a tonne of litter downstream. Net Watch flags it first, weekends included.</span></li>
    <li><b>Less hunting, more deciding</b><span>Instead of scanning photos, the officer gets an automatic email of the nets that need action, and approves with one click.</span></li>
   </ul>
  </div>
@@ -232,6 +239,15 @@ footer a{text-decoration:none;font-size:10px}
    <li><b>No personal data</b><span>Bushland frames only, road blurred, resident reports carry no names, officers appear by role.</span></li>
    <li><b>Built on what Council has</b><span>SCADA camera frames, FloodSmart gauges, the asset register and the cleaning contract. No new sensors for the pilot.</span></li>
   </ul>
+ </div>
+</section>
+
+<section class="alt" id="pilot">
+ <div class="in">
+  <p class="eyebrow">How we'll know it worked</p>
+  <h2>Eight weeks, <b>eight targets.</b></h2>
+  <p class="lead">Proposed targets for a pilot on the ten working cameras. To agree with Council before it starts.</p>
+  <ul class="targets"><li><span class="tv">0</span><b>Torn or detached nets missed</b><span>Every damaged net flagged on its next daily photo</span></li><li><span class="tv">Same day</span><b>Alert to officer decision</b><span>7 days a week, weekends and holidays included</span></li><li><span class="tv">48 h+</span><b>Warning before forecast rain</b><span>Full nets emptied before the storm, not after</span></li><li><span class="tv">&lt;2 a week</span><b>False alerts</b><span>Council expects a real alert every week or two</span></li><li><span class="tv">&lt;15 min</span><b>Photo review, per week</b><span>Down from about 15 minutes every weekday</span></li><li><span class="tv">Down 25%</span><b>Cleans on nets under 40% full</b><span>About $66,000 a year at the low end of our estimate</span></li><li><span class="tv">90%+</span><b>Model accuracy before auto-flagging</b><span>On 300 frames labelled by Council staff; until then it only ranks</span></li><li><span class="tv">100%</span><b>Jobs approved by an officer</b><span>No work order is raised without a person</span></li></ul>
  </div>
 </section>
 
