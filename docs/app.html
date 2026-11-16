@@ -404,7 +404,7 @@ let heat=null,gaugeLayer=null,WX={on:false,scen:'forecast',h:24,timer:null};
 const SCEN={forecast:{l:'Forecast'},s25:{l:'Typical storm · 25 mm in 6 h',mm:25},s60:{l:'Heavy storm · 60 mm in 6 h',mm:60},s120:{l:'Severe storm · 120 mm in 6 h',mm:120}};
 function hourly(lat,lon){
  if(WX.scen==='forecast'){
-  const F=window.WEATHER&&WEATHER.forecast;
+  const F=RAIN.live&&window.WEATHER&&WEATHER.forecast;
   if(F&&F.points&&F.points.length){let best=F.points[0],bd=1e9;F.points.forEach(p=>{const d=(p.lat-lat)**2+(p.lon-lon)**2;if(d<bd){bd=d;best=p}});return best.mm.slice(0,72)}
   const out=[];for(let d=0;d<3;d++){const mm=(RAIN.days[d+1]||{mm:0}).mm;for(let h=0;h<24;h++)out.push(mm/24)}return out;
  }
@@ -437,7 +437,7 @@ function drawWeather(){
  const avg=Math.round(S.nets.reduce((a,n)=>a+netImpact(n,h).r,0)/S.nets.length);
  $('#wxH').textContent=h?`+${h} h · ${whenAt(h)}`:'Now';
  $('#wxSum').innerHTML=`<span><b>${avg} mm</b> more rain by then</span><span><b>${hot.length}</b> nets full or damaged${hot.length?`: ${esc(hot.slice(0,5).map(o=>o.n.name).join(', '))}${hot.length>5?'…':''}`:''}</span><span><b>${high.length}</b> creek gauges 1.5 m+ above zero${high.length?`: ${esc(high.map(o=>o.g.name.split(' (')[0]).join(', '))}`:''}</span>`;
- $('#wxSrc').textContent=`Gauges: City of Parramatta FloodSmart (${G.filter(g=>g.kind==='level').length} water level, ${G.filter(g=>g.kind==='rain').length} rain), ${WEATHER.mode} ${tstamp(WEATHER.retrieved)}. Rain: ${WX.scen==='forecast'?(WEATHER.forecast?'Open-Meteo hourly forecast':'demo forecast'):'scenario'}. Future impact is an illustrative estimate, not Council’s FLASH flood forecast.`;
+ $('#wxSrc').textContent=`Gauges: City of Parramatta FloodSmart (${G.filter(g=>g.kind==='level').length} water level, ${G.filter(g=>g.kind==='rain').length} rain), ${WEATHER.mode} ${tstamp(WEATHER.retrieved)}. Rain: ${WX.scen==='forecast'?(RAIN.live&&WEATHER.forecast?'Open-Meteo hourly forecast':'demo forecast'):'scenario'}. Future impact is an illustrative estimate, not Council’s FLASH flood forecast.`;
 }
 function wxPlay(){if(WX.timer){clearInterval(WX.timer);WX.timer=null;$('#wxPlay').textContent='Play';return}
  $('#wxPlay').textContent='Pause';WX.h=0;WX.timer=setInterval(()=>{WX.h+=3;if(WX.h>72){WX.h=72;wxPlay();}$('#wxRange').value=WX.h;drawWeather()},500)}
