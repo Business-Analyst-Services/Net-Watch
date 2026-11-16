@@ -173,6 +173,12 @@ table.t td.n{font-family:var(--mono);text-align:right;white-space:nowrap}
 .wxleg .gk{display:inline-block;width:9px;height:9px;border:2px solid;border-radius:50%;margin-left:10px}
 .wxleg i{flex:1;max-width:260px;height:10px;background:linear-gradient(90deg,#CDEDED,#4DB8B8,#F5A04A,#C2352B,#8E1F56)}
 .ai{border:1px solid var(--line);padding:10px 12px;display:grid;gap:8px;font-size:.86rem}.ai .air{display:grid;gap:2px}.ai .ok{color:var(--ok);font-weight:600}.ai .no{color:var(--now);font-weight:600}.ai .note{color:var(--muted);font-size:.8rem}
+.pc{display:grid;gap:12px}.pcin{display:flex;flex-wrap:wrap;align-items:center;gap:10px}.pcin select{font:inherit;padding:6px 8px;border:1px solid var(--line);background:var(--card);color:var(--fg);max-width:100%}
+.pcres{display:grid;grid-template-columns:minmax(0,320px) 1fr;gap:16px}.pcres img{width:100%;display:block}
+.pcb{display:grid;grid-template-columns:80px 1fr 40px;gap:8px;align-items:center;font-size:.86rem}.pcb i{height:8px;background:var(--chip)}.pcb i b{display:block;height:100%}.pcb em{font-style:normal;text-align:right;font-variant-numeric:tabular-nums}
+.pill{justify-self:start;border-left:4px solid var(--c);background:var(--chip);padding:6px 10px;font-size:.86rem;font-weight:600}
+@media (max-width:640px){.pcres{grid-template-columns:1fr}}
+.covnote{padding:8px 14px;font-size:.86rem;border-top:1px solid var(--line);background:var(--chip)}
 .lnk{background:none;border:0;padding:0;font:inherit;color:var(--fg);text-decoration:underline;cursor:pointer}
 </style>
 </head>
@@ -192,7 +198,7 @@ table.t td.n{font-family:var(--mono);text-align:right;white-space:nowrap}
 
 <section class="grid">
  <div class="card">
-  <div class="hd"><h2>Map</h2><div class="tog"><button id="tWx">Weather impact</button><button id="tRadar">Rain radar</button><button id="tRun">Contractor run</button></div></div>
+  <div class="hd"><h2>Map</h2><div class="tog"><button id="tWx">Weather impact</button><button id="tCov">No-camera sites</button><button id="tRadar">Rain radar</button><button id="tRun">Contractor run</button></div></div>
   <div id="map"></div>
   <div id="wxpanel" class="wxp" hidden>
    <div class="wxrow"><label class="f">Weather<select id="wxScen"></select></label>
@@ -202,6 +208,7 @@ table.t td.n{font-family:var(--mono);text-align:right;white-space:nowrap}
    <div class="wxleg"><span>Low</span><i></i><span>High impact</span><b class="gk" style="border-color:#14284A;background:#fff;width:12px;height:12px"></b><span>Water level gauge</span><b class="gk" style="border-color:#2567B5;background:#CFE0F5"></b><span>Rain gauge</span></div>
    <div class="date" id="wxSrc" style="line-height:1.4"></div>
   </div>
+  <div class="covnote" id="covNote" hidden><b>11 of 25 sites</b> on the SCADA camera wall show no image. Grey rings are approximate street locations; dashed rings are unconfirmed. Council to confirm which have no camera, a removed camera or an offline one.</div>
   <div class="legend" id="legend"></div>
  </div>
  <div style="display:grid;gap:12px;align-content:start">
@@ -223,6 +230,8 @@ table.t td.n{font-family:var(--mono);text-align:right;white-space:nowrap}
 <div class="toast" id="toast" hidden></div>
 
 <script src="data/model-results.js"></script>
+<script src="data/model-weights.js"></script>
+<script src="js/photo-check.js"></script>
 <script src="data/weather.js"></script>
 <script>
 /* ---------- dates ---------- */
@@ -354,6 +363,15 @@ function drawPins(){
   markers[n.id]=m;});
  $('#legend').innerHTML=[['repair','Repair'],['now','Empty now'],['soon','Before rain'],['report','Resident report'],['view',"Can't see"],['wo','Work order'],['ok','OK']].map(([b,l])=>`<span><i style="background:var(${colOf(b)})"></i>${l}</span>`).join('');
 }
+/* Camera coverage: sites listed on the SCADA camera wall with no image. Street-level locations from OpenStreetMap, approximate. */
+const NOCAM=[['21 Short Street','Short St (three in the LGA: North Parramatta shown)',-33.80536,151.01146,0],['11 Parra Park West','Parramatta Park',-33.8079,150.9965,1],['12 Parra Park East','Parramatta Park',-33.8086,151.0018,1],
+ ['26 Beecroft Ave','No Beecroft Avenue in the LGA; Beecroft Rd, Epping shown',-33.76661,151.08188,0],['27 Stanley Rd North','Stanley Rd, Epping',-33.7716,151.0908,1],['30 Stanley Rd South','Stanley Rd, Epping',-33.7742,151.0912,1],
+ ['17 Pemberton Street','Pemberton St, Parramatta',-33.81083,151.02037,1],['24 McDonald Street','McDonald St, North Rocks',-33.77348,151.02821,1],['19 Harris Street','Harris St, Harris Park',-33.82426,151.01048,1],
+ ['52 Cowells Lane','Cowells Lane, Ermington',-33.80433,151.06406,1],['23 Mason Road','No Mason Road in the LGA; Mason St, North Parramatta shown',-33.80753,151.01714,0]];
+let cov=null;
+function toggleCov(){if(!map)return;if(cov){map.removeLayer(cov);cov=null;$('#tCov').classList.remove('on');$('#covNote').hidden=true;return}
+ cov=L.layerGroup(NOCAM.map(([n,w,la,lo,ok])=>L.circleMarker([la,lo],{radius:8,color:'#5A6B7D',weight:2,dashArray:ok?null:'3 3',fillColor:'#fff',fillOpacity:.9}).bindPopup(`<b>${esc(n)}</b><br>No camera image on the SCADA wall<br><span style="color:#5A6B7D">${esc(w)}${ok?' · location approximate':' · location unconfirmed'}</span>`))).addTo(map);
+ $('#tCov').classList.add('on');$('#covNote').hidden=false}
 async function toggleRadar(){
  if(!map)return;
  if(radar){map.removeLayer(radar);radar=null;$('#tRadar').classList.remove('on');return}
@@ -505,11 +523,17 @@ function drawer(id){
   ${n.prev?`<div><div class="date" style="margin-bottom:4px">COMPARE · ${esc(n.prev.cap)}</div><img src="${n.prev.img}" alt="${esc(n.prev.cap)}" style="width:100%;display:block"></div>`:''}
   ${correctBlock(n)}
   ${pc?`<div><div class="date" style="margin-bottom:4px">FILL FORECAST · 80% LINE</div>${pc}</div>`:''}
-  <dl class="kv"><dt>Holds</dt><dd>${n.fill==null?'—':'~'+Math.round((100-n.fill)/100*n.mm)+' mm more rain'}</dd><dt>Fills in</dt><dd>~${n.mm} mm of rain from empty</dd><dt>Last cleaned</dt><dd>${nice(n.last)}</dd></dl>
+  <dl class="kv"><dt>Holds</dt><dd>${n.fill==null?'—':'~'+Math.round((100-n.fill)/100*n.mm)+' mm more rain'}</dd><dt>Fills in</dt><dd>~${n.mm} mm of rain from empty${n.learn&&n.learn.length?` · learned from ${n.learn.length} clean${n.learn.length>1?"s":""} (was ${n.learn[0].was} mm)`:" · starting estimate"}</dd><dt>Last cleaned</dt><dd>${nice(n.last)}</dd></dl>
   <div><div class="date" style="margin-bottom:4px">HISTORY</div><div class="tl" style="padding:0">${n.hist.map(e=>`<div class="ev" style="--c:var(${e.task.startsWith('Repair')?'--repair':'--accent'})"><span class="d">${dmy(e.date)}</span><span class="k"></span><span>${esc(e.task)}</span><span class="kg">${e.kg?e.kg+' kg':''}</span></div>`).join('')}</div></div>
   ${(S.audit||[]).some(a=>a.net===n.id)?`<div><div class="date" style="margin-bottom:4px">AUDIT</div><table class="t">${auditRows(S.audit.filter(a=>a.net===n.id))}</table></div>`:''}
  </div></div>`;
 }
+/* Each net learns its own fill rate: the fill the contractor finds is compared with the prediction. */
+function learnRate(w,found){const n=S.nets.find(x=>x.id===w.net);if(!n||!found||n.fill==null||!n.mm)return'';
+ const pred=Math.max(5,n.fill),was=n.mm,est=was*pred/found,now=Math.max(10,Math.min(400,Math.round(.6*was+.4*est)));
+ w.job.found=found;n.learn=n.learn||[];n.learn.push({at:iso(TODAY),pred:Math.round(n.fill),found,was,now});n.mm=now;
+ const msg=`Fill rate learned: fills in ~${now} mm of rain (was ${was} mm); found ${found}% vs ${Math.round(n.fill)}% predicted`;log(msg,n.id,w.no);
+ return now===was?'fill rate confirmed':`fill rate now ~${now} mm (was ${was})`}
 function aiBlock(n){const R=(window.MODEL&&MODEL.results)||[];
  const L={empty:'Empty',part_full:'Part full',full:'Full',damaged:'Damaged',cant_see:'Can’t see'};
  const rs=R.filter(r=>r.site===n.name).sort((x,y)=>y.date.localeCompare(x.date));
@@ -589,7 +613,18 @@ function caption(n){return n.cap||(n.big&&n.big.includes('sim-')?'Simulated imag
 
 /* ---------- Model check ---------- */
 const CL={empty:'Empty',part_full:'Part full',full:'Full',damaged:'Damaged',cant_see:'Can’t see'};
-function vModel(){
+function vModel(){return checkCard()+vModelBase()}
+function checkCard(){const W=window.MODELW;if(!W||!window.PhotoCheck)return'';
+ const opts=W.trained_ids.map(id=>`<option value="${id}">${id.startsWith('sim-')?'Simulated · ':''}${esc(id.replace(/^sim-/,'').replace(/-/g,' '))}</option>`).join('');
+ return`<div class="card" style="margin-bottom:16px"><div class="hd"><h2>Check a photo</h2><span class="date">Runs in your browser. The photo is not uploaded or kept.</span></div>
+ <div class="pc"><div class="pcin"><label class="btn pri" style="cursor:pointer">Choose a photo<input type="file" accept="image/*" data-check hidden></label><span style="color:var(--muted)">or try a frame</span><select data-checksample aria-label="Try a frame"><option value="">Pick a frame…</option>${opts}</select></div><div id="pcOut"><div class="empty" style="padding:14px 0">Choose a photo of a litter net. The baseline model reads it and says how sure it is. Under 50% goes to a person.</div></div></div></div>`}
+function showCheck(im,label,trained){const r=PhotoCheck.check(im),W=window.MODELW;
+ const bars=W.classes.map(c=>[c,r.probs[c]]).sort((a,b)=>b[1]-a[1]).map(([c,v])=>`<div class="pcb"><span>${CL[c]}</span><i><b style="width:${(v*100).toFixed(0)}%;background:var(${c===r.top?(r.review?'--soon':'--ink'):'--line'})"></b></i><em>${Math.round(v*100)}%</em></div>`).join('');
+ $('#pcOut').innerHTML=`<div class="pcres"><img src="${im.src}" alt="${esc(label)}"><div style="display:grid;gap:8px;align-content:start"><div style="font-size:1.15rem">Reads as <b>${CL[r.top]}</b>, ${Math.round(r.conf*100)}% sure</div>
+ <div class="pill" style="--c:var(${r.review?'--soon':'--ok'})">${r.review?'Under 50%: sent to a person to check':'Ranked for the officer, who confirms before any job'}</div>${bars}
+ <div style="color:var(--muted);font-size:.82rem">${trained?'This frame was in the training set, so this is not a test. The honest test is below: on cameras it never saw, the model got 1 of 8 right.':'A photo the model has never seen. It is a weak first model (1 of 8 right on unseen cameras), so this only ranks the net; an officer decides.'}</div></div></div>`;
+ log(`Photo checked: ${label} read as ${CL[r.top]} (${Math.round(r.conf*100)}%)`,null,'');save()}
+function vModelBase(){
  const M=window.MODEL;if(!M)return'<div class="empty">Model results did not load.</div>';
  const rv=S.labels||{},wrongSure=M.results.filter(r=>r.pred!==(rv[r.id]||r.truth)&&r.routed!=='review').length,rev=M.results.filter(r=>r.routed==='review').length;
  const cards=M.results.map(r=>{const lab=rv[r.id]||r.truth,ok=r.pred===lab;
@@ -756,6 +791,7 @@ function jobForm(no){
  $('#jf-'+no).innerHTML=`<form data-job="${no}">
   <label class="f">Result<select name="result">${RESULTS.map(r=>`<option${w.task.startsWith('Repair')&&r.startsWith('Repaired')||w.task.startsWith('Clear')&&r.startsWith('Camera')||w.task.startsWith('Inspect')&&r.startsWith('Inspected')?' selected':''}>${r}</option>`).join('')}</select></label>
   <label class="f">Removed (kg)<input name="kg" type="number" min="0" step="1" value="${w.task.startsWith('Empty')?60:0}"></label>
+  ${w.task.startsWith('Empty')?(()=>{const n=S.nets.find(x=>x.id===w.net),pr=n&&n.fill!=null?Math.round(n.fill/10)*10:70;return`<label class="f">How full was it?<select name="found">${[10,20,30,40,50,60,70,80,90,100].map(v=>`<option value="${v}"${v===pr?' selected':''}>${v}%${v===pr?' (predicted)':''}</option>`).join('')}</select></label>`})():''}
   <label class="f">Photo after<input name="photo" type="file" accept="image/*" capture="environment" data-photo="${no}"></label>
   <div class="checks"><span style="color:var(--muted);font-size:.78rem">Issues found</span>${['Net damaged','Camera blocked','Access problem'].map(x=>`<label><input type="checkbox" name="def" value="${x}">${x}</label>`).join('')}</div>
   <label class="f" style="grid-column:1/-1">Note<input name="note" placeholder="Optional"></label>
@@ -839,12 +875,14 @@ document.addEventListener('click',e=>{
   else{const w=raise(id,d.confirm==='inspect'?'inspect':'');render();if(w){toast(`${w.no} raised · ${w.site}`);$('#wo-out').innerHTML=`<pre>${esc(woText(w))}</pre>`}}}
  else if('dismiss' in d){$('#banner').innerHTML=''}
 });
-document.addEventListener('change',e=>{if(e.target.dataset&&e.target.dataset.photo)photoIn(e.target)});
+document.addEventListener('change',e=>{if(e.target.dataset&&e.target.dataset.photo)photoIn(e.target);
+ if(e.target.dataset&&e.target.dataset.check!==undefined&&e.target.files&&e.target.files[0]){const f=e.target.files[0],rd=new FileReader();rd.onload=()=>{const im=new Image();im.onload=()=>showCheck(im,'uploaded photo',false);im.src=rd.result};rd.readAsDataURL(f)}
+ if(e.target.dataset&&e.target.dataset.checksample!==undefined&&e.target.value){const id=e.target.value,im=new Image();im.onload=()=>showCheck(im,id,true);im.src='img/frames/'+id+'.jpg'}});
 document.addEventListener('submit',e=>{
  const f=e.target;
  if(f.dataset.job!==undefined){e.preventDefault();const no=f.dataset.job,w=S.wos.find(x=>x.no===no),fd=new FormData(f);
   w.job={result:fd.get('result'),kg:+fd.get('kg')||0,defects:fd.getAll('def'),note:fd.get('note')||'',photo:PHOTO[no]||null,at:iso(TODAY)};w.status='Done';delete PHOTO[no];log(`Completed job: ${w.job.result}${w.job.defects.length?`; issues: ${w.job.defects.join(', ')}`:''}`,w.net,no);
-  save();show();toast(`${no} sent to Council for sign-off`)}
+  const lr=learnRate(w,+fd.get('found')||0);save();show();toast(`${no} sent to Council for sign-off${lr?` · ${lr}`:''}`)}
  else if(f.dataset.test!==undefined){e.preventDefault();const fd=new FormData(f),tasks=TASKS.map((_,i)=>!!fd.get('t'+i));
   S.tests=S.tests||[];S.tests.push({at:new Date().toISOString(),role:fd.get('role'),tasks,done:tasks.filter(Boolean).length,ease:+fd.get('ease'),replace:fd.get('replace'),comment:(fd.get('comment')||'').slice(0,600)});log('Saved user test result',null,`${tasks.filter(Boolean).length}/5`);save();show();toast('Test result saved')}
  else if(f.dataset.report!==undefined){e.preventDefault();const fd=new FormData(f),no='CRM-'+String(TODAY.getFullYear()).slice(2)+'-'+String(S.crm++).padStart(4,'0');
@@ -857,7 +895,7 @@ $('#tWx').onclick=()=>{WX.on=!WX.on;drawWeather()};
 $('#wxScen').onchange=e=>{WX.scen=e.target.value;drawWeather()};
 $('#wxRange').oninput=e=>{WX.h=+e.target.value;drawWeather()};
 $('#wxPlay').onclick=wxPlay;
-$('#tRadar').onclick=toggleRadar;$('#tRun').onclick=()=>toggleRun();
+$('#tRadar').onclick=toggleRadar;$('#tCov').onclick=toggleCov;$('#tRun').onclick=()=>toggleRun();
 $('#copyRun').onclick=()=>copy(runSheet(),'Run sheet copied');
 $('#reset').onclick=()=>{S=fresh();log('Demo reset');save();lane=null;closeDrawer();if(runLine){runLine.remove();runLine=null;$('#tRun').classList.remove('on')}show();toast('Demo reset')};
 $('#rainMode').onclick=()=>{const live=!RAIN.live;try{localStorage.setItem('netwatch-rain',live?'live':'demo')}catch(e){}location.reload()};
