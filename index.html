@@ -89,6 +89,11 @@ h2 b{font-weight:700}
 .role span{font-size:14px;color:var(--slate);flex:1}
 .role em{font-style:normal;font-size:13px;font-weight:700;color:var(--navy)}
 .role:hover em{text-decoration:underline}
+.ph{list-style:none;margin:0 0 16px;padding:0;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;counter-reset:p}
+.ph li{background:var(--navy);color:var(--white);padding:12px 14px;display:grid;gap:2px}
+.ph .k{font-size:10px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--teal)}.ph b{font-size:15px}
+.pfacts{display:flex;flex-wrap:wrap;gap:16px 36px;margin:0 0 10px}.pfacts b{display:block;font-size:24px;line-height:1.2}.pfacts span{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--slate)}
+@media (max-width:760px){.ph{grid-template-columns:1fr 1fr}}
 .targets{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
 @media (max-width:900px){.targets{grid-template-columns:repeat(2,minmax(0,1fr))}}@media (max-width:480px){.targets{grid-template-columns:1fr}}
 .targets li{align-content:start;background:var(--white);border:1px solid var(--line);border-left:4px solid var(--teal);padding:14px 16px;display:grid;gap:2px}
@@ -156,7 +161,7 @@ footer a{text-decoration:none;font-size:10px}
    <p class="eyebrow">The problem</p>
    <h2>One officer, ten cameras, <b>no one at the weekend.</b></h2>
    <p>Council's end-of-pipe litter nets catch bottles, bags and leaves before they reach the creeks and the river. When a full net meets a storm, it is built to tear off, and everything it caught goes downstream.</p>
-   <p>Today one stormwater officer checks about ten working cameras by eye, one photo a day, on weekdays only. Nets are cleaned every quarter and after big rain, so half-empty nets get emptied and full ones get missed.</p>
+   <p>Today one stormwater officer checks about ten working cameras by eye, one photo a day, on weekdays only. Of the 25 sites on Council's camera wall, 11 show no image at all. Nets are cleaned every quarter and after big rain, so half-empty nets get emptied and full ones get missed.</p>
    <div class="stats">
     <div><b>37</b><span>Litter traps</span></div>
     <div><b>~10</b><span>Working cameras</span></div>
@@ -244,9 +249,12 @@ footer a{text-decoration:none;font-size:10px}
 
 <section class="alt" id="pilot">
  <div class="in">
-  <p class="eyebrow">How we'll know it worked</p>
+  <p class="eyebrow">The pilot</p>
   <h2>Eight weeks, <b>eight targets.</b></h2>
   <p class="lead">Proposed targets for a pilot on the ten working cameras. To agree with Council before it starts.</p>
+  <ol class="ph"><li><span class="k">Week 0</span><b>Set up</b></li><li><span class="k">Weeks 1–2</span><b>Label and shadow</b></li><li><span class="k">Weeks 3–6</span><b>Live</b></li><li><span class="k">Week 7</span><b>Measure</b></li><li><span class="k">Week 8</span><b>Decide</b></li></ol>
+  <div class="pfacts"><div><b>$4,300</b><span>Council cost, team estimate</span></div><div><b>&lt;1 month</b><span>Payback at the low-end saving</span></div><div><b>James</b><span>Data owner (to confirm)</span></div><div><b>Officer</b><span>Approves every job</span></div></div>
+  <p class="cap" style="margin:0 0 24px">Full plan, costs, owners and data rules on the <a href="brief/mvp.html#pilot-plan">MVP page</a>.</p>
   <ul class="targets"><li><span class="tv">0</span><b>Torn or detached nets missed</b><span>Every damaged net flagged on its next daily photo</span></li><li><span class="tv">Same day</span><b>Alert to officer decision</b><span>7 days a week, weekends and holidays included</span></li><li><span class="tv">48 h+</span><b>Warning before forecast rain</b><span>Full nets emptied before the storm, not after</span></li><li><span class="tv">&lt;2 a week</span><b>False alerts</b><span>Council expects a real alert every week or two</span></li><li><span class="tv">&lt;15 min</span><b>Photo review, per week</b><span>Down from about 15 minutes every weekday</span></li><li><span class="tv">Down 25%</span><b>Cleans on nets under 40% full</b><span>About $66,000 a year at the low end of our estimate</span></li><li><span class="tv">90%+</span><b>Model accuracy before auto-flagging</b><span>On 300 frames labelled by Council staff; until then it only ranks</span></li><li><span class="tv">100%</span><b>Jobs approved by an officer</b><span>No work order is raised without a person</span></li></ul>
  </div>
 </section>
