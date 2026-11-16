@@ -129,17 +129,17 @@ footer a{text-decoration:none;font-size:10px}
    <h1>Empty every litter net <b>before the storm.</b></h1>
    <p class="hl">Net Watch reads Council's litter-net cameras and the rain forecast, ranks every net, and emails the stormwater officer what to do. An officer approves every job.</p>
    <div class="acts"><a class="btn" href="app.html">Open Net Watch</a><a class="btn ghost" href="email.html">See the morning email</a></div>
-   <p class="note">Working prototype for WSTI Festi 2026. Real Council camera frames and gauges; fill levels and job history are demo data.</p>
+   <p class="note">Working prototype for WSTI Festi 2026. Real Council camera frames and live FloodSmart gauges; fill levels, rain forecast, emails and job history are demo data.</p>
   </div>
   <div class="card" aria-label="Sample morning email">
    <div class="sc-h"><span>Morning email · Sample</span><span>Demo data</span></div>
-   <p class="mail">5 nets need action before Tuesday's rain</p>
-   <div class="row"><span class="nm">Lackey St West</span><span class="chip" style="background:var(--repair)">Repair</span><span class="bar"><i style="width:92%;background:var(--now)"></i></span><b>92</b></div>
+   <p class="mail">5 nets need action before the next storm</p>
    <div class="row"><span class="nm">Bettington Rd</span><span class="chip" style="background:var(--now)">Empty now</span><span class="bar"><i style="width:83%;background:var(--now)"></i></span><b>83</b></div>
    <div class="row"><span class="nm">James Ruse Dr 1</span><span class="chip" style="background:var(--soon)">Before rain</span><span class="bar"><i style="width:82%;background:var(--now)"></i></span><b>82</b></div>
    <div class="row"><span class="nm">Lackey St East</span><span class="chip" style="background:var(--view)">Can't see</span><span class="bar"><i style="width:81%;background:var(--now)"></i></span><b>81</b></div>
    <div class="row"><span class="nm">Norwood Ave</span><span class="chip" style="background:var(--soon)">Before rain</span><span class="bar"><i style="width:68%;background:var(--soon)"></i></span><b>68</b></div>
-   <div class="foot"><span>Priority score 0–100 · officer confirms each job</span><span>One click to raise →</span></div>
+   <div class="row"><span class="nm">Ridge St</span><span class="chip" style="background:var(--view)">Can't see</span><span class="bar"><i style="width:67%;background:var(--soon)"></i></span><b>67</b></div>
+   <div class="foot"><span>Priority score 0–100 · torn nets get their own urgent email</span><span>One click to raise →</span></div>
   </div>
  </div>
 </section>
@@ -177,10 +177,10 @@ footer a{text-decoration:none;font-size:10px}
   <p class="eyebrow">How it works</p>
   <h2>From camera to clean, <b>with a person at every gate.</b></h2>
   <ol class="steps">
-   <li><span class="k">01</span><h3>Read the camera</h3><p>Each daily frame is checked for full, torn or blocked nets, with a confidence. Unsure frames go to a person.</p></li>
-   <li><span class="k">02</span><h3>Add the rain</h3><p>Council's FloodSmart gauges and a 72-hour forecast show which nets fill, and which creeks rise, before the storm.</p></li>
+   <li><span class="k">01</span><h3>Read the camera</h3><p>Each daily frame is checked for full, torn or blocked nets, with a confidence. Unsure frames go to a person. Our first model is tested in the app.</p></li>
+   <li><span class="k">02</span><h3>Add the rain</h3><p>Live FloodSmart gauges and a 72-hour forecast estimate which nets fill, and which creeks rise, before the storm.</p></li>
    <li><span class="k">03</span><h3>Rank every net</h3><p>One priority score: condition, rain, criticality and build-up.</p><div class="mix" aria-label="Score weights: condition 50, rain 25, criticality 15, build-up 10"><i style="width:50%;background:var(--now)"></i><i style="width:25%;background:var(--rain)"></i><i style="width:15%;background:var(--teal-tint)"></i><i style="width:10%;background:var(--orange)"></i></div></li>
-   <li><span class="k">04</span><h3>Officer approves</h3><p>A morning email, an urgent alert when a net tears. One click raises the job; the contractor's photo closes it.</p></li>
+   <li><span class="k">04</span><h3>Officer approves</h3><p>A morning email, and an urgent email when a net tears. One click raises the job; the contractor's photo and the officer's sign-off close it.</p></li>
   </ol>
  </div>
 </section>
@@ -230,7 +230,7 @@ footer a{text-decoration:none;font-size:10px}
    <li><b>Human at every gate</b><span>No work order without an officer. Officers can correct a reading, remove a frame or pause auto-flagging. Every step is logged.</span></li>
    <li><b>Demo data is labelled</b><span>Fill levels and job history are dummy values and marked as such wherever they appear.</span></li>
    <li><b>No personal data</b><span>Bushland frames only, road blurred, resident reports carry no names, officers appear by role.</span></li>
-   <li><b>Built on what Council has</b><span>SCADA camera frames, FloodSmart gauges, the asset register and the cleaning contract. No new sensors.</span></li>
+   <li><b>Built on what Council has</b><span>SCADA camera frames, FloodSmart gauges, the asset register and the cleaning contract. No new sensors for the pilot.</span></li>
   </ul>
  </div>
 </section>
