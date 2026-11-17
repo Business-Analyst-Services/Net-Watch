@@ -678,7 +678,7 @@ function vData(){
  return`<div class="rolehd"><h2>Data model</h2><span>Built on data Council already holds; no new sensor network assumed</span></div>
  ${tbl(['Entity','Key fields','Existing source','In this demo'],[
   ['GPT asset','asset ID, type (GPT, uGPT, pGPT, Boom, Trash Rack), location, criticality tier','OneCouncil asset register; ESRI GIS; 2022 GPT Audit','14 camera sites, approximate locations, tiers assumed'],
-  ['Camera frame','camera ID, asset ID, time, image, quality','SCADA (about 15 cameras, 1 photo a day)','8 Council frames, 14 thumbnails, 10 simulated'],
+  ['Camera frame','camera ID, asset ID, time, image, quality','SCADA (14 cameras, about 10 working, 1 photo a day)','8 Council frames, 14 thumbnails, 10 simulated'],
   ['Net reading','state, fill %, confidence, model version, corrected by','New: model output plus officer correction','Demo values; corrections logged'],
   ['Rain and water level','gauge, time, rain mm, level m AHD, gauge zero','FloodSmart: about 20 water level and 21 rain gauges on the Lizard platform; BoM forecasts feed Council’s FLASH flood model','Real gauge readings (public Lizard API) refreshed every 30 minutes; Open-Meteo hourly forecast'],
   ['Priority score','asset, score, four part scores, time','New: calculated, not stored long term','Calculated in the browser'],
@@ -710,7 +710,7 @@ function vData(){
  <div class="rolehd"><h2>Cleaning and quality log</h2><span>Every transformation, so others can check it</span></div>
  ${tbl(['Date','Issue','Action'],[
   ['9 Nov','Camera origin unclear','Confirmed with SME: Council installs, not the CSIRO trial'],
-  ['12 Nov','GPT count differs across sources (37, 40, 35–40, “more than 58”)','Use the SME figure of 35–40 nets and the AMP register of 40 GPTs'],
+  ['12 Nov','GPT count differs across sources (37, 40, 35–40, “more than 58”)','Use Council’s published figure of 37 traps; the SME estimate (35–40) and the AMP register (40) are noted'],
   ['13 Nov','Viewer window around the Lackey St frame','Cropped to the camera image'],
   ['13 Nov','Thumbnails in one screenshot','Cropped per site; site names read from tiles'],
   ['14 Nov','Number plates visible on Sturt St frame','Road area blurred before use'],
@@ -720,7 +720,7 @@ function vData(){
   ['14 Nov','Forecast service unreachable on some networks','Times out after 6 s; demo values shown and labelled']])}
  <div class="rolehd"><h2>Bias and coverage check</h2><span>Who or what the data could miss</span></div>
  ${tbl(['Risk','What we found','What we do about it'],[
-  ['Suburbs without cameras','Cameras cover about 10 of 35–40 nets, mostly in North Parramatta and Carlingford','Nets without cameras are scored on rain, history and criticality and say “no camera”, so they are not treated as empty'],
+  ['Suburbs without cameras','Cameras cover 14 of 37 traps, about 10 reliably, mostly in North Parramatta and Carlingford','Nets without cameras are scored on rain, history and criticality and say “no camera”, so they are not treated as empty'],
   ['Image conditions','Leaves, fog and old frames break the baseline model','“Can’t see” is its own state with its own alert'],
   ['Simulated data','Synthetic frames may not look like real litter','Kept out of test sets; always labelled'],
   ['Residents','Reports by phone, counter, email or online','No digital-only channel; no names stored'],
