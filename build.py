@@ -5,7 +5,9 @@ Content sources: Council SME breakout session (Dr Paul Hackney, 9 Nov 2026), the
 Proactive GPT Monitoring brief (Zoe), City of Parramatta public records, and the SCADA
 GPT Cameras page screenshots (13 Nov 2026).
 """
-import re, os, html, shutil
+import re, os, html, shutil, sys
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "tools"))
+from sitenav import nav as sitenav
 HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(HERE, 'docs', 'brief')
 os.makedirs(os.path.join(OUT, 'types'), exist_ok=True)
@@ -149,7 +151,7 @@ header.site{padding-block:18px;border-bottom:1px solid var(--line)}
 header.site .in{display:flex;align-items:center;justify-content:space-between;gap:12px 20px;flex-wrap:wrap}
 .brandl{display:flex;align-items:center;gap:12px;text-decoration:none;color:var(--navy)}
 .brandl img{width:44px;height:44px}.brandl b{display:block;font-size:15px}.brandl small{display:block;font-size:9px;letter-spacing:.25em;color:var(--muted);text-transform:uppercase}
-nav.sitenav{display:flex;gap:6px 18px;flex-wrap:wrap;padding:0;border:0;font:700 13px var(--display)}
+nav.sitenav{display:flex;gap:6px 18px;flex-wrap:wrap;padding:0;border:0;font:700 14px var(--display)}
 nav.sitenav a{text-decoration:none;color:var(--navy);padding-bottom:3px}nav.sitenav a.cur{border-bottom:2px solid var(--teal-b)}
 .hero{background:var(--navy);color:#fff;position:relative;overflow:hidden}
 .hero .in{padding-block:52px}
@@ -233,8 +235,8 @@ def split_h1(t):
 def page(title, body, cur, depth=0):
     root = '../' if depth else ''
     site = root + '../'
-    links = [('index.html','Brief'),('mvp.html','MVP'),('sensors.html','Sensor matrix'),('plan.html','Build plan'),('evidence.html','Evidence')]
-    nav = ''.join(f'<a href="{root}{h}"{" class=cur" if cur==h else ""}>{t}</a>' for h,t in links)
+    key = {'index.html':'brief','mvp.html':'mvp','sensors.html':'sensors','plan.html':'plan','evidence.html':'evidence'}.get(cur,'brief')
+    navhtml = sitenav(site, key)
     lead_style = ''
     m = re.match(r'\s*(<style>.*?</style>)', body, re.S)
     if m: lead_style, body = m.group(1), body[m.end():]
@@ -250,7 +252,7 @@ def page(title, body, cur, depth=0):
 <title>{html.escape(title)} | Net Watch brief</title>
 <style>{CSS}</style>{lead_style}{"<style>"+ROOTVARS+"</style>" if lead_style else ""}</head><body>
 <header class="site"><div class="in"><a class="brandl" href="{site}"><img src="https://careers.business-analyst.services/logo.png" alt="BAS"><span><b>Net Watch</b><small>Business Analyst Services · Team 101</small></span></a>
-<nav class="sitenav" aria-label="Brief">{nav}<a href="{site}app.html">Open the app</a></nav></div></header>
+{navhtml}</div></header>
 <section class="hero">{bars}<div class="in">{hero}</div></section>
 <main class="in">
 {body}
