@@ -1,0 +1,69 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Net Watch portal banner</title>
+<style>
+:root{--navy:#1F3A5F;--deep:#14284A;--soft:#3E6189;--teal:#4DB8B8;--tint:#CDEDED;--orange:#F5A04A;--white:#fff;--slate:#A9B6C4;--ok:#3FA66B;--soon:#F5A04A;--now:#E2554A;--repair:#D2508A}
+*{box-sizing:border-box}html,body{margin:0}
+body{width:1456px;height:816px;font-family:Arial,Helvetica,"Liberation Sans",sans-serif;color:var(--white);
+ background:radial-gradient(1100px 700px at 18% 12%,#2A4B75 0%,var(--navy) 42%,var(--deep) 100%);position:relative;overflow:hidden}
+.grid{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.035) 1px,transparent 1px);background-size:56px 56px}
+.copy{position:absolute;left:88px;top:92px;width:760px}
+.brand{display:flex;align-items:center;gap:14px;font-size:14px;font-weight:700;letter-spacing:.3em;text-transform:uppercase;color:var(--teal)}
+.brand::before{content:"";width:40px;height:3px;background:var(--teal)}
+h1{margin:26px 0 0;font-size:132px;line-height:.95;font-weight:400;letter-spacing:-.02em}
+h1 b{font-weight:700}
+.sub{margin:30px 0 0;font-size:36px;line-height:1.25;font-weight:700;color:var(--white);max-width:640px}
+.sub span{color:var(--orange)}
+.tag{margin:26px 0 0;font-size:16px;letter-spacing:.22em;text-transform:uppercase;color:var(--slate)}
+.flow{position:absolute;left:88px;bottom:96px;font-size:20px;color:var(--tint);display:flex;gap:14px;align-items:center}
+.flow b{color:var(--white)}
+.flow i{font-style:normal;color:var(--teal)}
+.band{position:absolute;left:0;right:0;bottom:0;height:56px;background:var(--teal);color:var(--white);display:flex;justify-content:space-between;align-items:center;padding:0 88px;font-size:14px;font-weight:700;letter-spacing:.3em;text-transform:uppercase}
+svg{position:absolute;right:0;top:0}
+</style></head>
+<body>
+<div class="grid"></div>
+<svg width="760" height="760" viewBox="0 0 760 760" aria-hidden="true">
+ <!-- rain -->
+ <g stroke="#A9B6C4" stroke-width="3" stroke-linecap="round" opacity=".55">
+  <line x1="300" y1="118" x2="290" y2="142"/><line x1="340" y1="92" x2="330" y2="116"/><line x1="380" y1="124" x2="370" y2="148"/><line x1="420" y1="96" x2="410" y2="120"/>
+  <line x1="460" y1="130" x2="450" y2="154"/><line x1="500" y1="100" x2="490" y2="124"/><line x1="540" y1="134" x2="530" y2="158"/><line x1="580" y1="104" x2="570" y2="128"/><line x1="620" y1="132" x2="610" y2="156"/>
+ </g>
+ <!-- stormwater pipes coming down to the creek -->
+ <g fill="none" stroke="#3E6189" stroke-width="6" stroke-linejoin="round" opacity=".95">
+  <path d="M60 470 H128 L172 662"/>
+  <path d="M164 272 H224 L224 470 L268 638"/>
+  <path d="M310 182 H372 L372 420 L420 586"/>
+  <path d="M470 236 H534 L534 400 L566 530"/>
+  <path d="M594 162 H656 L656 380 L700 496"/>
+ </g>
+ <!-- creek -->
+ <path d="M118 684 C180 668 220 664 300 640 C380 616 420 600 470 562 C540 512 620 496 760 480" fill="none" stroke="#4DB8B8" stroke-width="22" stroke-linecap="round" opacity=".9"/>
+ <path d="M118 684 C180 668 220 664 300 640 C380 616 420 600 470 562 C540 512 620 496 760 480" fill="none" stroke="#CDEDED" stroke-width="3" stroke-dasharray="2 18" stroke-linecap="round" opacity=".7"/>
+ <!-- nets: fill or state -->
+ <g font-family="Arial,Helvetica,sans-serif" font-weight="700" text-anchor="middle">
+  <circle cx="172" cy="662" r="27" fill="#3FA66B" stroke="#14284A" stroke-width="4"/><text x="172" y="669" font-size="18" fill="#fff">22%</text>
+  <circle cx="268" cy="638" r="38" fill="#F5A04A" opacity=".22"/><circle cx="268" cy="638" r="29" fill="#F5A04A" stroke="#14284A" stroke-width="4"/><text x="268" y="645" font-size="18" fill="#14284A">68%</text>
+  <circle cx="420" cy="586" r="58" fill="#D2508A" opacity=".22"/><circle cx="420" cy="586" r="44" fill="#D2508A" opacity=".35"/>
+  <circle cx="420" cy="586" r="33" fill="#D2508A" stroke="#14284A" stroke-width="4"/><text x="420" y="593" font-size="17" fill="#fff">TORN</text>
+  <circle cx="566" cy="530" r="38" fill="#E2554A" opacity=".22"/><circle cx="566" cy="530" r="29" fill="#E2554A" stroke="#14284A" stroke-width="4"/><text x="566" y="537" font-size="18" fill="#fff">86%</text>
+  <circle cx="700" cy="496" r="27" fill="#3FA66B" stroke="#14284A" stroke-width="4"/><text x="700" y="503" font-size="18" fill="#fff">31%</text>
+ </g>
+ <!-- callout -->
+ <line x1="420" y1="552" x2="420" y2="470" stroke="#F5A04A" stroke-width="2" stroke-dasharray="5 5"/>
+ <g font-family="Arial,Helvetica,sans-serif">
+  <rect x="236" y="330" width="404" height="140" fill="#14284A" stroke="#F5A04A" stroke-width="2"/>
+  <rect x="236" y="330" width="6" height="140" fill="#D2508A"/>
+  <text x="262" y="368" font-size="15" font-weight="700" letter-spacing="3" fill="#F5A04A">ACT NOW · SCORE 92</text>
+  <text x="262" y="402" font-size="26" font-weight="700" fill="#fff">Net torn off the pipe</text>
+  <text x="262" y="436" font-size="17" fill="#CDEDED">26 mm forecast · officer confirms the job</text>
+ </g>
+</svg>
+<div class="copy">
+ <div class="brand">GPT which GPT? · Team 101</div>
+ <h1>Net <b>Watch</b></h1>
+ <p class="sub">Empty or fix every litter net <span>before the storm.</span></p>
+ <p class="tag">City of Parramatta · AI for smarter asset and environmental management</p>
+</div>
+<div class="flow"><b>37 traps</b><i>·</i>camera frame + rain forecast<i>→</i>priority score<i>→</i>officer approves<i>→</i>work order</div>
+<div class="band"><span>Human at every gate</span><span>WSTI Festi 2026</span></div>
+</body></html>
