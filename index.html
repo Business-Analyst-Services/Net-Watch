@@ -122,13 +122,14 @@ footer a{text-decoration:none;font-size:10px}
 @media (max-width:900px){.hero .in,.two,.team{grid-template-columns:1fr}.steps,.roles{grid-template-columns:repeat(2,1fr)}.hero .bars{opacity:.2}}
 @media (max-width:560px){.steps,.roles{grid-template-columns:1fr}.cams{grid-template-columns:repeat(2,1fr)}.row{grid-template-columns:1fr 84px 28px}.row .bar{display:none}section{padding-block:56px}}
 @media (prefers-reduced-motion:no-preference){.hero .bars i{animation:rise 1.2s ease-out both}@keyframes rise{from{transform:scaleY(.2);transform-origin:bottom}to{transform:scaleY(1);transform-origin:bottom}}}
+nav.sitenav{display:flex;gap:6px 18px;flex-wrap:wrap;justify-content:flex-end}nav.sitenav a{font:700 14px Arial,Helvetica,sans-serif;text-decoration:none;color:inherit;padding-bottom:3px;border-bottom:2px solid transparent}nav.sitenav a:hover{border-bottom-color:#CDEDED}nav.sitenav a.cur{border-bottom-color:#4DB8B8}
 </style>
 </head>
 <body>
 
 <header><div class="in">
- <a class="brand" href="https://business-analyst.services/"><img src="https://careers.business-analyst.services/logo.png" alt="BAS"><span><b>Net Watch</b><small>Business Analyst Services · Team 101</small></span></a>
- <nav aria-label="Main"><a href="#how">How it works</a><a href="#roles">Who uses it</a><a href="app.html">Open the app</a></nav>
+ <a class="brand" href="./"><img src="https://careers.business-analyst.services/logo.png" alt="BAS"><span><b>Net Watch</b><small>Business Analyst Services · Team 101</small></span></a>
+ <nav class="sitenav" aria-label="Main"><a href="" class="cur" aria-current="page">Home</a><a href="app.html">App</a><a href="email.html">Email alerts</a><a href="brief/">Brief</a><a href="brief/mvp.html">MVP and pilot</a><a href="brief/sensors.html">Sensors</a><a href="brief/plan.html">Build plan</a><a href="brief/evidence.html">Evidence</a></nav>
 </div></header>
 
 <main>
