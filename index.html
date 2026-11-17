@@ -4,134 +4,18 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Net Watch | Empty every litter net before the storm</title>
-<meta name="description" content="Net Watch reads City of Parramatta's litter-net cameras and the rain forecast, ranks every net, and emails the stormwater officer what to do. An officer approves every job.">
+<meta name="description" content="Check this morning’s camera photos. Net Watch flags full, torn or blocked litter nets, checks the rain and emails the officer, who approves every job.">
 <meta property="og:title" content="Net Watch | Empty every litter net before the storm">
-<meta property="og:description" content="Camera frames plus rain forecast, ranked into one morning email. An officer approves every job.">
+<meta property="og:description" content="Check this morning’s camera photos. Net Watch flags full, torn or blocked litter nets, checks the rain and emails the officer, who approves every job.">
 <meta property="og:image" content="https://business-analyst-services.github.io/Net-Watch/img/lackey-st-west-alert.jpg">
-<script>
-/* Email deep links (?net=, ?lane=, ?role=, ?do=, ?view=) belong to the app */
-(function(){var q=location.search;if(/[?&](net|lane|role|do|view)=/.test(q))location.replace('app.html'+q+location.hash)})();
-</script>
-<style>
-:root{--navy:#1F3A5F;--deep:#14284A;--mid:#34557C;--soft:#3E6189;--teal:#4DB8B8;--teal-tint:#CDEDED;--orange:#F5A04A;--slate:#5A6B7D;--alt:#F4F6F8;--line:#DDE3EA;--white:#fff;
---repair:#B3266B;--now:#C2352B;--soon:#A8580A;--report:#2567B5;--view:#5A6B7D;--wo:#4DB8B8;--ok:#2E7D50;--rain:#2F7FD8;
---sans:Arial,Helvetica,"Liberation Sans",sans-serif}
-*{box-sizing:border-box}
-html,body{margin:0}
-body{font:16px/1.6 var(--sans);color:var(--navy);background:var(--white)}
-a{color:inherit}
-img{max-width:100%;display:block}
-.in{max-width:1120px;margin:0 auto;padding-inline:max(20px,env(safe-area-inset-left))}
-header{padding-block:20px;border-bottom:1px solid var(--line)}
-header .in{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
-.brand{display:flex;align-items:center;gap:12px;text-decoration:none}
-.brand img{width:48px;height:48px}
-.brand b{display:block;font-size:15px}
-.brand small{display:block;font-size:9px;letter-spacing:.25em;color:var(--slate);text-transform:uppercase}
-nav{display:flex;gap:22px;flex-wrap:wrap}
-nav a{font-size:14px;font-weight:700;text-decoration:none;padding-bottom:4px}
-nav a:hover{border-bottom:2px solid var(--teal)}
-.hero{background:var(--navy);color:var(--white);position:relative;overflow:hidden}
-.hero .in{display:grid;grid-template-columns:1.15fr 1fr;gap:48px;align-items:center;padding-block:72px}
-.hero .bars{position:absolute;right:0;bottom:0;display:flex;align-items:flex-end;gap:14px;opacity:.35;pointer-events:none}
-.hero .bars i{display:block;width:26px;background:var(--soft)}
-.eyebrow{display:flex;align-items:center;gap:12px;font-size:11px;font-weight:700;letter-spacing:.3em;text-transform:uppercase;color:var(--teal);margin:0}
-.eyebrow::before{content:"";width:28px;height:2px;background:var(--teal)}
-h1{font-size:clamp(36px,5.4vw,56px);line-height:1.08;font-weight:400;margin:18px 0 20px;text-wrap:balance}
-h1 b{display:block;font-weight:700}
-.hl{color:var(--teal);font-weight:700;font-size:17px;margin:0 0 28px;max-width:46ch}
-.acts{display:flex;gap:12px;flex-wrap:wrap}
-.btn{display:inline-block;background:var(--orange);color:var(--deep);font-weight:700;text-decoration:none;padding:15px 24px;border-radius:2px}
-.btn.ghost{background:none;color:var(--white);border:2px solid var(--white);padding:13px 22px}
-.btn.line{background:none;color:var(--navy);border:2px solid var(--navy);padding:13px 22px}
-.btn:focus-visible,nav a:focus-visible,.role:focus-visible{outline:3px solid var(--teal);outline-offset:3px}
-.note{font-size:13px;opacity:.8;margin-top:14px}
-.card{background:var(--white);color:var(--navy);padding:22px;position:relative;z-index:1}
-.sc-h{display:flex;justify-content:space-between;gap:12px;font-size:10px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--slate);margin-bottom:6px}
-.mail{font-size:15px;font-weight:700;margin:0 0 10px}
-.row{display:grid;grid-template-columns:1fr 92px 84px 28px;gap:10px;align-items:center;padding:8px 0;border-top:1px solid var(--line);font-size:13px}
-.row .nm{font-weight:700;min-width:0}
-.chip{display:inline-block;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--white);padding:3px 6px;text-align:center;white-space:nowrap}
-.bar{height:8px;background:var(--alt)}
-.bar i{display:block;height:100%}
-.row b{text-align:right;font-variant-numeric:tabular-nums}
-.foot{font-size:12px;color:var(--slate);border-top:1px solid var(--line);padding-top:10px;margin-top:4px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
-.foot span:last-child{color:var(--navy);font-weight:700}
-section{padding-block:72px}
-h2{font-size:32px;line-height:1.15;font-weight:400;margin:14px 0 32px;text-wrap:balance}
-h2 b{font-weight:700}
-.lead{max-width:58ch;margin:-12px 0 32px;color:var(--slate)}
-.alt{background:var(--alt)}
-.two{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:start}
-.two>*{min-width:0}
-.stats{display:flex;gap:16px 28px;flex-wrap:wrap;margin-top:8px}
-.stats div b{display:block;font-size:30px;line-height:1.2}
-.stats div span{font-size:10px;letter-spacing:.25em;text-transform:uppercase;color:var(--slate)}
-.cams{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:0;padding:0;list-style:none}
-.cams li{background:var(--white);border:1px solid var(--line)}
-.cams img{aspect-ratio:4/3;object-fit:cover;width:100%}
-.cams div{display:flex;justify-content:space-between;align-items:center;gap:6px;padding:7px 8px;font-size:12px;font-weight:700}
-.cap{font-size:12px;color:var(--slate);margin-top:10px}
-.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;list-style:none;padding:0;margin:0}
-.steps li{background:var(--navy);color:var(--white);padding:22px}
-.steps .k{font-size:11px;font-weight:700;letter-spacing:.25em;color:var(--teal)}
-.steps h3{font-size:18px;margin:8px 0 6px}
-.steps p{margin:0;font-size:14px;opacity:.85}
-.mix{display:flex;height:10px;margin-top:12px}
-.mix i{display:block;height:100%}
-.ticks{list-style:none;padding:0;margin:0;display:grid;gap:12px}
-.ticks li{background:var(--white);border:1px solid var(--line);padding:14px 16px;font-size:15px}
-.ticks li b{display:block}
-.ticks li span{color:var(--slate);font-size:14px}
-.roles{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
-.role{display:flex;flex-direction:column;gap:6px;border:1px solid var(--line);border-top:4px solid var(--teal);padding:18px;text-decoration:none;background:var(--white)}
-.role b{font-size:17px}
-.role span{font-size:14px;color:var(--slate);flex:1}
-.role em{font-style:normal;font-size:13px;font-weight:700;color:var(--navy)}
-.role:hover em{text-decoration:underline}
-.ph{list-style:none;margin:0 0 16px;padding:0;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;counter-reset:p}
-.ph li{background:var(--navy);color:var(--white);padding:12px 14px;display:grid;gap:2px}
-.ph .k{font-size:10px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--teal)}.ph b{font-size:15px}
-.pfacts{display:flex;flex-wrap:wrap;gap:16px 36px;margin:0 0 10px}.pfacts b{display:block;font-size:24px;line-height:1.2}.pfacts span{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--slate)}
-@media (max-width:760px){.ph{grid-template-columns:1fr 1fr}}
-.targets{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
-@media (max-width:900px){.targets{grid-template-columns:repeat(2,minmax(0,1fr))}}@media (max-width:480px){.targets{grid-template-columns:1fr}}
-.targets li{align-content:start;background:var(--white);border:1px solid var(--line);border-left:4px solid var(--teal);padding:14px 16px;display:grid;gap:2px}
-.targets .tv{font-size:26px;font-weight:700;line-height:1.15}
-.targets b{font-size:15px}
-.targets li>span:last-child{font-size:13.5px;color:var(--slate)}
-.team{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
-.person{background:var(--white);border:1px solid var(--line);padding:22px}
-.person>b{font-size:20px;display:block}
-.person small{display:block;font-size:10px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--slate);margin:2px 0 10px}
-.person{display:grid;gap:10px;align-content:start;border-top:4px solid var(--teal)}
-.person small{margin:0}
-.person p{margin:0;font-size:15px}
-.person .one{font-size:17px;font-weight:700;line-height:1.4}
-.person .wb{font-size:11px;font-weight:700;letter-spacing:.25em;text-transform:uppercase;color:var(--slate);margin-top:6px}
-.person ul{margin:0;padding:0;list-style:none;display:grid;gap:8px}
-.person li{font-size:14.5px;padding-left:14px;border-left:2px solid var(--line)}
-.cta{background:var(--deep);color:var(--white)}
-.cta .in{display:flex;justify-content:space-between;align-items:center;gap:24px;flex-wrap:wrap;padding-block:56px}
-.cta h2{margin:0}
-.cta p{margin:6px 0 0;opacity:.8;font-size:15px}
-footer{background:var(--teal);color:var(--white);font-size:10px;font-weight:700;letter-spacing:.25em;text-transform:uppercase}
-footer .in{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;padding-block:18px}
-footer nav{gap:18px}
-footer a{text-decoration:none;font-size:10px}
-@media (max-width:900px){.hero .in,.two,.team{grid-template-columns:1fr}.steps,.roles{grid-template-columns:repeat(2,1fr)}.hero .bars{opacity:.2}}
-@media (max-width:560px){.steps,.roles{grid-template-columns:1fr}.cams{grid-template-columns:repeat(2,1fr)}.row{grid-template-columns:1fr 84px 28px}.row .bar{display:none}section{padding-block:56px}}
-@media (prefers-reduced-motion:no-preference){.hero .bars i{animation:rise 1.2s ease-out both}@keyframes rise{from{transform:scaleY(.2);transform-origin:bottom}to{transform:scaleY(1);transform-origin:bottom}}}
-nav.sitenav{display:flex;gap:6px 18px;flex-wrap:wrap;justify-content:flex-end}nav.sitenav a{font:700 14px Arial,Helvetica,sans-serif;text-decoration:none;color:inherit;padding-bottom:3px;border-bottom:2px solid transparent}nav.sitenav a:hover{border-bottom-color:#CDEDED}nav.sitenav a.cur{border-bottom-color:#4DB8B8}
-</style>
+<script>(function(){var q=location.search;if(/[?&](net|lane|role|do|view|photo)=/.test(q))location.replace('app.html'+q+location.hash)})();</script>
+<link rel="stylesheet" href="css/site.css">
 </head>
 <body>
-
 <header><div class="in">
  <a class="brand" href="./"><img src="https://careers.business-analyst.services/logo.png" alt="BAS"><span><b>Net Watch</b><small>Business Analyst Services · Team 101</small></span></a>
- <nav class="sitenav" aria-label="Main"><a href="" class="cur" aria-current="page">Home</a><a href="app.html">App</a><a href="email.html">Email alerts</a><a href="brief/">Brief</a><a href="brief/mvp.html">MVP and pilot</a><a href="brief/sensors.html">Sensors</a><a href="brief/plan.html">Build plan</a><a href="brief/evidence.html">Evidence</a></nav>
+ <nav class="sitenav" aria-label="Main"><a href="./" class="cur" aria-current="page">Home</a><a href="#try">Try the demo</a><a href="pilot.html">Pilot plan</a><a href="team.html">Team</a></nav>
 </div></header>
-
 <main>
 <section class="hero" style="padding:0">
  <div class="bars" aria-hidden="true"><i style="height:60px"></i><i style="height:120px;animation-delay:.05s"></i><i style="height:90px;animation-delay:.1s"></i><i style="height:210px;animation-delay:.15s"></i><i style="height:300px;animation-delay:.2s"></i><i style="height:170px;animation-delay:.25s"></i><i style="height:80px;animation-delay:.3s"></i></div>
@@ -139,9 +23,9 @@ nav.sitenav{display:flex;gap:6px 18px;flex-wrap:wrap;justify-content:flex-end}na
   <div>
    <p class="eyebrow">City of Parramatta · Challenge 5</p>
    <h1>Empty every litter net <b>before the storm.</b></h1>
-   <p class="hl">Net Watch reads Council's litter-net cameras and the rain forecast, ranks every net, and emails the stormwater officer what to do. An officer approves every job.</p>
-   <div class="acts"><a class="btn" href="app.html">Open Net Watch</a><a class="btn ghost" href="email.html">See the morning email</a></div>
-   <p class="note">Working prototype for WSTI Festi 2026. Real Council camera frames and live FloodSmart gauges; fill levels, rain forecast, emails and job history are demo data.</p>
+   <p class="hl">Check this morning's camera photos. Net Watch tells you if a net is full, torn or blocked, checks the rain, and puts it in your morning email. You approve every job.</p>
+   <div class="acts"><a class="btn" href="#try">Try the demo (10 min)</a><a class="btn ghost" href="email.html">See the morning email</a></div>
+   <p class="note">Working prototype for WSTI Festi 2026. Real Council camera frames and FloodSmart gauges; fill levels, rain forecast, emails and job history are demo data.</p>
   </div>
   <div class="card" aria-label="Sample morning email">
    <div class="sc-h"><span>Morning email · Sample</span><span>Demo data</span></div>
@@ -156,153 +40,93 @@ nav.sitenav{display:flex;gap:6px 18px;flex-wrap:wrap;justify-content:flex-end}na
  </div>
 </section>
 
-<section class="alt" id="problem">
- <div class="in two">
-  <div>
-   <p class="eyebrow">The problem</p>
-   <h2>One officer, ten cameras, <b>no one at the weekend.</b></h2>
-   <p>Council's end-of-pipe litter nets catch bottles, bags and leaves before they reach the creeks and the river. When a full net meets a storm, it is built to tear off, and everything it caught goes downstream.</p>
-   <p>Today one stormwater officer checks the photos from 14 cameras by eye, about ten of them reliable, one photo a day, on weekdays only. Of the 25 sites on Council's camera wall, 11 show no image at all. Nets are cleaned every quarter and after big rain, so half-empty nets get emptied and full ones get missed.</p>
-   <div class="stats">
-    <div><b>37</b><span>Litter traps</span></div>
-    <div><b>14</b><span>On camera, ~10 reliable</span></div>
-    <div><b>65 h</b><span>A year on photos</span></div>
-    <div><b>~110</b><span>Days unwatched</span></div>
+<section id="photo">
+ <div class="in">
+  <p class="eyebrow">The core: image check</p>
+  <h2>It starts with <b>one photo.</b></h2>
+  <div class="onephoto">
+   <figure class="frame" style="margin:0"><img id="opImg" src="img/frames/lackey-st-west-2026-11-13.jpg" alt="Council camera photo of the Lackey St West litter net, torn and hanging off the pipe"><span class="arrow" aria-hidden="true">→</span><figcaption id="opCap">Camera LACKEST 009 · Fri 13 Nov 11:05 · Council frame</figcaption></figure>
+   <div style="display:grid;gap:14px">
+    <div class="flag" id="opFlag" aria-live="polite">
+     <span class="st">Not checked yet</span><span class="site" id="opSite">Lackey St West</span>
+     <p style="margin:0">Press the button and the model reads this photo in your browser.</p>
+     <div class="acts"><button class="btn" id="opRun" type="button">Check this photo</button><button class="btn line" id="opAlt" type="button">Try an unsure one</button></div>
+    </div>
+    <p class="unsure">Not sure? Under 50% confidence, the photo goes to a person instead of raising a flag.</p>
    </div>
   </div>
-  <div>
-   <ul class="cams">
-    <li><img src="img/lackey-st-west-alert.jpg" alt="Lackey St West net, torn" loading="lazy"><div>Lackey St West<span class="chip" style="background:var(--repair)">Repair</span></div></li>
-    <li><img src="img/bettington-rd.jpg" alt="Bettington Rd net" loading="lazy"><div>Bettington Rd<span class="chip" style="background:var(--now)">Empty</span></div></li>
-    <li><img src="img/ridge-st.jpg" alt="Ridge St camera, lens fogged" loading="lazy"><div>Ridge St<span class="chip" style="background:var(--view)">Can't see</span></div></li>
-    <li><img src="img/lake-parra-res.jpg" alt="Lake Parramatta Reserve net" loading="lazy"><div>Lake Parra Res<span class="chip" style="background:var(--report)">Report</span></div></li>
-    <li><img src="img/james-ruse-dr-1.jpg" alt="James Ruse Drive net" loading="lazy"><div>James Ruse Dr 1<span class="chip" style="background:var(--soon)">Soon</span></div></li>
-    <li><img src="img/sturt-st.jpg" alt="Sturt St net, road blurred" loading="lazy"><div>Sturt St<span class="chip" style="background:var(--wo);color:var(--deep)">Job done</span></div></li>
-   </ul>
-   <p class="cap">City of Parramatta camera frames, shared for the challenge. Statuses are demo data.</p>
-  </div>
+  <p class="cap" style="margin-top:14px">Today you load the photo and press Check this photo. In the pilot, it comes straight from Council's SCADA cameras every morning.</p>
  </div>
 </section>
 
-<section id="how">
+<section class="alt" id="try">
  <div class="in">
-  <p class="eyebrow">How it works</p>
-  <h2>From camera to clean, <b>with a person at every gate.</b></h2>
-  <ol class="steps">
-   <li><span class="k">01</span><h3>Read the camera</h3><p>Each daily frame is checked for full, torn or blocked nets, with a confidence. Unsure frames go to a person. Our first model is tested in the app.</p></li>
-   <li><span class="k">02</span><h3>Add the rain</h3><p>Live FloodSmart gauges and a 72-hour forecast estimate which nets fill, and which creeks rise, before the storm.</p></li>
-   <li><span class="k">03</span><h3>Rank every net</h3><p>One priority score: condition, rain, criticality and build-up.</p><div class="mix" aria-label="Score weights: condition 50, rain 25, criticality 15, build-up 10"><i style="width:50%;background:var(--now)"></i><i style="width:25%;background:var(--rain)"></i><i style="width:15%;background:var(--teal-tint)"></i><i style="width:10%;background:var(--orange)"></i></div></li>
-   <li><span class="k">04</span><h3>Officer approves</h3><p>A morning email, and an urgent email when a net tears. One click raises the job; the contractor's photo and the officer's sign-off close it.</p></li>
+  <p class="eyebrow">Try it in 3 steps</p>
+  <h2>You're the stormwater officer. <b>It's 7:30 Monday.</b></h2>
+  <ol class="steps3">
+   <li><span class="num">1</span><h3>Check a photo</h3><p>Open this morning's camera photos, pick one and press Check this photo. See the reading and how sure it is, then confirm or correct it.</p><a href="app.html?photo=lackey-st-west">Open today's photos →</a><a href="demo-photos.zip">Download demo photos (zip, 0.4 MB)</a></li>
+   <li><span class="num">2</span><h3>Read your emails</h3><p>An urgent email says Lackey St West is torn: priority 92, act now. The morning email lists five more nets to deal with before the next storm.</p><a href="email.html">Open the emails →</a></li>
+   <li><span class="num">3</span><h3>Raise one job and close it</h3><p>One click raises the work order. As the contractor, record the job with an after photo. As the officer, sign it off. Every step is logged.</p><a href="app.html?net=lackey-st-west&amp;do=raise">Raise the Lackey St West job →</a></li>
   </ol>
+  <div class="utest"><p><b>Want to test it properly?</b> 5 tasks, about 15 minutes, no names recorded.</p><a class="btn" href="app.html?role=test">Open the User test</a></div>
  </div>
 </section>
 
-<section class="alt" id="value">
- <div class="in two">
-  <div>
-   <p class="eyebrow">What Council gets</p>
-   <h2>Planned trips, <b>not wasted ones.</b></h2>
-   <div class="stats">
-    <div><b>104 t</b><span>Litter caught a year</span></div>
-    <div><b>$66–119k</b><span>A year freed*</span></div>
-    <div><b>7 days</b><span>A week covered</span></div>
-    <div><b>1</b><span>Officer decides</span></div>
-   </div>
-   <p class="cap">104 t is Council's figure for litter its 37 traps catch each year, about 0.7 t per trap each quarter. Every tonne that stays in a net stays out of the Parramatta River. *Team estimate from public records: about 305 cleans a year at about $1,390 each, skipping the 25–45% that would find a net under 40% full. Not a Council figure.</p>
+<section id="why">
+ <div class="in">
+  <p class="eyebrow">Why it matters</p>
+  <h2>One officer, ten cameras, <b>no one at the weekend.</b></h2>
+  <div class="stats">
+   <div><b>37</b><span>Litter traps</span></div>
+   <div><b>~10</b><span>Reliable cameras of 14</span></div>
+   <div><b>65 h</b><span>A year on photos</span></div>
+   <div><b>~110</b><span>Days unwatched</span></div>
   </div>
-  <ul class="ticks">
-   <li><b>Planned trips, not wasted ones</b><span>The truck goes only to nets that need emptying, ranked ahead of the rain.</span></li>
-   <li><b>Cleaner streets and creeks</b><span>A full net before a storm backs water up the pipe or tears off and sends about three-quarters of a tonne of litter downstream. Net Watch flags it first, weekends included.</span></li>
-   <li><b>Less hunting, more deciding</b><span>Instead of scanning photos, the officer gets an automatic email of the nets that need action, and approves with one click.</span></li>
+  <ul class="vals">
+   <li><b>Planned trips, not wasted ones</b><span>$66–119k a year freed by skipping cleans on half-empty nets (team estimate).</span></li>
+   <li><b>Cleaner creeks</b><span>Council's traps catch 104 t of litter a year. Full and torn nets are flagged before the storm, weekends included.</span></li>
+   <li><b>Less hunting, more deciding</b><span>One email, one click to approve.</span></li>
   </ul>
  </div>
 </section>
 
-<section id="roles">
+<section class="alt" id="more">
  <div class="in">
-  <p class="eyebrow">Who uses it</p>
-  <h2>Four roles, <b>one record of every job.</b></h2>
-  <div class="roles">
-   <a class="role" href="app.html?role=officer"><b>Stormwater officer</b><span>Morning email, priority list, weather impact map. Raises and signs off jobs.</span><em>Open officer view →</em></a>
-   <a class="role" href="app.html?role=contractor"><b>Contractor</b><span>Today's run in route order. Uploads an after photo to mark a job done.</span><em>Open contractor view →</em></a>
-   <a class="role" href="app.html?role=cs"><b>Customer service</b><span>Logs a resident report straight onto the right net, with no personal details.</span><em>Open customer service →</em></a>
-   <a class="role" href="app.html?role=manager"><b>Manager</b><span>Network status, cleans by month, priority scores and the full audit log.</span><em>Open manager view →</em></a>
+  <h2 style="margin-top:0">Want <b>more?</b></h2>
+  <div class="cards6">
+   <a href="roles.html"><b>Four roles →</b><span>Officer, contractor, customer service and manager, and how they hand work on.</span></a>
+   <a href="app.html?role=model"><b>How the AI was tested →</b><span>1 of 8 right on cameras it never saw, and what that means.</span></a>
+   <a href="pilot.html"><b>8-week pilot →</b><span>Targets, timeline, cost, owners and data rules.</span></a>
+   <a href="brief/sensors.html"><b>Sensors and future data →</b><span>The right signal for each of the five trap types.</span></a>
+   <a href="brief/evidence.html"><b>Evidence and sources →</b><span>Council records, the SME session and where each number comes from.</span></a>
+   <a href="team.html"><b>The team →</b><span>Team 101, Business Analyst Services.</span></a>
   </div>
- </div>
-</section>
-
-<section class="alt" id="trust">
- <div class="in two">
-  <div>
-   <p class="eyebrow">Built responsibly</p>
-   <h2>The AI ranks. <b>People decide.</b></h2>
-   <p>We tested a first image model on eight Council frames it had never seen. It got one right. That is why Net Watch only ranks nets, sends unsure frames to a person, and never raises a job on its own.</p>
-   <div class="acts" style="margin-top:20px"><a class="btn line" href="app.html?role=model">See the model check</a><a class="btn line" href="app.html?role=data">See the data register</a></div>
-  </div>
-  <ul class="ticks">
-   <li><b>Human at every gate</b><span>No work order without an officer. Officers can correct a reading, remove a frame or pause auto-flagging. Every step is logged.</span></li>
-   <li><b>Demo data is labelled</b><span>Fill levels and job history are dummy values and marked as such wherever they appear.</span></li>
-   <li><b>No personal data</b><span>Bushland frames only, road blurred, resident reports carry no names, officers appear by role.</span></li>
-   <li><b>Built on what Council has</b><span>SCADA camera frames, FloodSmart gauges, the asset register and the cleaning contract. No new sensors for the pilot.</span></li>
-  </ul>
- </div>
-</section>
-
-<section class="alt" id="pilot">
- <div class="in">
-  <p class="eyebrow">The pilot</p>
-  <h2>Eight weeks, <b>eight targets.</b></h2>
-  <p class="lead">Proposed targets for a pilot on the working cameras. To agree with Council before it starts.</p>
-  <ol class="ph"><li><span class="k">Week 0</span><b>Set up</b></li><li><span class="k">Weeks 1–2</span><b>Label and shadow</b></li><li><span class="k">Weeks 3–6</span><b>Live</b></li><li><span class="k">Week 7</span><b>Measure</b></li><li><span class="k">Week 8</span><b>Decide</b></li></ol>
-  <div class="pfacts"><div><b>$4,300</b><span>Council cost, team estimate</span></div><div><b>&lt;1 month</b><span>Payback at the low-end saving</span></div><div><b>James</b><span>Data owner (to confirm)</span></div><div><b>Officer</b><span>Approves every job</span></div></div>
-  <p class="cap" style="margin:0 0 24px">Full plan, costs, owners and data rules on the <a href="brief/mvp.html#pilot-plan">MVP page</a>.</p>
-  <ul class="targets"><li><span class="tv">0</span><b>Torn or detached nets missed</b><span>Every damaged net flagged on its next daily photo</span></li><li><span class="tv">Same day</span><b>Alert to officer decision</b><span>7 days a week, weekends and holidays included</span></li><li><span class="tv">48 h+</span><b>Warning before forecast rain</b><span>Full nets emptied before the storm, not after</span></li><li><span class="tv">&lt;2 a week</span><b>False alerts</b><span>Council expects a real alert every week or two</span></li><li><span class="tv">&lt;15 min</span><b>Photo review, per week</b><span>Down from about 15 minutes every weekday</span></li><li><span class="tv">Down 25%</span><b>Cleans on nets under 40% full</b><span>About $66,000 a year at the low end of our estimate</span></li><li><span class="tv">90%+</span><b>Model accuracy before auto-flagging</b><span>On 300 frames labelled by Council staff; until then it only ranks</span></li><li><span class="tv">100%</span><b>Jobs approved by an officer</b><span>No work order is raised without a person</span></li></ul>
- </div>
-</section>
-
-<section id="team">
- <div class="in">
-  <p class="eyebrow">The team</p>
-  <h2>Built by <b>Team 101.</b></h2>
-  <div class="team">
-   <article class="person">
-    <b>Chale Dodge</b><small>Lead Business Analyst · Business Analyst Services</small>
-    <p class="one">Turns operational problems into AI tools people can trust and act on.</p>
-    <p>Leads Business Analyst Services, a Sydney practice in business analysis consulting, training and advice. Author of <i>Business Analyst Practice Leadership, Volume 1</i> and the <i>Business Analyst Practice Model</i> with 12 companion playbooks.</p>
-    <p class="wb">What Chale brings</p>
-    <ul>
-     <li><b>Problem framing.</b> Mapped how Council cleans a litter net today from public records and the SME session, then built the process map and cost model.</li>
-     <li><b>Responsible AI.</b> AI governance for business analysts: people approve every action, every step is logged, results are reported honestly.</li>
-     <li><b>Building, not just advising.</b> Took Net Watch from idea to live app, email alerts, weather map and pitch within the challenge.</li>
-     <li><b>AI in real delivery.</b> Designs teams of AI agents that work alongside business analysts in Jira and Confluence.</li>
-    </ul>
-   </article>
-   <article class="person">
-    <b>Zoe Ding</b><small>Process, risk and controls · Team 101</small>
-    <p class="one">Bridges business operations, process improvement and risk controls to turn complex challenges into practical AI solutions.</p>
-    <p>Brings together Big Four consulting, banking and business ownership experience to turn complex operational challenges into practical, well-controlled AI solutions. With a background in process improvement, change management and IT risk, she bridges business needs with technology.</p>
-    <p class="wb">What Zoe brings</p>
-    <ul>
-     <li><b>Problem framing.</b> Turns messy operational challenges into clear processes, identifies gaps and defines practical improvement opportunities.</li>
-     <li><b>Process improvement and change management.</b> Combines Big Four consulting experience with hands-on business operations to improve workflows and support organisational change.</li>
-     <li><b>Risk and controls.</b> Chartered Accountant and CISA qualified, bringing expertise in internal controls, IT risk and governance to responsible AI implementation.</li>
-     <li><b>Business meets technology.</b> Connects operational requirements with AI and automation opportunities, keeping solutions practical and accountable.</li>
-     <li><b>Real-world delivery perspective.</b> As a construction and project management business owner, understands the challenges of managing people, projects and processes.</li>
-    </ul>
-   </article>
-  </div>
-  <p class="cap" style="margin-top:14px">With Karin, Team 101.</p>
  </div>
 </section>
 </main>
-
-<section class="cta" aria-labelledby="cta-h">
- <div class="in">
-  <div><h2 id="cta-h">Ready for an <b>8-week pilot?</b></h2><p>The working cameras, seven days a week, 300 frames labelled by Council staff.</p></div>
-  <div class="acts"><a class="btn" href="app.html">Open Net Watch</a><a class="btn ghost" href="brief/">Read the brief</a></div>
- </div>
-</section>
-
-<footer><div class="in"><span>Human at every gate</span><nav aria-label="Footer"><a href="https://business-analyst.services/">BAS</a><a href="app.html">App</a><a href="email.html">Email alerts</a><a href="brief/">Brief</a><a href="https://github.com/Business-Analyst-Services/Net-Watch">Code</a></nav></div></footer>
-</body>
+<div class="more"><div class="in"><b>More</b><a href="app.html">App</a><a href="email.html">Email alerts</a><a href="roles.html">Four roles</a><a href="brief/">Brief</a><a href="brief/sensors.html">Sensors</a><a href="brief/plan.html">Build plan</a><a href="brief/evidence.html">Evidence</a><a href="https://github.com/Business-Analyst-Services/Net-Watch">Code</a><a href="https://business-analyst.services/">BAS</a></div></div>
+<footer><div class="in"><span>The AI ranks. People decide.</span><span>Team 101 · WSTI Festi 2026</span></div></footer>
+<script src="data/model-weights.js"></script>
+<script src="js/photo-check.js"></script>
+<script>
+(function(){
+ const L={empty:'Empty',part_full:'Part full',full:'Full',damaged:'Damaged',cant_see:'Can’t see'};
+ const NEXT={damaged:'Repair, urgent',full:'Empty now',cant_see:'Clear the camera',empty:'No action',part_full:'Watch'};
+ const COL={damaged:'#B3266B',full:'#C2352B',cant_see:'#5A6B7D',empty:'#2E7D50',part_full:'#2E7D50'};
+ const P={main:{src:'img/frames/lackey-st-west-2026-11-13.jpg',site:'Lackey St West',cap:'Camera LACKEST 009 · Fri 13 Nov 11:05 · Council frame',id:'lackey-st-west-2026-11-13'},
+          alt:{src:'img/lackey-st-east.jpg',site:'Lackey St East',cap:'Council camera screen · Council frame',id:'lackey-st-east'}};
+ const $=s=>document.getElementById(s);
+ function run(k){const p=P[k],f=$('opFlag');$('opImg').src=p.src;$('opCap').textContent=p.cap;
+  f.style.setProperty('--c','#DDE3EA');f.innerHTML=`<span class="st">Checking…</span><span class="site">${p.site}</span>`;
+  const im=new Image();im.onload=()=>setTimeout(()=>{if(!window.PhotoCheck){f.innerHTML='<p>The model could not load. Try the app.</p>';return}
+   const r=PhotoCheck.check(im),pc=Math.round(r.conf*100),trained=(window.MODELW.trained_ids||[]).includes(p.id);
+   const st=r.review?'Unsure · sent to a person':`${L[r.top]} · ${NEXT[r.top]}`;
+   f.style.setProperty('--c',r.review?'#A8580A':COL[r.top]);
+   f.innerHTML=`<span class="st">${st}</span><span class="site">${p.site}</span><dl><dt>Reads as</dt><dd>${L[r.top]}</dd><dt>Confidence</dt><dd>${pc}%</dd><dt>Next step</dt><dd>${r.review?'Sent to a person':'Ranked for the officer'}</dd></dl>
+   <p class="why">${trained?'This photo was in the model’s training set, so this is not a test. On cameras it never saw, our first model got 1 of 8 right. That’s why it only ranks, and you decide.':'Below 50%, so no flag is raised: a person looks at it first.'}</p>
+   <div class="acts"><a class="btn" href="app.html?photo=${k==='main'?'lackey-st-west':'lackey-st-east'}">Open in Net Watch</a><button class="btn line" type="button" id="opSwap">${k==='main'?'Try an unsure one':'Back to Lackey St West'}</button></div>`;
+   $('opSwap').onclick=()=>run(k==='main'?'alt':'main')},600);im.src=p.src}
+ $('opRun').onclick=()=>run('main');$('opAlt').onclick=()=>run('alt');
+})();
+</script></body>
 </html>

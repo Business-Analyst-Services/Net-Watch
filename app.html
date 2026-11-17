@@ -29,7 +29,7 @@ header .roles button.on{background:#fff;border-color:#fff;color:var(--deep)}
 header .roles span{background:rgba(255,255,255,.35)!important}
 header .wx span{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.3);color:#fff}
 header .date{color:rgba(255,255,255,.75)}
-.band{display:block;background:var(--teal);color:#fff;font-size:10px;font-weight:700;letter-spacing:.25em;text-transform:uppercase;padding-block:14px;margin-top:28px}
+.band{display:block;margin-top:0!important;background:var(--teal);color:#fff;font-size:10px;font-weight:700;letter-spacing:.25em;text-transform:uppercase;padding-block:14px;margin-top:28px}
 .band .in{max-width:1240px;margin:0 auto;padding-inline:max(16px,env(safe-area-inset-left));display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
 .brand{display:grid;gap:0}
 h1{margin:0;font-size:1.7rem;font-weight:400;line-height:1.15}h1 b{font-weight:700}
@@ -179,12 +179,21 @@ table.t td.n{font-family:var(--mono);text-align:right;white-space:nowrap}
 .pill{justify-self:start;border-left:4px solid var(--c);background:var(--chip);padding:6px 10px;font-size:.86rem;font-weight:600}
 @media (max-width:640px){.pcres{grid-template-columns:1fr}}
 .covnote{padding:8px 14px;font-size:.86rem;border-top:1px solid var(--line);background:var(--chip)}
+.phs{display:grid;grid-auto-flow:column;grid-auto-columns:132px;gap:10px;overflow-x:auto;padding:4px 14px 12px}
+.tp{display:grid;gap:4px;background:var(--card);border:1px solid var(--line);border-bottom:4px solid var(--c);padding:6px;text-align:left;cursor:pointer;color:var(--fg);font:inherit;position:relative}
+.tp.sel{outline:2px solid var(--accent);outline-offset:1px}.tp img{width:100%;aspect-ratio:4/3;object-fit:cover;display:block}
+.tp .pn{font-size:.8rem;font-weight:700}.tp .pst{font-size:.74rem;color:var(--muted)}
+.tp .start{position:absolute;top:10px;left:10px;font-style:normal;font-size:.7rem;font-weight:700;background:var(--orange);color:var(--deep);padding:2px 6px}
+.pdet{display:grid;grid-template-columns:minmax(0,360px) 1fr;gap:16px;border-top:1px solid var(--line);padding:14px}.pdet img{width:100%;display:block}
+.pfix{display:flex;flex-wrap:wrap;gap:8px;align-items:center}.pfix select{font:inherit;padding:6px 8px;border:1px solid var(--line);background:var(--card);color:var(--fg)}
+@media (max-width:700px){.pdet{grid-template-columns:1fr}}
 .lnk{background:none;border:0;padding:0;font:inherit;color:var(--fg);text-decoration:underline;cursor:pointer}
 nav.sitenav{display:flex;gap:6px 18px;flex-wrap:wrap;justify-content:flex-end}nav.sitenav a{font:700 14px Arial,Helvetica,sans-serif;text-decoration:none;color:inherit;padding-bottom:3px;border-bottom:2px solid transparent}nav.sitenav a:hover{border-bottom-color:#CDEDED}nav.sitenav a.cur{border-bottom-color:#4DB8B8}
+.more{border-top:1px solid var(--line);font-size:14px}.more .in{max-width:1240px;margin:0 auto;padding-inline:max(16px,env(safe-area-inset-left));display:flex;flex-wrap:wrap;gap:8px 22px;padding-block:16px;align-items:center}.more b{font-size:11px;letter-spacing:.25em;text-transform:uppercase;color:var(--muted)}.more a{font-weight:700;text-decoration:none;color:inherit}.more a:hover{text-decoration:underline}
 </style>
 </head>
 <body>
-<div class="site"><div class="in"><a class="brandl" href="./"><img src="https://careers.business-analyst.services/logo.png" alt="BAS"><span><b>Net Watch</b><small>Business Analyst Services · Team 101</small></span></a><nav class="sitenav" aria-label="Main"><a href="">Home</a><a href="app.html" class="cur" aria-current="page">App</a><a href="email.html">Email alerts</a><a href="brief/">Brief</a><a href="brief/mvp.html">MVP and pilot</a><a href="brief/sensors.html">Sensors</a><a href="brief/plan.html">Build plan</a><a href="brief/evidence.html">Evidence</a></nav></div></div>
+<div class="site"><div class="in"><a class="brandl" href="./"><img src="https://careers.business-analyst.services/logo.png" alt="BAS"><span><b>Net Watch</b><small>Business Analyst Services · Team 101</small></span></a><nav class="sitenav" aria-label="Main"><a href="./">Home</a><a href="./#try">Try the demo</a><a href="pilot.html">Pilot plan</a><a href="team.html">Team</a></nav></div></div>
 <div class="app">
 <header>
  <div class="brand"><p class="eyebrow">City of Parramatta · Stormwater</p><h1>Net <b>Watch</b></h1><span class="date" id="date"></span></div>
@@ -195,6 +204,7 @@ nav.sitenav{display:flex;gap:6px 18px;flex-wrap:wrap;justify-content:flex-end}na
 <div id="vOfficer">
 <div id="banner"></div>
 <section class="actions" id="actions"></section>
+<section class="card" id="photos" style="margin-bottom:16px"></section>
 <section class="lane" id="lane"></section>
 
 <section class="grid">
@@ -227,6 +237,7 @@ nav.sitenav{display:flex;gap:6px 18px;flex-wrap:wrap;justify-content:flex-end}na
 
 <footer><span>Demo data · approximate locations</span><span id="src2"></span><button id="reset">Reset demo</button><a href="email.html">Email alerts</a><a href="brief/">Brief</a><a href="./">About</a></footer>
 </div>
+<div class="more"><div class="in"><b>More</b><a href="app.html">App</a><a href="email.html">Email alerts</a><a href="roles.html">Four roles</a><a href="brief/">Brief</a><a href="brief/sensors.html">Sensors</a><a href="brief/plan.html">Build plan</a><a href="brief/evidence.html">Evidence</a><a href="https://github.com/Business-Analyst-Services/Net-Watch">Code</a><a href="https://business-analyst.services/">BAS</a></div></div>
 <footer class="band"><div class="in"><span>Human at every gate</span><span>Team 101 · WSTI Festi 2026</span></div></footer>
 <div class="toast" id="toast" hidden></div>
 
@@ -445,8 +456,30 @@ function wxPlay(){if(WX.timer){clearInterval(WX.timer);WX.timer=null;$('#wxPlay'
 
 /* ---------- render ---------- */
 let lane=null,drawerId=null;
+/* Today's photos: one per camera. In the pilot they arrive from SCADA; today they are loaded in. */
+const PHOTO_SRC=n=>n.id==='lackey-st-west'?'img/frames/lackey-st-west-2026-11-13.jpg':`img/${n.id}.jpg`;
+let PSEL=null;
+function photoStatus(c){if(!c)return['Not checked','--line'];if(c.busy)return['Checking…','--line'];if(c.officer)return[c.officer===c.top?'Confirmed: '+CL[c.top]:'Corrected: '+CL[c.officer],'--ink'];
+ if(c.review)return['Sent to a person','--soon'];return({damaged:['Flagged: damaged','--repair'],full:['Flagged: full','--now'],cant_see:['Can’t see','--view'],empty:['Looks OK','--ok'],part_full:['Looks OK','--ok']})[c.top]}
+function renderPhotos(){const el=$('#photos');if(!el)return;S.checks=S.checks||{};const C=S.checks,nets=S.nets,done=nets.filter(n=>C[n.id]).length;
+ const strip=nets.map(n=>{const c=C[n.id],[l,col]=photoStatus(c);return`<button class="tp${PSEL===n.id?' sel':''}" data-pick="${n.id}" style="--c:var(${col})"><img src="${PHOTO_SRC(n)}" alt="${esc(n.name)} camera photo" loading="lazy"><span class="pn">${esc(n.name)}</span>${n.id==='lackey-st-west'&&!c?'<em class="start">Start here</em>':''}<span class="pst">${l}</span></button>`}).join('');
+ let det='';if(PSEL){const n=S.nets.find(x=>x.id===PSEL),c=C[PSEL],trained=(window.MODELW?.trained_ids||[]).some(id=>PHOTO_SRC(n).includes(id));
+  const res=!c?`<div style="display:grid;gap:10px;align-content:start"><p style="margin:0">Press the button and the model reads this photo in your browser. Under 50% sure, it goes to a person.</p><button class="btn pri" data-checkphoto="${n.id}" style="justify-self:start">Check this photo</button></div>`
+  :`<div style="display:grid;gap:8px;align-content:start"><div style="font-size:1.15rem">Reads as <b>${CL[c.top]}</b>, ${Math.round(c.conf*100)}% sure</div>
+   <div class="pill" style="--c:var(${c.review?'--soon':'--ok'})">${c.review?'Under 50%: sent to a person to check':'Ranked for the officer, who confirms before any job'}</div>
+   ${c.officer?`<div><b>Officer:</b> ${c.officer===c.top?'confirmed':'corrected to '+CL[c.officer]}. Saved as a label for the next model.</div>`:`<div class="pfix"><button class="btn" data-pconfirm="${n.id}">Confirm</button><span style="color:var(--muted)">or correct to</span><select data-pfixsel="${n.id}" aria-label="Correct the reading">${Object.keys(CL).map(k=>`<option value="${k}"${k===c.top?' selected':''}>${CL[k]}</option>`).join('')}</select><button class="btn" data-pfix="${n.id}">Save</button></div>`}
+   <div style="color:var(--muted);font-size:.82rem">${trained?'This photo was in the model’s training set, so this is not a test. On cameras it never saw, the model got 1 of 8 right.':'A weak first model (1 of 8 right on unseen cameras): it only ranks, and the officer decides.'}</div>
+   <button class="btn" data-open="${n.id}" style="justify-self:start">Open ${esc(n.name)} →</button></div>`;
+  det=`<div class="pdet"><img src="${PHOTO_SRC(n)}" alt="${esc(n.name)} camera photo, large"><div style="display:grid;gap:8px;align-content:start"><b style="font-size:1.05rem">${esc(n.name)}</b><span class="meta">${n.id==='lackey-st-west'?'Camera LACKEST 009 · Fri 13 Nov 11:05 · Council frame':'Council camera screen · Council frame'}</span>${c&&c.busy?'<div>Checking…</div>':res}</div></div>`}
+ el.innerHTML=`<div class="hd"><h2>Today's photos</h2><span class="date">${done} of ${nets.length} checked · in the pilot they arrive from SCADA each morning; today they are loaded in</span></div><div class="phs">${strip}</div>${det}`}
+function checkPhoto(id){const n=S.nets.find(x=>x.id===id);S.checks=S.checks||{};S.checks[id]={busy:true};renderPhotos();
+ const im=new Image();im.onload=()=>setTimeout(()=>{const r=PhotoCheck.check(im);S.checks[id]={top:r.top,conf:r.conf,review:r.review,at:new Date().toISOString()};
+  log(`Photo checked: read as ${CL[r.top]} (${Math.round(r.conf*100)}%)${r.review?', sent to a person':''}`,id,'');save();renderPhotos()},650);im.src=PHOTO_SRC(n)}
+function introBanner(){let seen=false;try{seen=localStorage.getItem('netwatch-intro')==='done'}catch(_){}
+ if(seen||$('#banner').innerHTML.trim())return;
+ $('#banner').innerHTML=`<div class="banner"><span><b>First time? Start here.</b> 1. Check the Lackey St West photo below · 2. <a href="email.html" style="color:inherit">Read the morning email</a> · 3. Raise and close one job</span><span style="display:flex;gap:8px"><button class="btn" data-pick="lackey-st-west">Start step 1</button><button class="btn" data-introx>Dismiss</button></span></div>`}
 function render(){
- $('#date').textContent=nice(iso(TODAY));
+ $('#date').textContent=nice(iso(TODAY));renderPhotos();
  const st=storm();
  $('#wx').innerHTML=`<span>Today <b>${RAIN.days[0].mm} mm</b></span><span>Next 7 days <b>${rain7()} mm</b></span><span>Heaviest <b>${short(st.d)} · ${st.mm} mm</b></span>`;
  $('#wxsrc').textContent=RAIN.live?'Open-Meteo, live':'demo forecast';$('#rainMode').textContent=RAIN.live?'Use demo forecast':'Use live forecast';
@@ -850,9 +883,14 @@ function copy(t,msg){(navigator.clipboard?navigator.clipboard.writeText(t):Promi
 function toast(t){const e=$('#toast');e.textContent=t;e.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>e.hidden=true,2400)}
 
 document.addEventListener('click',e=>{
- const t=e.target.closest('[data-lane],[data-open],[data-raise],[data-raiseall],[data-inspect],[data-defer],[data-close],[data-scroll],[data-confirm],[data-dismiss],[data-role],[data-signoff],[data-sendback],[data-noaction],[data-jobform],[data-fix],[data-remove],[data-suspend],[data-label],[data-copytests]');
+ const t=e.target.closest('[data-pick],[data-checkphoto],[data-pconfirm],[data-pfix],[data-introx],[data-lane],[data-open],[data-raise],[data-raiseall],[data-inspect],[data-defer],[data-close],[data-scroll],[data-confirm],[data-dismiss],[data-role],[data-signoff],[data-sendback],[data-noaction],[data-jobform],[data-fix],[data-remove],[data-suspend],[data-label],[data-copytests]');
  if(!t){if(e.target.classList.contains('drawer'))closeDrawer();return}
  const d=t.dataset;
+ if(d.pick!==undefined){PSEL=d.pick;renderPhotos();$('#photos').scrollIntoView({behavior:'smooth',block:'start'});return}
+ if(d.checkphoto!==undefined){checkPhoto(d.checkphoto);return}
+ if(d.pconfirm!==undefined){const c=S.checks[d.pconfirm];c.officer=c.top;log(`Officer confirmed the photo reading: ${CL[c.top]}`,d.pconfirm,'');save();renderPhotos();toast('Reading confirmed and saved as a label');return}
+ if(d.pfix!==undefined){const v=document.querySelector(`[data-pfixsel="${d.pfix}"]`).value,c=S.checks[d.pfix];c.officer=v;log(`Officer corrected the photo reading from ${CL[c.top]} to ${CL[v]}`,d.pfix,'');save();renderPhotos();toast('Correction saved as a label for the next model');return}
+ if(d.introx!==undefined){try{localStorage.setItem('netwatch-intro','done')}catch(_){}$('#banner').innerHTML='';return}
  if(d.role){setRole(d.role)}
  else if(d.lane){lane=lane===d.lane?null:d.lane;render();if(lane)$('#lane').scrollIntoView({behavior:'smooth',block:'start'})}
  else if(d.scroll){$('#'+d.scroll).scrollIntoView({behavior:'smooth',block:'center'})}
@@ -900,7 +938,7 @@ $('#tRadar').onclick=toggleRadar;$('#tCov').onclick=toggleCov;$('#tRun').onclick
 $('#copyRun').onclick=()=>copy(runSheet(),'Run sheet copied');
 $('#reset').onclick=()=>{S=fresh();log('Demo reset');save();lane=null;closeDrawer();if(runLine){runLine.remove();runLine=null;$('#tRun').classList.remove('on')}show();toast('Demo reset')};
 $('#rainMode').onclick=()=>{const live=!RAIN.live;try{localStorage.setItem('netwatch-rain',live?'live':'demo')}catch(e){}location.reload()};
-initMap();if(new URLSearchParams(location.search).has('net')||new URLSearchParams(location.search).has('lane'))ROLE='officer';show();fromEmail();{let m='demo';try{m=new URLSearchParams(location.search).get('rain')||localStorage.getItem('netwatch-rain')||'demo'}catch(e){}if(m==='live')getRain();}
+initMap();if(new URLSearchParams(location.search).has('net')||new URLSearchParams(location.search).has('lane'))ROLE='officer';{const ph=new URLSearchParams(location.search).get('photo');if(ph){ROLE='officer';PSEL=ph}}show();fromEmail();if(ROLE==='officer')introBanner();{const ph=new URLSearchParams(location.search).get('photo');if(ph)setTimeout(()=>$('#photos').scrollIntoView({block:'start'}),300)}{let m='demo';try{m=new URLSearchParams(location.search).get('rain')||localStorage.getItem('netwatch-rain')||'demo'}catch(e){}if(m==='live')getRain();}
 </script>
 </body>
 </html>
