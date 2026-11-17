@@ -86,7 +86,7 @@ h2 b{font-weight:700}
 .targets .tv{font-size:26px;font-weight:700;line-height:1.15}
 .targets b{font-size:15px}
 .targets li>span:last-child{font-size:13.5px;color:var(--slate)}
-.team{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
+.team{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;align-items:start}
 .person{background:var(--white);border:1px solid var(--line);padding:22px}
 .person>b{font-size:20px;display:block}
 .person small{display:block;font-size:10px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--slate);margin:2px 0 10px}
@@ -152,3 +152,7 @@ header{position:relative;z-index:2;background:var(--white)}
 .datal{margin:0;padding-left:20px;display:grid;gap:6px;font-size:15px}
 @media (max-width:900px){.onephoto,.steps3,.vals{grid-template-columns:1fr}.cards6{grid-template-columns:1fr 1fr}.arrow{display:none}}
 @media (max-width:560px){.cards6{grid-template-columns:1fr}}
+
+.person .face{width:120px;height:120px;object-fit:cover;display:block;border:1px solid var(--line)}
+@media (max-width:1000px){.team{grid-template-columns:1fr 1fr}}
+@media (max-width:760px){.team{grid-template-columns:1fr}}
