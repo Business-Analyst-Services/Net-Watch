@@ -16,9 +16,9 @@ Codes and colours are Council's, from the December 2022 GPT Audit.
 
 Plus a sensor matrix, the Wayfinder build plan and the evidence base.
 
-**Landing page:** https://business-analyst-services.github.io/gpt-which-gpt/
-**App:** https://business-analyst-services.github.io/gpt-which-gpt/app.html (Net Watch)
-**Brief:** https://business-analyst-services.github.io/gpt-which-gpt/brief/
+**Landing page:** https://business-analyst-services.github.io/net-watch/
+**App:** https://business-analyst-services.github.io/net-watch/app.html (Net Watch)
+**Brief:** https://business-analyst-services.github.io/net-watch/brief/
 
 ## Build and deploy
 
