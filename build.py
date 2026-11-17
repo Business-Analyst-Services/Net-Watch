@@ -332,7 +332,7 @@ index = f"""
 </ul><p><a href="../email.html">See the email alerts</a> · <a href="mvp.html">What we are demoing</a> · <a href="../app.html">Open the app</a></p></div>
 </div>
 """
-open(os.path.join(OUT,'index.html'),'w').write(page('Home', index, 'index.html'))
+open(os.path.join(OUT,'index.html'),'w').write(page('Overview', index, 'index.html'))
 
 # ---------- type pages ----------
 for t in TYPES:
