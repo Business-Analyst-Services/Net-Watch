@@ -8,4 +8,4 @@ git push origin main
 git branch -D gh-pages 2>/dev/null || true
 git subtree split --prefix docs -b gh-pages
 git push -f origin gh-pages
-echo "Live in about a minute: https://business-analyst-services.github.io/net-watch/"
+echo "Live in about a minute: https://business-analyst-services.github.io/Net-Watch/"
