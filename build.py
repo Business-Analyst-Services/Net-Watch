@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generates the GPT which GPT? static site into ./docs (GitHub Pages).
+"""Generates the Net Watch brief pages into ./docs/brief (GitHub Pages).
 
 Content sources: Council SME breakout session (Dr Paul Hackney, 9 Nov 2026), the team's
 Proactive GPT Monitoring brief (Zoe), City of Parramatta public records, and the SCADA
@@ -30,7 +30,7 @@ TYPES = [
   looks=["Empty: net hangs slack, pipe mouth visible through the mesh.","Filling: lower third swollen with leaves and packaging.","Clean due: net taut and rounded, sagging toward the ground.","Overdue: net at full stretch, pipe mouth hidden, material backing into the pipe.","Damaged / detached: mesh torn, or net pulled off the top of the pipe (Lackey St West, 13 Nov 2026; Paul's example in the SME session).","Can't see: leaves or a branch across the lens, fog, IR night frame."],
   cue="Change in the net itself, not the scene. Paul's warning: dense leafy frames, and about 90% of days nothing changes. Score against the trap's own last clean frame, not a generic 'full' image.",
   sensors=[
-   ("Existing trail camera","Primary","About 15 installed, about 10 working; one photo a day into SCADA, 1–3 years of history. AI scores fill %, damage, detachment and can't-see.","$0 marginal · solar · 4G"),
+   ("Existing trail camera","Primary","14 on the SCADA camera screen, about 10 working; one photo a day, 1–3 years of history. AI scores fill %, damage, detachment and can't-see.","$0 marginal · solar · 4G"),
    ("Fullness sensor (ToF, ultrasonic or radar) on a bracket over the net","For nets with no camera","CSIRO/Matter 4G dry-sump fullness sensor: 17 units trialled, within 2% of manual checks. Low bandwidth, so it works where 4G is too weak for images.","low-cost · battery · 4G/LTE-M"),
    ("Tilt or strain on the net frame","Detachment","A detached net is the one event that must never be missed; a tilt switch confirms it when the camera can't see.","~$300 · battery"),
    ("BoM 12-hour forecast + FloodSmart gauges","Trigger","Council's 25 SCADA rain and level gauges and the Nelen &amp; Schuurmans forecast already exist. Used to ask: is there room in this net for the next storm?","shared, already in SCADA"),
@@ -255,7 +255,7 @@ def page(title, body, cur, depth=0):
 <main class="in">
 {body}
 </main>
-<div class="in"><p class="credit">GPT which GPT? (Net Watch) is a Team 101 entry for the WSTI Festi 2026 Build with AI challenge, City Challenge track, Parramatta Possibilities Challenge 5 (AI for Smarter Asset and Environmental Management). Operating facts come from the Council SME breakout session with Dr Paul Hackney (9 Nov 2026) and City of Parramatta public records: GPT Audit (Council minutes 25 Mar 2024), Asset Management Plan 2027–2036, Annual Report 2024/25. Sensor costs are indicative, not quotes. Vendor names are examples from public sources, not endorsements. Camera frames are Council SCADA images shared for the challenge.</p></div>
+<div class="in"><p class="credit">Net Watch is a Team 101 entry for the WSTI Festi 2026 Build with AI challenge, City Challenge track, Parramatta Possibilities Challenge 5 (AI for Smarter Asset and Environmental Management). Operating facts come from the Council SME breakout session with Dr Paul Hackney (9 Nov 2026) and City of Parramatta public records: GPT Audit (Council minutes 25 Mar 2024), Asset Management Plan 2027–2036, Annual Report 2024/25. Sensor costs are indicative, not quotes. Vendor names are examples from public sources, not endorsements. Camera frames are Council SCADA images shared for the challenge.</p></div>
 <footer class="band"><div class="in"><span>Human at every gate</span><span><a href="{site}">About</a><a href="{site}app.html">App</a><a href="{site}email.html">Email alerts</a><a href="https://business-analyst.services/">BAS</a></span></div></footer>
 </body></html>"""
 
@@ -297,7 +297,7 @@ cat_rows = ''.join(
   f'<td><b>{TB[sl]["code"]}</b>{"<br><span class=mvp>MVP focus</span>" if TB[sl]["focus"] else ""}</td><td>{d}</td><td>{m}</td><td>{lim}</td>'
   f'</tr>' for sl,d,m,lim in CAT)
 index = f"""
-<div class="eyebrow">City of Parramatta · 37 GPTs · about 15 cameras, 10 working · one photo a day</div>
+<div class="eyebrow">City of Parramatta · 37 GPTs · 14 on camera, about 10 working · one photo a day</div>
 <h1>Clean the net before the storm, not after it lets go</h1>
 <p class="lede">Council's end-of-pipe litter nets are built to break away from the pipe when they are full and the next surge hits. Today one officer checks the camera images for about 15 minutes each weekday, and no one checks at weekends or over holidays. Net Watch reads every image, scores each net, checks the rain forecast, and emails the officer the marked-up photo when a net needs emptying or repair. The officer approves; the work order follows.</p>
 <h2 id="types">Five trap types, one decision layer</h2>
@@ -379,7 +379,7 @@ mvp = """
 <tr><th>Criterion</th><th style="text-align:right">Weight</th><th>Our answer</th></tr>
 <tr><td>Problem understanding and community impact</td><td class="num">25%</td><td>Detach-when-full is the real risk; weekend and holiday gap; one person's knowledge. Less litter reaching creeks, assets protected, staff time saved.</td></tr>
 <tr><td>Working prototype and feasibility</td><td class="num">25%</td><td>Three scenarios run end to end on Council frames; uses cameras and SCADA Council already has.</td></tr>
-<tr><td>Path forward and implementation potential</td><td class="num">25%</td><td>Pilot on the ~10 working cameras; add low-bandwidth fullness sensors to nets without cameras; then the other types.</td></tr>
+<tr><td>Path forward and implementation potential</td><td class="num">25%</td><td>Pilot on the about 10 working cameras; add low-bandwidth fullness sensors to nets without cameras; then the other types.</td></tr>
 <tr><td>Innovation and creativity</td><td class="num">15%</td><td>Rain-aware "is there room for the next storm" trigger; each net learns its own fill rate.</td></tr>
 <tr><td>Pitch and presentation</td><td class="num">10%</td><td>Show the torn Lackey St net that nobody saw, then the email that would have caught it.</td></tr>
 </table></div>
@@ -403,7 +403,7 @@ alert = """
 <h1>What lands in the inbox</h1>
 <p class="lede">Council officers asked for email, not another dashboard to watch, with the image and something pointing at the problem. This is the damage scenario built from the real Lackey St West frame.</p>
 <div class="mail">
- <div class="hd"><span>From: GPT Monitor &lt;gpt-monitor@&hellip;&gt; · To: Stormwater officer on duty</span><b>Lackey St West net is torn: repair before Tuesday's rain</b><span>Sat 14 Nov 2026, 07:30 · Camera LACKEST 009 · Asset code GPT (end-of-pipe net)</span></div>
+ <div class="hd"><span>From: Net Watch &lt;alerts@netwatch&gt; · To: Stormwater officer on duty</span><b>Lackey St West net is torn: repair before Tuesday's rain</b><span>Sat 14 Nov 2026, 07:30 · Camera LACKEST 009 · Asset code GPT (end-of-pipe net)</span></div>
  <div class="bd">
   <div><span class="pill">DAMAGED · confidence 0.86</span></div>
   <div class="figwrap"><img class="fig" src="assets/lackey-st-west-2026-11-13.jpg" alt="Lackey St West camera frame showing the litter net torn and sagging off the pipe outlet">
@@ -441,7 +441,7 @@ matrix=f"""
 <h2>Principles</h2>
 <div class="two">
 <div class="panel"><ul>
-<li><b>Use what Council has first.</b> About 15 cameras feed SCADA, and FloodSmart already reports about 20 water-level and 21 rain gauges.</li>
+<li><b>Use what Council has first.</b> 14 cameras feed SCADA, and FloodSmart already reports about 20 water-level and 21 rain gauges.</li>
 <li><b>Bandwidth decides the sensor.</b> Paul's team flagged weak 4G at some nets. A fullness sensor sends a few bytes; an image sends hundreds of kilobytes.</li>
 <li><b>A detached net must never be missed.</b> Back the camera with a tilt switch where the view is unreliable.</li>
 </ul></div>
