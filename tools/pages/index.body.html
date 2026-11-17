@@ -1,0 +1,86 @@
+<section class="hero" style="padding:0">
+ <div class="bars" aria-hidden="true"><i style="height:60px"></i><i style="height:120px;animation-delay:.05s"></i><i style="height:90px;animation-delay:.1s"></i><i style="height:210px;animation-delay:.15s"></i><i style="height:300px;animation-delay:.2s"></i><i style="height:170px;animation-delay:.25s"></i><i style="height:80px;animation-delay:.3s"></i></div>
+ <div class="in">
+  <div>
+   <p class="eyebrow">City of Parramatta · Challenge 5</p>
+   <h1>Empty every litter net <b>before the storm.</b></h1>
+   <p class="hl">Check this morning's camera photos. Net Watch tells you if a net is full, torn or blocked, checks the rain, and puts it in your morning email. You approve every job.</p>
+   <div class="acts"><a class="btn" href="#try">Try the demo (10 min)</a><a class="btn ghost" href="email.html">See the morning email</a></div>
+   <p class="note">Working prototype for WSTI Festi 2026. Real Council camera frames and FloodSmart gauges; fill levels, rain forecast, emails and job history are demo data.</p>
+  </div>
+  <div class="card" aria-label="Sample morning email">
+   <div class="sc-h"><span>Morning email · Sample</span><span>Demo data</span></div>
+   <p class="mail">5 nets need action before the next storm</p>
+   <div class="row"><span class="nm">Bettington Rd</span><span class="chip" style="background:var(--now)">Empty now</span><span class="bar"><i style="width:83%;background:var(--now)"></i></span><b>83</b></div>
+   <div class="row"><span class="nm">James Ruse Dr 1</span><span class="chip" style="background:var(--soon)">Before rain</span><span class="bar"><i style="width:82%;background:var(--now)"></i></span><b>82</b></div>
+   <div class="row"><span class="nm">Lackey St East</span><span class="chip" style="background:var(--view)">Can't see</span><span class="bar"><i style="width:81%;background:var(--now)"></i></span><b>81</b></div>
+   <div class="row"><span class="nm">Norwood Ave</span><span class="chip" style="background:var(--soon)">Before rain</span><span class="bar"><i style="width:68%;background:var(--soon)"></i></span><b>68</b></div>
+   <div class="row"><span class="nm">Ridge St</span><span class="chip" style="background:var(--view)">Can't see</span><span class="bar"><i style="width:67%;background:var(--soon)"></i></span><b>67</b></div>
+   <div class="foot"><span>Priority score 0–100 · torn nets get their own urgent email</span><span>One click to raise →</span></div>
+  </div>
+ </div>
+</section>
+
+<section id="photo">
+ <div class="in">
+  <p class="eyebrow">The core: image check</p>
+  <h2>It starts with <b>one photo.</b></h2>
+  <div class="onephoto">
+   <figure class="frame" style="margin:0"><img id="opImg" src="img/frames/lackey-st-west-2026-11-13.jpg" alt="Council camera photo of the Lackey St West litter net, torn and hanging off the pipe"><span class="arrow" aria-hidden="true">→</span><figcaption id="opCap">Camera LACKEST 009 · Fri 13 Nov 11:05 · Council frame</figcaption></figure>
+   <div style="display:grid;gap:14px">
+    <div class="flag" id="opFlag" aria-live="polite">
+     <span class="st">Not checked yet</span><span class="site" id="opSite">Lackey St West</span>
+     <p style="margin:0">Press the button and the model reads this photo in your browser.</p>
+     <div class="acts"><button class="btn" id="opRun" type="button">Check this photo</button><button class="btn line" id="opAlt" type="button">Try an unsure one</button></div>
+    </div>
+    <p class="unsure">Not sure? Under 50% confidence, the photo goes to a person instead of raising a flag.</p>
+   </div>
+  </div>
+  <p class="cap" style="margin-top:14px">Today you load the photo and press Check this photo. In the pilot, it comes straight from Council's SCADA cameras every morning.</p>
+ </div>
+</section>
+
+<section class="alt" id="try">
+ <div class="in">
+  <p class="eyebrow">Try it in 3 steps</p>
+  <h2>You're the stormwater officer. <b>It's 7:30 Monday.</b></h2>
+  <ol class="steps3">
+   <li><span class="num">1</span><h3>Check a photo</h3><p>Open this morning's camera photos, pick one and press Check this photo. See the reading and how sure it is, then confirm or correct it.</p><a href="app.html?photo=lackey-st-west">Open today's photos →</a><a href="demo-photos.zip">Download demo photos (zip, 0.4 MB)</a></li>
+   <li><span class="num">2</span><h3>Read your emails</h3><p>An urgent email says Lackey St West is torn: priority 92, act now. The morning email lists five more nets to deal with before the next storm.</p><a href="email.html">Open the emails →</a></li>
+   <li><span class="num">3</span><h3>Raise one job and close it</h3><p>One click raises the work order. As the contractor, record the job with an after photo. As the officer, sign it off. Every step is logged.</p><a href="app.html?net=lackey-st-west&amp;do=raise">Raise the Lackey St West job →</a></li>
+  </ol>
+  <div class="utest"><p><b>Want to test it properly?</b> 5 tasks, about 15 minutes, no names recorded.</p><a class="btn" href="app.html?role=test">Open the User test</a></div>
+ </div>
+</section>
+
+<section id="why">
+ <div class="in">
+  <p class="eyebrow">Why it matters</p>
+  <h2>One officer, ten cameras, <b>no one at the weekend.</b></h2>
+  <div class="stats">
+   <div><b>37</b><span>Litter traps</span></div>
+   <div><b>~10</b><span>Reliable cameras of 14</span></div>
+   <div><b>65 h</b><span>A year on photos</span></div>
+   <div><b>~110</b><span>Days unwatched</span></div>
+  </div>
+  <ul class="vals">
+   <li><b>Planned trips, not wasted ones</b><span>$66–119k a year freed by skipping cleans on half-empty nets (team estimate).</span></li>
+   <li><b>Cleaner creeks</b><span>Council's traps catch 104 t of litter a year. Full and torn nets are flagged before the storm, weekends included.</span></li>
+   <li><b>Less hunting, more deciding</b><span>One email, one click to approve.</span></li>
+  </ul>
+ </div>
+</section>
+
+<section class="alt" id="more">
+ <div class="in">
+  <h2 style="margin-top:0">Want <b>more?</b></h2>
+  <div class="cards6">
+   <a href="roles.html"><b>Four roles →</b><span>Officer, contractor, customer service and manager, and how they hand work on.</span></a>
+   <a href="app.html?role=model"><b>How the AI was tested →</b><span>1 of 8 right on cameras it never saw, and what that means.</span></a>
+   <a href="pilot.html"><b>8-week pilot →</b><span>Targets, timeline, cost, owners and data rules.</span></a>
+   <a href="brief/sensors.html"><b>Sensors and future data →</b><span>The right signal for each of the five trap types.</span></a>
+   <a href="brief/evidence.html"><b>Evidence and sources →</b><span>Council records, the SME session and where each number comes from.</span></a>
+   <a href="team.html"><b>The team →</b><span>Team 101, Business Analyst Services.</span></a>
+  </div>
+ </div>
+</section>

@@ -49,3 +49,7 @@ Camera frames and FloodSmart gauges are real. Fill levels, the demo rain forecas
 `python3 model/baseline.py` reruns the baseline net-state classifier on the labelled frames in `docs/img/frames/` (labels in `model/frames.json`) and writes `docs/data/model-results.js`. It tests leave-one-camera-out over 8 Council frames; simulated frames are used for training only. Result: 1 of 8 correct. This is a small demonstration, not production accuracy, which is why the model only ranks nets and an officer confirms every job.
 
 `python3 model/export_weights.py` trains the same model on all 18 frames and writes `docs/data/model-weights.js` for the in-browser Check a photo tool.
+
+## Site pages
+
+`python3 tools/site_pages.py` writes Home, Pilot plan, Team and Four roles from `tools/pages/*.body.html`, with the shared menu and footer from `tools/sitenav.py` and styles from `docs/css/site.css`. The brief pages use the same menu and footer through `build.py`.

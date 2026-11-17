@@ -7,7 +7,7 @@ GPT Cameras page screenshots (13 Nov 2026).
 """
 import re, os, html, shutil, sys
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "tools"))
-from sitenav import nav as sitenav
+from sitenav import nav as sitenav, more as sitemore
 HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(HERE, 'docs', 'brief')
 os.makedirs(os.path.join(OUT, 'types'), exist_ok=True)
@@ -216,6 +216,7 @@ table.cat tr.tot td{border-top:2px solid var(--navy);font-weight:700}
 @media (max-width:900px){.phases{grid-template-columns:1fr 1fr}}@media (max-width:480px){.phases{grid-template-columns:1fr}}
 .mk{display:inline-block;width:12px;height:12px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:var(--c);margin-right:10px;vertical-align:-1px}
 .credit{font-size:12px;color:var(--muted);line-height:1.6;max-width:110ch;margin:24px auto 0;padding-bottom:24px}
+.more{border-top:1px solid var(--line);font-size:14px;background:var(--alt)}.more .in{display:flex;flex-wrap:wrap;gap:8px 22px;padding-block:16px;align-items:center}.more b{font-size:11px;letter-spacing:.25em;text-transform:uppercase;color:var(--muted)}.more a{font-weight:700;text-decoration:none;color:var(--navy)}.more a:hover{text-decoration:underline}
 footer.band{margin:0;background:var(--teal-b);color:#fff;font:700 10px var(--display);letter-spacing:.25em;text-transform:uppercase;max-width:none}
 footer.band .in{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;padding-block:16px}
 footer.band a{color:#fff;text-decoration:none;margin-left:16px}
@@ -236,7 +237,7 @@ def page(title, body, cur, depth=0):
     root = '../' if depth else ''
     site = root + '../'
     key = {'index.html':'brief','mvp.html':'mvp','sensors.html':'sensors','plan.html':'plan','evidence.html':'evidence'}.get(cur,'brief')
-    navhtml = sitenav(site, key)
+    navhtml = sitenav(site, 'none')
     lead_style = ''
     m = re.match(r'\s*(<style>.*?</style>)', body, re.S)
     if m: lead_style, body = m.group(1), body[m.end():]
@@ -258,7 +259,8 @@ def page(title, body, cur, depth=0):
 {body}
 </main>
 <div class="in"><p class="credit">Net Watch is a Team 101 entry for the WSTI Festi 2026 Build with AI challenge, City Challenge track, Parramatta Possibilities Challenge 5 (AI for Smarter Asset and Environmental Management). Operating facts come from the Council SME breakout session with Dr Paul Hackney (9 Nov 2026) and City of Parramatta public records: GPT Audit (Council minutes 25 Mar 2024), Asset Management Plan 2027–2036, Annual Report 2024/25. Sensor costs are indicative, not quotes. Vendor names are examples from public sources, not endorsements. Camera frames are Council SCADA images shared for the challenge.</p></div>
-<footer class="band"><div class="in"><span>Human at every gate</span><span><a href="{site}">About</a><a href="{site}app.html">App</a><a href="{site}email.html">Email alerts</a><a href="https://business-analyst.services/">BAS</a></span></div></footer>
+{sitemore(site)}
+<footer class="band"><div class="in"><span>The AI ranks. People decide.</span><span>Team 101 · WSTI Festi 2026</span></div></footer>
 </body></html>"""
 
 def code_chip(t):

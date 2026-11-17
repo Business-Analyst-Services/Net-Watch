@@ -1,0 +1,23 @@
+<script src="data/model-weights.js"></script>
+<script src="js/photo-check.js"></script>
+<script>
+(function(){
+ const L={empty:'Empty',part_full:'Part full',full:'Full',damaged:'Damaged',cant_see:'Can’t see'};
+ const NEXT={damaged:'Repair, urgent',full:'Empty now',cant_see:'Clear the camera',empty:'No action',part_full:'Watch'};
+ const COL={damaged:'#B3266B',full:'#C2352B',cant_see:'#5A6B7D',empty:'#2E7D50',part_full:'#2E7D50'};
+ const P={main:{src:'img/frames/lackey-st-west-2026-11-13.jpg',site:'Lackey St West',cap:'Camera LACKEST 009 · Fri 13 Nov 11:05 · Council frame',id:'lackey-st-west-2026-11-13'},
+          alt:{src:'img/lackey-st-east.jpg',site:'Lackey St East',cap:'Council camera screen · Council frame',id:'lackey-st-east'}};
+ const $=s=>document.getElementById(s);
+ function run(k){const p=P[k],f=$('opFlag');$('opImg').src=p.src;$('opCap').textContent=p.cap;
+  f.style.setProperty('--c','#DDE3EA');f.innerHTML=`<span class="st">Checking…</span><span class="site">${p.site}</span>`;
+  const im=new Image();im.onload=()=>setTimeout(()=>{if(!window.PhotoCheck){f.innerHTML='<p>The model could not load. Try the app.</p>';return}
+   const r=PhotoCheck.check(im),pc=Math.round(r.conf*100),trained=(window.MODELW.trained_ids||[]).includes(p.id);
+   const st=r.review?'Unsure · sent to a person':`${L[r.top]} · ${NEXT[r.top]}`;
+   f.style.setProperty('--c',r.review?'#A8580A':COL[r.top]);
+   f.innerHTML=`<span class="st">${st}</span><span class="site">${p.site}</span><dl><dt>Reads as</dt><dd>${L[r.top]}</dd><dt>Confidence</dt><dd>${pc}%</dd><dt>Next step</dt><dd>${r.review?'Sent to a person':'Ranked for the officer'}</dd></dl>
+   <p class="why">${trained?'This photo was in the model’s training set, so this is not a test. On cameras it never saw, our first model got 1 of 8 right. That’s why it only ranks, and you decide.':'Below 50%, so no flag is raised: a person looks at it first.'}</p>
+   <div class="acts"><a class="btn" href="app.html?photo=${k==='main'?'lackey-st-west':'lackey-st-east'}">Open in Net Watch</a><button class="btn line" type="button" id="opSwap">${k==='main'?'Try an unsure one':'Back to Lackey St West'}</button></div>`;
+   $('opSwap').onclick=()=>run(k==='main'?'alt':'main')},600);im.src=p.src}
+ $('opRun').onclick=()=>run('main');$('opAlt').onclick=()=>run('alt');
+})();
+</script>
