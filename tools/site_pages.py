@@ -7,7 +7,7 @@ from sitenav import nav, more
 DOCS = os.path.join(os.path.dirname(HERE), 'docs')
 PAGES = [('index', 'home', 'Net Watch | Empty every litter net before the storm',
           'Check this morning’s camera photos. Net Watch flags full, torn or blocked litter nets, checks the rain and emails the officer, who approves every job.'),
-         ('pilot', 'pilot', 'Pilot plan | Net Watch', 'An 8-week Net Watch pilot on the cameras City of Parramatta already has: targets, timeline, cost, owners and data rules.'),
+         ('pilot', 'pilot', 'Pilot plan | Net Watch', 'An 8-week Net Watch pilot on the cameras City of Parramatta already has: targets, timeline, what it needs, owners and data rules.'),
          ('team', 'team', 'Team | Net Watch', 'Team 101, Business Analyst Services: the people behind Net Watch.'),
          ('roles', '', 'Four roles | Net Watch', 'The officer, contractor, customer service and manager views in Net Watch.')]
 REDIRECT = "<script>(function(){var q=location.search;if(/[?&](net|lane|role|do|view|photo)=/.test(q))location.replace('app.html'+q+location.hash)})();</script>\n"
